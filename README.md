@@ -8,6 +8,9 @@ machine-generated chain of rule applications (`export/chains/`).
 * `STATE.md` — pinned counts and pass progress.
 * `WANTED_RULES.md` — statements that would help but are not in the catalogue (never used).
 * `export/` — deliverable (`knots.csv` / `knots.xlsx` are the human-readable tables; `FORMAT.md` documents every file).
+  The JSONL files are stored as gzip parts and the chain files inside `chains/chains-NNN.tar.xz`, because no file
+  may exceed 50 MB; `python3 scripts/export_pack.py unpack export <dir>` writes plain `X.jsonl` files and one
+  `chains/<node>.txt` per node.
 * `checker/check.py` — independent checker: replays `export/events.jsonl`, rebuilds every chain file.
 * `route.py <node> <invariant>` — prints the chain of a pinned value with the cited edges inlined.
 
