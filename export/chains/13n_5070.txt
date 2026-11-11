@@ -1,7 +1,13 @@
 # chains for 13n_5070
-1. e264729 C1 nodes=13n_5070 par={} -> 13n_5070.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-2. e264730 C4 nodes=13n_5070 par={} -> 13n_5070.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 1
-3. e264731 C5 nodes=13n_5070 par={"g4":1,"src":"KnotInfo g4"} -> 13n_5070.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 2
-4. e264732 C8 nodes=13n_5070 par={"tau":1,"why":"homogeneous diagram"} -> 13n_5070.C: (tau=1,nu=1):r_0{>=0} | in: 3
-== nu = 1 : pinned at 4 ; chain 1,2,3,4
-== tau = 1 : pinned at 4 ; chain 1,2,3,4
+1. e12 U4a nodes=3_1 par={"g4":1} -> 3_1.U: upsilon in [-1,1] | in: -
+2. e13 U2a nodes=3_1 par={"tau":1} -> 3_1.U: upsilon in [-1,-1] | in: 1
+3. e264853 C1 nodes=13n_5070 par={} -> 13n_5070.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+4. e264854 C4 nodes=13n_5070 par={} -> 13n_5070.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 3
+5. e264855 C5 nodes=13n_5070 par={"g4":1,"src":"KnotInfo g4"} -> 13n_5070.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 4
+6. e264856 C8 nodes=13n_5070 par={"tau":1,"why":"homogeneous diagram"} -> 13n_5070.C: (tau=1,nu=1):r_0{>=0} | in: 5
+7. e264859 U4a nodes=13n_5070 par={"g4":1} -> 13n_5070.U: upsilon in [-1,1] | in: -
+8. e342807 U5 nodes=3_1,13n_5070 par={} -> 13n_5070.U: upsilon in [-1,0] | in: 2,7
+9. e362300 U1 nodes=13n_5070 par={"value":-1,"why":"Floer-thin"} -> 13n_5070.U: upsilon in [-1,-1] | in: 8
+== nu = 1 : pinned at 6 ; chain 3,4,5,6
+== tau = 1 : pinned at 6 ; chain 3,4,5,6
+== upsilon = -1 : pinned at 9 ; chain 1,2,7,8,9

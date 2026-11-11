@@ -1,8 +1,14 @@
 # chains for 13n_3890*
-1. e10718 U4a nodes=11a_259 par={"g4":3} -> 11a_259.U: upsilon in [-3,3] | in: -
-2. e10719 U2a nodes=11a_259 par={"tau":3} -> 11a_259.U: upsilon in [-3,-3] | in: 1
-3. e242285 U4a nodes=13n_3890 par={"g4":2} -> 13n_3890.U: upsilon in [-2,2] | in: -
-4. e242294 U4a nodes=13n_3890* par={"g4":2} -> 13n_3890*.U: upsilon in [-2,2] | in: -
-5. e336302 U6 nodes=11a_259,13n_3890 par={"a":1,"b":1,"h":1} -> 13n_3890.U: upsilon in [-2,-2] | in: 2,3
-6. e362849 U4b nodes=13n_3890,13n_3890* par={"kind":"mirror"} -> 13n_3890*.U: upsilon in [2,2] | in: 4,5
-== upsilon = 2 : pinned at 6 ; chain 1,2,3,4,5,6
+1. e12 U4a nodes=3_1 par={"g4":1} -> 3_1.U: upsilon in [-1,1] | in: -
+2. e13 U2a nodes=3_1 par={"tau":1} -> 3_1.U: upsilon in [-1,-1] | in: 1
+3. e86 U4a nodes=6_1 par={"why":"slice"} -> 6_1.U: upsilon in [0,0] | in: -
+4. e10719 U4a nodes=11a_259 par={"g4":3} -> 11a_259.U: upsilon in [-3,3] | in: -
+5. e10720 U2a nodes=11a_259 par={"tau":3} -> 11a_259.U: upsilon in [-3,-3] | in: 4
+6. e242409 U4a nodes=13n_3890 par={"g4":2} -> 13n_3890.U: upsilon in [-2,2] | in: -
+7. e242418 U4a nodes=13n_3890* par={"g4":2} -> 13n_3890*.U: upsilon in [-2,2] | in: -
+8. e265787 U4a nodes=3_1#6_1 par={"g4":2} -> 3_1#6_1.U: upsilon in [-2,2] | in: -
+9. e318377 U4b nodes=3_1#6_1,3_1,6_1 par={"kind":"sum","mult":[1,1]} -> 3_1#6_1.U: upsilon in [-1,-1] | in: 2,3,8
+10. e340494 U5 nodes=13n_3890,3_1#6_1 par={} -> 13n_3890.U: upsilon in [-2,-1] | in: 6,9
+11. e351042 U6 nodes=11a_259,13n_3890 par={"a":1,"b":1,"h":1} -> 13n_3890.U: upsilon in [-2,-2] | in: 5,10
+12. e380549 U4b nodes=13n_3890,13n_3890* par={"kind":"mirror"} -> 13n_3890*.U: upsilon in [2,2] | in: 7,11
+== upsilon = 2 : pinned at 12 ; chain 1,2,3,4,5,6,7,8,9,10,11,12

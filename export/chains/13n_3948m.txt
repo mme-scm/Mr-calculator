@@ -1,7 +1,24 @@
 # chains for 13n_3948*
-1. e243359 C1 nodes=13n_3948* par={} -> 13n_3948*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-2. e243360 C4 nodes=13n_3948* par={} -> 13n_3948*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 1
-3. e243361 C5 nodes=13n_3948* par={"g4":2,"src":"KnotInfo g4"} -> 13n_3948*.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 2
-4. e243362 C8 nodes=13n_3948* par={"tau":2,"why":"homogeneous diagram"} -> 13n_3948*.C: (tau=2,nu=3):r_0{>=0} | in: 3
-== nu = 3 : pinned at 4 ; chain 1,2,3,4
-== tau = 2 : pinned at 4 ; chain 1,2,3,4
+1. e23 U4a nodes=3_1* par={"g4":1} -> 3_1*.U: upsilon in [-1,1] | in: -
+2. e24 U2a nodes=3_1* par={"tau":-1} -> 3_1*.U: upsilon in [1,1] | in: 1
+3. e214 U4a nodes=7_4* par={"g4":1} -> 7_4*.U: upsilon in [-1,1] | in: -
+4. e215 U2a nodes=7_4* par={"tau":-1} -> 7_4*.U: upsilon in [1,1] | in: 3
+5. e3447 U4a nodes=10_84 par={"g4":1} -> 10_84.U: upsilon in [-1,1] | in: -
+6. e3448 U2a nodes=10_84 par={"tau":1} -> 10_84.U: upsilon in [-1,-1] | in: 5
+7. e14018 U4a nodes=11n_47 par={"g4":2} -> 11n_47.U: upsilon in [-2,2] | in: -
+8. e243479 U4a nodes=13n_3948 par={"g4":2} -> 13n_3948.U: upsilon in [-2,2] | in: -
+9. e243483 C1 nodes=13n_3948* par={} -> 13n_3948*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+10. e243484 C4 nodes=13n_3948* par={} -> 13n_3948*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 9
+11. e243485 C5 nodes=13n_3948* par={"g4":2,"src":"KnotInfo g4"} -> 13n_3948*.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 10
+12. e243486 C8 nodes=13n_3948* par={"tau":2,"why":"homogeneous diagram"} -> 13n_3948*.C: (tau=2,nu=3):r_0{>=0} | in: 11
+13. e243490 U4a nodes=13n_3948* par={"g4":2} -> 13n_3948*.U: upsilon in [-2,2] | in: -
+14. e266065 U4a nodes=3_1*#7_4* par={"g4":2} -> 3_1*#7_4*.U: upsilon in [-2,2] | in: -
+15. e318467 U4b nodes=3_1*#7_4*,3_1*,7_4* par={"kind":"sum","mult":[1,1]} -> 3_1*#7_4*.U: upsilon in [2,2] | in: 2,4,14
+16. e329108 U5 nodes=11n_47,10_84 par={} -> 11n_47.U: upsilon in [-2,-1] | in: 6,7
+17. e340572 U5 nodes=13n_3948,3_1*#7_4* par={} -> 13n_3948.U: upsilon in [1,2] | in: 8,15
+18. e355793 U6 nodes=11n_47,13n_3948* par={"a":1,"b":1,"h":-1} -> 13n_3948*.U: upsilon in [-2,-1] | in: 13,16
+19. e361696 U1 nodes=13n_3948 par={"value":2,"why":"Floer-thin"} -> 13n_3948.U: upsilon in [2,2] | in: 17
+20. e380580 U4b nodes=13n_3948,13n_3948* par={"kind":"mirror"} -> 13n_3948*.U: upsilon in [-2,-2] | in: 18,19
+== nu = 3 : pinned at 12 ; chain 9,10,11,12
+== tau = 2 : pinned at 12 ; chain 9,10,11,12
+== upsilon = -2 : pinned at 20 ; chain 1,2,3,4,5,6,7,8,13,14,15,16,17,18,19,20

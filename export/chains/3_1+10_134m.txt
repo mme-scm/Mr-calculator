@@ -1,6 +1,13 @@
 # chains for 3_1#10_134*
-1. e269663 C1 nodes=3_1#10_134* par={} -> 3_1#10_134*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-2. e269664 C4 nodes=3_1#10_134* par={} -> 3_1#10_134*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 1
-3. e269665 C5 nodes=3_1#10_134* par={"g4":4,"src":"calculator g"} -> 3_1#10_134*.C: (tau=-4,nu=-7):r_0{>=0} (tau=-3,nu=-7):r_0{>=0} (tau=-3,nu=-6):r_0{>=0} (tau=-3,nu=-5):r_0{>=0} (tau... [digest ac35ae83a15c] | in: 2
-4. e269666 C8 nodes=3_1#10_134* par={"tau":-2,"why":"homogeneous diagram"} -> 3_1#10_134*.C: (tau=-2,nu=-5):r_0{>=0} (tau=-2,nu=-4):r_0{>=0} (tau=-2,nu=-3):r_0{>=0} | in: 3
-== tau = -2 : pinned at 4 ; chain 1,2,3,4
+1. e12 U4a nodes=3_1 par={"g4":1} -> 3_1.U: upsilon in [-1,1] | in: -
+2. e13 U2a nodes=3_1 par={"tau":1} -> 3_1.U: upsilon in [-1,-1] | in: 1
+3. e4453 U4a nodes=10_134* par={"g4":3} -> 10_134*.U: upsilon in [-3,3] | in: -
+4. e269792 C1 nodes=3_1#10_134* par={} -> 3_1#10_134*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+5. e269793 C4 nodes=3_1#10_134* par={} -> 3_1#10_134*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 4
+6. e269794 C5 nodes=3_1#10_134* par={"g4":4,"src":"calculator g"} -> 3_1#10_134*.C: (tau=-4,nu=-7):r_0{>=0} (tau=-3,nu=-7):r_0{>=0} (tau=-3,nu=-6):r_0{>=0} (tau=-3,nu=-5):r_0{>=0} (tau... [digest ac35ae83a15c] | in: 5
+7. e269795 C8 nodes=3_1#10_134* par={"tau":-2,"why":"homogeneous diagram"} -> 3_1#10_134*.C: (tau=-2,nu=-5):r_0{>=0} (tau=-2,nu=-4):r_0{>=0} (tau=-2,nu=-3):r_0{>=0} | in: 6
+8. e269797 U4a nodes=3_1#10_134* par={"g4":4} -> 3_1#10_134*.U: upsilon in [-4,4] | in: -
+9. e319732 U4b nodes=3_1#10_134*,3_1,10_134* par={"kind":"sum","mult":[1,1]} -> 3_1#10_134*.U: upsilon in [-4,2] | in: 2,3,8
+10. e362336 U1 nodes=3_1#10_134* par={"value":2,"why":"Floer-thin"} -> 3_1#10_134*.U: upsilon in [2,2] | in: 9
+== tau = -2 : pinned at 7 ; chain 4,5,6,7
+== upsilon = 2 : pinned at 10 ; chain 1,2,3,8,9,10

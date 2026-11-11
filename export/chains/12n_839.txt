@@ -1,7 +1,13 @@
 # chains for 12n_839
-1. e60141 C1 nodes=12n_839 par={} -> 12n_839.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-2. e60142 C4 nodes=12n_839 par={} -> 12n_839.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 1
-3. e60143 C5 nodes=12n_839 par={"g4":2,"src":"KnotInfo g4"} -> 12n_839.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 2
-4. e60144 C8 nodes=12n_839 par={"tau":-2,"why":"homogeneous diagram"} -> 12n_839.C: (tau=-2,nu=-3):r_0{>=0} | in: 3
-== nu = -3 : pinned at 4 ; chain 1,2,3,4
-== tau = -2 : pinned at 4 ; chain 1,2,3,4
+1. e3538 U4a nodes=10_89 par={"g4":1} -> 10_89.U: upsilon in [-1,1] | in: -
+2. e3539 U2a nodes=10_89 par={"tau":-1} -> 10_89.U: upsilon in [1,1] | in: 1
+3. e60178 C1 nodes=12n_839 par={} -> 12n_839.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+4. e60179 C4 nodes=12n_839 par={} -> 12n_839.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 3
+5. e60180 C5 nodes=12n_839 par={"g4":2,"src":"KnotInfo g4"} -> 12n_839.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 4
+6. e60181 C8 nodes=12n_839 par={"tau":-2,"why":"homogeneous diagram"} -> 12n_839.C: (tau=-2,nu=-3):r_0{>=0} | in: 5
+7. e60184 U4a nodes=12n_839 par={"g4":2} -> 12n_839.U: upsilon in [-2,2] | in: -
+8. e347769 U6 nodes=10_89,12n_839 par={"a":1,"b":1,"h":1} -> 12n_839.U: upsilon in [1,2] | in: 2,7
+9. e359995 U1 nodes=12n_839 par={"value":2,"why":"Floer-thin"} -> 12n_839.U: upsilon in [2,2] | in: 8
+== nu = -3 : pinned at 6 ; chain 3,4,5,6
+== tau = -2 : pinned at 6 ; chain 3,4,5,6
+== upsilon = 2 : pinned at 9 ; chain 1,2,7,8,9

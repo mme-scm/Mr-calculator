@@ -1,0 +1,8 @@
+# chains for 12n_550*
+1. e3277 U4a nodes=10_75 par={"why":"slice"} -> 10_75.U: upsilon in [0,0] | in: -
+2. e54690 U4a nodes=12n_550 par={"g4":1} -> 12n_550.U: upsilon in [-1,1] | in: -
+3. e54699 U4a nodes=12n_550* par={"g4":1} -> 12n_550*.U: upsilon in [-1,1] | in: -
+4. e325670 U5 nodes=10_75,12n_550 par={} -> 12n_550.U: upsilon in [0,1] | in: 1,2
+5. e359906 U3 nodes=12n_550 par={} -> 12n_550.U: upsilon in [0,0] | in: 4
+6. e377124 U4b nodes=12n_550,12n_550* par={"kind":"mirror"} -> 12n_550*.U: upsilon in [0,0] | in: 3,5
+== upsilon = 0 : pinned at 6 ; chain 1,2,3,4,5,6

@@ -1,7 +1,19 @@
 # chains for 12n_201
-1. e48096 C1 nodes=12n_201 par={} -> 12n_201.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-2. e48097 C4 nodes=12n_201 par={} -> 12n_201.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 1
-3. e48098 C5 nodes=12n_201 par={"g4":2,"src":"KnotInfo g4"} -> 12n_201.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 2
-4. e48099 C8 nodes=12n_201 par={"tau":2,"why":"homogeneous diagram"} -> 12n_201.C: (tau=2,nu=3):r_0{>=0} | in: 3
-== nu = 3 : pinned at 4 ; chain 1,2,3,4
-== tau = 2 : pinned at 4 ; chain 1,2,3,4
+1. e2 U4a nodes=0_1 par={"why":"unknot"} -> 0_1.U: upsilon in [0,0] | in: -
+2. e367 U4a nodes=8_5 par={"g4":2} -> 8_5.U: upsilon in [-2,2] | in: -
+3. e368 U2a nodes=8_5 par={"tau":2} -> 8_5.U: upsilon in [-2,-2] | in: 2
+4. e4382 U4a nodes=10_131 par={"g4":1} -> 10_131.U: upsilon in [-1,1] | in: -
+5. e12715 U4a nodes=11a_349 par={"g4":1} -> 11a_349.U: upsilon in [-1,1] | in: -
+6. e12716 U2a nodes=11a_349 par={"tau":1} -> 11a_349.U: upsilon in [-1,-1] | in: 5
+7. e48129 C1 nodes=12n_201 par={} -> 12n_201.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+8. e48130 C4 nodes=12n_201 par={} -> 12n_201.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 7
+9. e48131 C5 nodes=12n_201 par={"g4":2,"src":"KnotInfo g4"} -> 12n_201.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 8
+10. e48132 C8 nodes=12n_201 par={"tau":2,"why":"homogeneous diagram"} -> 12n_201.C: (tau=2,nu=3):r_0{>=0} | in: 9
+11. e48136 U4a nodes=12n_201 par={"g4":2} -> 12n_201.U: upsilon in [-2,2] | in: -
+12. e323788 U5 nodes=10_131,0_1 par={} -> 10_131.U: upsilon in [-1,0] | in: 1,4
+13. e323790 U5 nodes=10_131,11a_349 par={} -> 10_131.U: upsilon in [-1,-1] | in: 6,12
+14. e332212 U5 nodes=12n_201,10_131 par={} -> 12n_201.U: upsilon in [-2,-1] | in: 11,13
+15. e332214 U5 nodes=12n_201,8_5 par={} -> 12n_201.U: upsilon in [-2,-2] | in: 3,14
+== nu = 3 : pinned at 10 ; chain 7,8,9,10
+== tau = 2 : pinned at 10 ; chain 7,8,9,10
+== upsilon = -2 : pinned at 15 ; chain 1,2,3,4,5,6,11,12,13,14,15

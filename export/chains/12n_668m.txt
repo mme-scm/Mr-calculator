@@ -1,7 +1,18 @@
 # chains for 12n_668*
-1. e56906 C1 nodes=12n_668* par={} -> 12n_668*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-2. e56907 C4 nodes=12n_668* par={} -> 12n_668*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 1
-3. e56908 C5 nodes=12n_668* par={"g4":2,"src":"KnotInfo g4"} -> 12n_668*.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 2
-4. e56909 C8 nodes=12n_668* par={"tau":-2,"why":"homogeneous diagram"} -> 12n_668*.C: (tau=-2,nu=-3):r_0{>=0} | in: 3
-== nu = -3 : pinned at 4 ; chain 1,2,3,4
-== tau = -2 : pinned at 4 ; chain 1,2,3,4
+1. e2283 U4a nodes=10_27 par={"g4":1} -> 10_27.U: upsilon in [-1,1] | in: -
+2. e2284 U2a nodes=10_27 par={"tau":-1} -> 10_27.U: upsilon in [1,1] | in: 1
+3. e56939 U4a nodes=12n_668 par={"g4":2} -> 12n_668.U: upsilon in [-2,2] | in: -
+4. e56943 C1 nodes=12n_668* par={} -> 12n_668*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+5. e56944 C4 nodes=12n_668* par={} -> 12n_668*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 4
+6. e56945 C5 nodes=12n_668* par={"g4":2,"src":"KnotInfo g4"} -> 12n_668*.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 5
+7. e56946 C8 nodes=12n_668* par={"tau":-2,"why":"homogeneous diagram"} -> 12n_668*.C: (tau=-2,nu=-3):r_0{>=0} | in: 6
+8. e56949 U4a nodes=12n_668* par={"g4":2} -> 12n_668*.U: upsilon in [-2,2] | in: -
+9. e81022 U4a nodes=13a_904 par={"g4":2} -> 13a_904.U: upsilon in [-2,2] | in: -
+10. e81023 U2a nodes=13a_904 par={"tau":2} -> 13a_904.U: upsilon in [-2,-2] | in: 9
+11. e336835 U5 nodes=13a_904,12n_668 par={} -> 12n_668.U: upsilon in [-2,-1] | in: 3,10
+12. e347237 U6 nodes=10_27,12n_668* par={"a":1,"b":1,"h":1} -> 12n_668*.U: upsilon in [1,2] | in: 2,8
+13. e359941 U1 nodes=12n_668 par={"value":-2,"why":"Floer-thin"} -> 12n_668.U: upsilon in [-2,-2] | in: 11
+14. e379421 U4b nodes=12n_668,12n_668* par={"kind":"mirror"} -> 12n_668*.U: upsilon in [2,2] | in: 12,13
+== nu = -3 : pinned at 7 ; chain 4,5,6,7
+== tau = -2 : pinned at 7 ; chain 4,5,6,7
+== upsilon = 2 : pinned at 14 ; chain 1,2,3,8,9,10,11,12,13,14

@@ -1,6 +1,43 @@
 # chains for 13n_2658*
-1. e11073 U4a nodes=11a_275 par={"g4":2} -> 11a_275.U: upsilon in [-2,2] | in: -
-2. e11074 U2a nodes=11a_275 par={"tau":2} -> 11a_275.U: upsilon in [-2,-2] | in: 1
-3. e219040 U4a nodes=13n_2658* par={"g4":1} -> 13n_2658*.U: upsilon in [-1,1] | in: -
-4. e336828 U6 nodes=11a_275,13n_2658* par={"a":1,"b":1,"h":1} -> 13n_2658*.U: upsilon in [-1,-1] | in: 2,3
-== upsilon = -1 : pinned at 4 ; chain 1,2,3,4
+1. e17 C1 nodes=3_1* par={} -> 3_1*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+2. e18 C4 nodes=3_1* par={} -> 3_1*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 1
+3. e19 C5 nodes=3_1* par={"g4":1,"src":"KnotInfo g4"} -> 3_1*.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 2
+4. e20 C8 nodes=3_1* par={"tau":-1,"why":"alternating"} -> 3_1*.C: (tau=-1,nu=-1):r_0{>=0} | in: 3
+5. e21 C10 nodes=3_1* par={"named":1} -> 3_1*.C: (tau=-1,nu=-1):r_0{1} | in: 4
+6. e27 C1 nodes=4_1 par={} -> 4_1.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+7. e28 C4 nodes=4_1 par={} -> 4_1.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 6
+8. e29 C5 nodes=4_1 par={"g4":1,"src":"KnotInfo g4"} -> 4_1.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 7
+9. e30 C5 nodes=4_1 par={"why":"amphichiral"} -> 4_1.C: (tau=0,nu=0):r_0{>=0} | in: 8
+10. e31 C10 nodes=4_1 par={"named":2} -> 4_1.C: (tau=0,nu=0):r_0{2} | in: 9
+11. e11074 U4a nodes=11a_275 par={"g4":2} -> 11a_275.U: upsilon in [-2,2] | in: -
+12. e11075 U2a nodes=11a_275 par={"tau":2} -> 11a_275.U: upsilon in [-2,-2] | in: 11
+13. e219131 C1 nodes=13n_2658 par={} -> 13n_2658.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+14. e219132 C4 nodes=13n_2658 par={} -> 13n_2658.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 13
+15. e219133 C5 nodes=13n_2658 par={"g4":1,"src":"KnotInfo g4"} -> 13n_2658.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 14
+16. e219134 C9 nodes=13n_2658 par={"n":6,"w":-5} -> 13n_2658.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} | in: 15
+17. e219135 C10 nodes=13n_2658 par={"a":true,"b":true,"ge3":true} -> 13n_2658.C: (tau=-1,nu=-1):r_0{>=3} (tau=0,nu=-1):r_0{>=3} (tau=0,nu=0):r_0{>=3} (tau=0,nu=1):r_0{>=4} | in: 16
+18. e219141 C1 nodes=13n_2658* par={} -> 13n_2658*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+19. e219142 C4 nodes=13n_2658* par={} -> 13n_2658*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 18
+20. e219143 C5 nodes=13n_2658* par={"g4":1,"src":"KnotInfo g4"} -> 13n_2658*.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 19
+21. e219144 C10 nodes=13n_2658* par={"a":true,"b":true,"ge3":true} -> 13n_2658*.C: (tau=-1,nu=-1):r_0{>=3} (tau=0,nu=-1):r_0{>=3} (tau=0,nu=0):r_0{>=3} (tau=0,nu=1):r_0{>=4} (tau=1,nu... [digest 9810f5ea7415] | in: 20
+22. e219146 U4a nodes=13n_2658* par={"g4":1} -> 13n_2658*.U: upsilon in [-1,1] | in: -
+23. e265680 C1 nodes=3_1#4_1 par={} -> 3_1#4_1.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+24. e265681 C4 nodes=3_1#4_1 par={} -> 3_1#4_1.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 23
+25. e265682 C5 nodes=3_1#4_1 par={"g4":2,"src":"calculator g"} -> 3_1#4_1.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 24
+26. e265683 C8 nodes=3_1#4_1 par={"tau":1,"why":"homogeneous diagram"} -> 3_1#4_1.C: (tau=1,nu=1):r_0{>=0} (tau=1,nu=2):r_0{>=0} (tau=1,nu=3):r_0{>=0} | in: 25
+27. e265684 C10 nodes=3_1#4_1 par={"a":true,"b":true,"ge3":true} -> 3_1#4_1.C: (tau=1,nu=1):r_0{>=4} (tau=1,nu=2):r_0{>=3} (tau=1,nu=3):r_0{>=4} | in: 26
+28. e265687 C1 nodes=3_1*#4_1 par={} -> 3_1*#4_1.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+29. e265688 C4 nodes=3_1*#4_1 par={} -> 3_1*#4_1.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 28
+30. e265689 C5 nodes=3_1*#4_1 par={"g4":2,"src":"calculator g"} -> 3_1*#4_1.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 29
+31. e265690 C9 nodes=3_1*#4_1 par={"n":4,"w":-3} -> 3_1*#4_1.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest 856affc58d9d] | in: 30
+32. e265691 C10 nodes=3_1*#4_1 par={"a":true,"b":true,"ge3":true} -> 3_1*#4_1.C: (tau=-2,nu=-3):r_0{>=4} (tau=-1,nu=-3):r_0{>=4} (tau=-1,nu=-2):r_0{>=3} (tau=-1,nu=-1):r_0{>=3} (tau... [digest 59056553dd31] | in: 31
+33. e309709 C3 nodes=13n_2658,13n_2658* par={} -> 13n_2658.C: (tau=-1,nu=-1):r_0{>=4} (tau=0,nu=-1):r_0{>=4} (tau=0,nu=0):r_0{>=3} (tau=0,nu=1):r_0{>=4} | in: 17,21
+34. e309710 C3 nodes=13n_2658,13n_2658* par={} -> 13n_2658*.C: (tau=0,nu=-1):r_0{>=4} (tau=0,nu=0):r_0{>=3} (tau=0,nu=1):r_0{>=4} (tau=1,nu=1):r_0{>=4} | in: 17,21
+35. e317009 C3 nodes=3_1#4_1,3_1*#4_1 par={} -> 3_1*#4_1.C: (tau=-1,nu=-3):r_0{>=4} (tau=-1,nu=-2):r_0{>=3} (tau=-1,nu=-1):r_0{>=4} | in: 27,32
+36. e318349 C6 nodes=3_1*#4_1,3_1*,4_1 par={"mult":[1,1]} -> 3_1*#4_1.C: (tau=-1,nu=-2):r_0{>=3} (tau=-1,nu=-1):r_0{>=4} | in: 5,10,35
+37. e344622 C7 nodes=13n_2658,3_1*#4_1 par={} -> 13n_2658.C: (tau=-1,nu=-1):r_0{>=4} | in: 33,36
+38. e351438 U6 nodes=11a_275,13n_2658* par={"a":1,"b":1,"h":1} -> 13n_2658*.U: upsilon in [-1,-1] | in: 12,22
+39. e370671 C3 nodes=13n_2658,13n_2658* par={} -> 13n_2658*.C: (tau=1,nu=1):r_0{>=4} | in: 34,37
+== nu = 1 : pinned at 39 ; chain 1,2,3,4,5,6,7,8,9,10,13,14,15,16,17,18,19,20,21,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,39
+== tau = 1 : pinned at 39 ; chain 1,2,3,4,5,6,7,8,9,10,13,14,15,16,17,18,19,20,21,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,39
+== upsilon = -1 : pinned at 38 ; chain 11,12,22,38

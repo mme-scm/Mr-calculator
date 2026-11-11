@@ -1,7 +1,18 @@
 # chains for 9_43*
-1. e1598 C1 nodes=9_43* par={} -> 9_43*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-2. e1599 C4 nodes=9_43* par={} -> 9_43*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 1
-3. e1600 C5 nodes=9_43* par={"g4":2,"src":"KnotInfo g4"} -> 9_43*.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 2
-4. e1601 C8 nodes=9_43* par={"tau":-2,"why":"prime, at most 10 crossings, not in E"} -> 9_43*.C: (tau=-2,nu=-3):r_0{>=0} | in: 3
-== nu = -3 : pinned at 4 ; chain 1,2,3,4
-== tau = -2 : pinned at 4 ; chain 1,2,3,4
+1. e12 U4a nodes=3_1 par={"g4":1} -> 3_1.U: upsilon in [-1,1] | in: -
+2. e13 U2a nodes=3_1 par={"tau":1} -> 3_1.U: upsilon in [-1,-1] | in: 1
+3. e1598 C1 nodes=9_43* par={} -> 9_43*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+4. e1599 C4 nodes=9_43* par={} -> 9_43*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 3
+5. e1600 C5 nodes=9_43* par={"g4":2,"src":"KnotInfo g4"} -> 9_43*.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 4
+6. e1601 C8 nodes=9_43* par={"tau":-2,"why":"prime, at most 10 crossings, not in E"} -> 9_43*.C: (tau=-2,nu=-3):r_0{>=0} | in: 5
+7. e1604 U4a nodes=9_43* par={"g4":2} -> 9_43*.U: upsilon in [-2,2] | in: -
+8. e10631 U4a nodes=11a_255 par={"g4":1} -> 11a_255.U: upsilon in [-1,1] | in: -
+9. e10632 U2a nodes=11a_255 par={"tau":-1} -> 11a_255.U: upsilon in [1,1] | in: 8
+10. e267647 U4a nodes=3_1#9_43* par={"g4":4} -> 3_1#9_43*.U: upsilon in [-4,4] | in: -
+11. e319013 U4b nodes=3_1#9_43*,3_1,9_43* par={"kind":"sum","mult":[1,1]} -> 3_1#9_43*.U: upsilon in [-3,1] | in: 2,7,10
+12. e326862 U5 nodes=11a_255,9_43* par={} -> 9_43*.U: upsilon in [1,2] | in: 7,9
+13. e362327 U1 nodes=3_1#9_43* par={"value":1,"why":"Floer-thin"} -> 3_1#9_43*.U: upsilon in [1,1] | in: 11
+14. e374520 U4b nodes=3_1#9_43*,3_1,9_43* par={"kind":"sum","mult":[1,1]} -> 9_43*.U: upsilon in [2,2] | in: 2,12,13
+== nu = -3 : pinned at 6 ; chain 3,4,5,6
+== tau = -2 : pinned at 6 ; chain 3,4,5,6
+== upsilon = 2 : pinned at 14 ; chain 1,2,7,8,9,10,11,12,13,14

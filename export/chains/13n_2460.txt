@@ -1,7 +1,16 @@
 # chains for 13n_2460
-1. e215292 C1 nodes=13n_2460 par={} -> 13n_2460.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-2. e215293 C4 nodes=13n_2460 par={} -> 13n_2460.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 1
-3. e215294 C5 nodes=13n_2460 par={"g4":2,"src":"KnotInfo g4"} -> 13n_2460.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 2
-4. e215295 C8 nodes=13n_2460 par={"tau":2,"why":"homogeneous diagram"} -> 13n_2460.C: (tau=2,nu=3):r_0{>=0} | in: 3
-== nu = 3 : pinned at 4 ; chain 1,2,3,4
-== tau = 2 : pinned at 4 ; chain 1,2,3,4
+1. e12 U4a nodes=3_1 par={"g4":1} -> 3_1.U: upsilon in [-1,1] | in: -
+2. e13 U2a nodes=3_1 par={"tau":1} -> 3_1.U: upsilon in [-1,-1] | in: 1
+3. e644 U4a nodes=8_20* par={"why":"slice"} -> 8_20*.U: upsilon in [0,0] | in: -
+4. e215395 C1 nodes=13n_2460 par={} -> 13n_2460.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+5. e215396 C4 nodes=13n_2460 par={} -> 13n_2460.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 4
+6. e215397 C5 nodes=13n_2460 par={"g4":2,"src":"KnotInfo g4"} -> 13n_2460.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 5
+7. e215398 C8 nodes=13n_2460 par={"tau":2,"why":"homogeneous diagram"} -> 13n_2460.C: (tau=2,nu=3):r_0{>=0} | in: 6
+8. e215402 U4a nodes=13n_2460 par={"g4":2} -> 13n_2460.U: upsilon in [-2,2] | in: -
+9. e266451 U4a nodes=3_1#8_20* par={"g4":3} -> 3_1#8_20*.U: upsilon in [-3,3] | in: -
+10. e318587 U4b nodes=3_1#8_20*,3_1,8_20* par={"kind":"sum","mult":[1,1]} -> 3_1#8_20*.U: upsilon in [-1,-1] | in: 2,3,9
+11. e338811 U5 nodes=13n_2460,3_1#8_20* par={} -> 13n_2460.U: upsilon in [-2,-1] | in: 8,10
+12. e361001 U1 nodes=13n_2460 par={"value":-2,"why":"Floer-thin"} -> 13n_2460.U: upsilon in [-2,-2] | in: 11
+== nu = 3 : pinned at 7 ; chain 4,5,6,7
+== tau = 2 : pinned at 7 ; chain 4,5,6,7
+== upsilon = -2 : pinned at 12 ; chain 1,2,3,8,9,10,11,12

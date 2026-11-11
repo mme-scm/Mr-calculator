@@ -1,6 +1,12 @@
 # chains for 12n_448
-1. e52730 C1 nodes=12n_448 par={} -> 12n_448.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-2. e52731 C4 nodes=12n_448 par={} -> 12n_448.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 1
-3. e52732 C5 nodes=12n_448 par={"g4":1,"src":"KnotInfo g4"} -> 12n_448.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 2
-4. e52733 C8 nodes=12n_448 par={"tau":0,"why":"homogeneous diagram"} -> 12n_448.C: (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} | in: 3
-== tau = 0 : pinned at 4 ; chain 1,2,3,4
+1. e3987 U4a nodes=10_110* par={"g4":1} -> 10_110*.U: upsilon in [-1,1] | in: -
+2. e3988 U2a nodes=10_110* par={"tau":-1} -> 10_110*.U: upsilon in [1,1] | in: 1
+3. e52766 C1 nodes=12n_448 par={} -> 12n_448.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+4. e52767 C4 nodes=12n_448 par={} -> 12n_448.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 3
+5. e52768 C5 nodes=12n_448 par={"g4":1,"src":"KnotInfo g4"} -> 12n_448.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 4
+6. e52769 C8 nodes=12n_448 par={"tau":0,"why":"homogeneous diagram"} -> 12n_448.C: (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} | in: 5
+7. e52772 U4a nodes=12n_448 par={"g4":1} -> 12n_448.U: upsilon in [-1,1] | in: -
+8. e332903 U5 nodes=12n_448,10_110* par={} -> 12n_448.U: upsilon in [0,1] | in: 2,7
+9. e359869 U3 nodes=12n_448 par={} -> 12n_448.U: upsilon in [0,0] | in: 8
+== tau = 0 : pinned at 6 ; chain 3,4,5,6
+== upsilon = 0 : pinned at 9 ; chain 1,2,7,8,9

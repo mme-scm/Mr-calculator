@@ -1,7 +1,17 @@
 # chains for 13n_929*
-1. e186420 C1 nodes=13n_929* par={} -> 13n_929*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-2. e186421 C4 nodes=13n_929* par={} -> 13n_929*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 1
-3. e186422 C5 nodes=13n_929* par={"g4":2,"src":"KnotInfo g4"} -> 13n_929*.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 2
-4. e186423 C8 nodes=13n_929* par={"tau":-2,"why":"homogeneous diagram"} -> 13n_929*.C: (tau=-2,nu=-3):r_0{>=0} | in: 3
-== nu = -3 : pinned at 4 ; chain 1,2,3,4
-== tau = -2 : pinned at 4 ; chain 1,2,3,4
+1. e3318 U4a nodes=10_77 par={"g4":1} -> 10_77.U: upsilon in [-1,1] | in: -
+2. e3319 U2a nodes=10_77 par={"tau":-1} -> 10_77.U: upsilon in [1,1] | in: 1
+3. e14562 U4a nodes=11n_76 par={"g4":2} -> 11n_76.U: upsilon in [-2,2] | in: -
+4. e186479 U4a nodes=13n_929 par={"g4":2} -> 13n_929.U: upsilon in [-2,2] | in: -
+5. e186483 C1 nodes=13n_929* par={} -> 13n_929*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+6. e186484 C4 nodes=13n_929* par={} -> 13n_929*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 5
+7. e186485 C5 nodes=13n_929* par={"g4":2,"src":"KnotInfo g4"} -> 13n_929*.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 6
+8. e186486 C8 nodes=13n_929* par={"tau":-2,"why":"homogeneous diagram"} -> 13n_929*.C: (tau=-2,nu=-3):r_0{>=0} | in: 7
+9. e186489 U4a nodes=13n_929* par={"g4":2} -> 13n_929*.U: upsilon in [-2,2] | in: -
+10. e325694 U5 nodes=10_77,11n_76 par={} -> 11n_76.U: upsilon in [1,2] | in: 2,3
+11. e356206 U6 nodes=11n_76,13n_929* par={"a":1,"b":1,"h":1} -> 13n_929*.U: upsilon in [1,2] | in: 9,10
+12. e360361 U1 nodes=13n_929 par={"value":-2,"why":"Floer-thin"} -> 13n_929.U: upsilon in [-2,-2] | in: 4
+13. e383868 U4b nodes=13n_929,13n_929* par={"kind":"mirror"} -> 13n_929*.U: upsilon in [2,2] | in: 11,12
+== nu = -3 : pinned at 8 ; chain 5,6,7,8
+== tau = -2 : pinned at 8 ; chain 5,6,7,8
+== upsilon = 2 : pinned at 13 ; chain 1,2,3,4,9,10,11,12,13

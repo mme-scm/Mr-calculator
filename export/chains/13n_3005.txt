@@ -1,12 +1,14 @@
 # chains for 13n_3005
-1. e11829 U4a nodes=11a_309 par={"g4":2} -> 11a_309.U: upsilon in [-2,2] | in: -
-2. e11830 U2a nodes=11a_309 par={"tau":2} -> 11a_309.U: upsilon in [-2,-2] | in: 1
-3. e225544 C1 nodes=13n_3005 par={} -> 13n_3005.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-4. e225545 C4 nodes=13n_3005 par={} -> 13n_3005.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 3
-5. e225546 C5 nodes=13n_3005 par={"g4":2,"src":"KnotInfo g4"} -> 13n_3005.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 4
-6. e225547 C9 nodes=13n_3005 par={"n":5,"w":8} -> 13n_3005.C: (tau=2,nu=3):r_0{>=0} | in: 5
-7. e225551 U4a nodes=13n_3005 par={"g4":2} -> 13n_3005.U: upsilon in [-2,2] | in: -
-8. e337794 U6 nodes=11a_309,13n_3005 par={"a":2,"b":0,"h":1} -> 13n_3005.U: upsilon in [-2,-2] | in: 2,7
+1. e12 U4a nodes=3_1 par={"g4":1} -> 3_1.U: upsilon in [-1,1] | in: -
+2. e13 U2a nodes=3_1 par={"tau":1} -> 3_1.U: upsilon in [-1,-1] | in: 1
+3. e225654 C1 nodes=13n_3005 par={} -> 13n_3005.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+4. e225655 C4 nodes=13n_3005 par={} -> 13n_3005.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 3
+5. e225656 C5 nodes=13n_3005 par={"g4":2,"src":"KnotInfo g4"} -> 13n_3005.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 4
+6. e225657 C9 nodes=13n_3005 par={"n":5,"w":8} -> 13n_3005.C: (tau=2,nu=3):r_0{>=0} | in: 5
+7. e225661 U4a nodes=13n_3005 par={"g4":2} -> 13n_3005.U: upsilon in [-2,2] | in: -
+8. e265662 U4a nodes=3_1#3_1 par={"g4":2} -> 3_1#3_1.U: upsilon in [-2,2] | in: -
+9. e318342 U4b nodes=3_1#3_1,3_1 par={"kind":"sum","mult":[2]} -> 3_1#3_1.U: upsilon in [-2,-2] | in: 2,8
+10. e339501 U5 nodes=13n_3005,3_1#3_1 par={} -> 13n_3005.U: upsilon in [-2,-2] | in: 7,9
 == nu = 3 : pinned at 6 ; chain 3,4,5,6
 == tau = 2 : pinned at 6 ; chain 3,4,5,6
-== upsilon = -2 : pinned at 8 ; chain 1,2,7,8
+== upsilon = -2 : pinned at 10 ; chain 1,2,7,8,9,10

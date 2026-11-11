@@ -252,7 +252,10 @@ class Problem:
             if 'word' in d:
                 w = sum(1 if g > 0 else -1 for g in d['word'])
                 self.braids[node].setdefault((d['strands'], w), {'diagram': d['id']})
+        skip = set(filter(None, os.environ.get('MRCALC_SKIP_PASSES', '').split(',')))
         for r in passes.iter_pass_records():
+            if r['pass'] in skip:
+                continue
             nrec += 1
             if r.get('dst') is None:
                 self.stats['unidentified results'] += 1
@@ -687,3 +690,6 @@ class Problem:
                 self.con('U1', 'U', [n], {'value': r['upsilon'], 'why': r.get('why')}, {'calculator': r.get('source')})
             if r.get('upsilon') is not None and not r.get('exact'):
                 self.nodes[n]['upsilon_unverified'] = r['upsilon']
+                m = self.nodes[n]['mirror']
+                if m in self.nodes and m != n:
+                    self.nodes[m]['upsilon_unverified'] = -r['upsilon']   # tagged, never used by a rule

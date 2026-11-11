@@ -1,7 +1,13 @@
 # chains for 13n_2058
-1. e207734 C1 nodes=13n_2058 par={} -> 13n_2058.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-2. e207735 C4 nodes=13n_2058 par={} -> 13n_2058.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 1
-3. e207736 C5 nodes=13n_2058 par={"g4":1,"src":"KnotInfo g4"} -> 13n_2058.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 2
-4. e207737 C8 nodes=13n_2058 par={"tau":-1,"why":"homogeneous diagram"} -> 13n_2058.C: (tau=-1,nu=-1):r_0{>=0} | in: 3
-== nu = -1 : pinned at 4 ; chain 1,2,3,4
-== tau = -1 : pinned at 4 ; chain 1,2,3,4
+1. e23201 U4a nodes=12a_301 par={"g4":1} -> 12a_301.U: upsilon in [-1,1] | in: -
+2. e23202 U2a nodes=12a_301 par={"tau":0} -> 12a_301.U: upsilon in [0,0] | in: 1
+3. e207826 C1 nodes=13n_2058 par={} -> 13n_2058.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+4. e207827 C4 nodes=13n_2058 par={} -> 13n_2058.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 3
+5. e207828 C5 nodes=13n_2058 par={"g4":1,"src":"KnotInfo g4"} -> 13n_2058.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 4
+6. e207829 C8 nodes=13n_2058 par={"tau":-1,"why":"homogeneous diagram"} -> 13n_2058.C: (tau=-1,nu=-1):r_0{>=0} | in: 5
+7. e207832 U4a nodes=13n_2058 par={"g4":1} -> 13n_2058.U: upsilon in [-1,1] | in: -
+8. e330496 U5 nodes=12a_301,13n_2058 par={} -> 13n_2058.U: upsilon in [0,1] | in: 2,7
+9. e360823 U1 nodes=13n_2058 par={"value":1,"why":"Floer-thin"} -> 13n_2058.U: upsilon in [1,1] | in: 8
+== nu = -1 : pinned at 6 ; chain 3,4,5,6
+== tau = -1 : pinned at 6 ; chain 3,4,5,6
+== upsilon = 1 : pinned at 9 ; chain 1,2,7,8,9

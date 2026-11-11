@@ -1,7 +1,19 @@
 # chains for 13n_802
-1. e184007 C1 nodes=13n_802 par={} -> 13n_802.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-2. e184008 C4 nodes=13n_802 par={} -> 13n_802.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 1
-3. e184009 C5 nodes=13n_802 par={"g4":3,"src":"KnotInfo g4"} -> 13n_802.C: (tau=-3,nu=-5):r_0{>=0} (tau=-2,nu=-5):r_0{>=0} (tau=-2,nu=-4):r_0{>=0} (tau=-2,nu=-3):r_0{>=0} (tau... [digest 525edc963b57] | in: 2
-4. e184010 C9 nodes=13n_802 par={"n":4,"w":9} -> 13n_802.C: (tau=3,nu=5):r_0{>=0} | in: 3
-== nu = 5 : pinned at 4 ; chain 1,2,3,4
-== tau = 3 : pinned at 4 ; chain 1,2,3,4
+1. e12 U4a nodes=3_1 par={"g4":1} -> 3_1.U: upsilon in [-1,1] | in: -
+2. e13 U2a nodes=3_1 par={"tau":1} -> 3_1.U: upsilon in [-1,-1] | in: 1
+3. e314 U4a nodes=8_2 par={"g4":2} -> 8_2.U: upsilon in [-2,2] | in: -
+4. e315 U2a nodes=8_2 par={"tau":2} -> 8_2.U: upsilon in [-2,-2] | in: 3
+5. e4247 U4a nodes=10_124 par={"g4":4} -> 10_124.U: upsilon in [-4,4] | in: -
+6. e184068 C1 nodes=13n_802 par={} -> 13n_802.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+7. e184069 C4 nodes=13n_802 par={} -> 13n_802.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 6
+8. e184070 C5 nodes=13n_802 par={"g4":3,"src":"KnotInfo g4"} -> 13n_802.C: (tau=-3,nu=-5):r_0{>=0} (tau=-2,nu=-5):r_0{>=0} (tau=-2,nu=-4):r_0{>=0} (tau=-2,nu=-3):r_0{>=0} (tau... [digest 525edc963b57] | in: 7
+9. e184071 C9 nodes=13n_802 par={"n":4,"w":9} -> 13n_802.C: (tau=3,nu=5):r_0{>=0} | in: 8
+10. e184075 U4a nodes=13n_802 par={"g4":3} -> 13n_802.U: upsilon in [-3,3] | in: -
+11. e266432 U4a nodes=3_1#8_2 par={"g4":4} -> 3_1#8_2.U: upsilon in [-4,4] | in: -
+12. e285182 U7 nodes=10_124 par={"p":3,"q":5} -> 10_124.U: upsilon in [-3,-3] | in: 5
+13. e318579 U4b nodes=3_1#8_2,3_1,8_2 par={"kind":"sum","mult":[1,1]} -> 3_1#8_2.U: upsilon in [-3,-3] | in: 2,4,11
+14. e323596 U5 nodes=10_124,13n_802 par={} -> 13n_802.U: upsilon in [-3,-2] | in: 10,12
+15. e342182 U5 nodes=13n_802,3_1#8_2 par={} -> 13n_802.U: upsilon in [-3,-3] | in: 13,14
+== nu = 5 : pinned at 9 ; chain 6,7,8,9
+== tau = 3 : pinned at 9 ; chain 6,7,8,9
+== upsilon = -3 : pinned at 15 ; chain 1,2,3,4,5,10,11,12,13,14,15

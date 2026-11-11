@@ -1,0 +1,21 @@
+# chains for 12n_515
+1. e2834 U4a nodes=10_55 par={"g4":2} -> 10_55.U: upsilon in [-2,2] | in: -
+2. e2835 U2a nodes=10_55 par={"tau":2} -> 10_55.U: upsilon in [-2,-2] | in: 1
+3. e4748 C1 nodes=10_150 par={} -> 10_150.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+4. e4749 C4 nodes=10_150 par={} -> 10_150.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 3
+5. e4750 C5 nodes=10_150 par={"g4":2,"src":"KnotInfo g4"} -> 10_150.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 4
+6. e4751 C8 nodes=10_150 par={"tau":2,"why":"prime, at most 10 crossings, not in E"} -> 10_150.C: (tau=2,nu=3):r_0{>=0} | in: 5
+7. e4752 C10 nodes=10_150 par={"a":true,"b":true,"ge3":true} -> 10_150.C: (tau=2,nu=3):r_0{>=4} | in: 6
+8. e54021 C1 nodes=12n_515 par={} -> 12n_515.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+9. e54022 C4 nodes=12n_515 par={} -> 12n_515.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 8
+10. e54023 C5 nodes=12n_515 par={"g4":2,"src":"KnotInfo g4"} -> 12n_515.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 9
+11. e54024 C9 nodes=12n_515 par={"n":5,"w":6} -> 12n_515.C: (tau=1,nu=1):r_0{>=0} (tau=1,nu=2):r_0{>=0} (tau=1,nu=3):r_0{>=0} (tau=2,nu=3):r_0{>=0} | in: 10
+12. e54025 C10 nodes=12n_515 par={"a":true,"b":true,"ge3":true} -> 12n_515.C: (tau=1,nu=1):r_0{>=4} (tau=1,nu=2):r_0{>=3} (tau=1,nu=3):r_0{>=4} (tau=2,nu=3):r_0{>=4} | in: 11
+13. e54026 C15 nodes=12n_515 par={} -> 12n_515.C: (tau=1,nu=1):r_0{>=4} (tau=1,nu=2):r_0{3,>=5} (tau=1,nu=3):r_0{4,>=6} (tau=2,nu=3):r_0{4,>=6} | in: 12
+14. e54028 U4a nodes=12n_515 par={"g4":2} -> 12n_515.U: upsilon in [-2,2] | in: -
+15. e325275 U5 nodes=10_55,12n_515 par={} -> 12n_515.U: upsilon in [-2,-1] | in: 2,14
+16. e333071 C7 nodes=10_150,12n_515 par={} -> 12n_515.C: (tau=2,nu=3):r_0{4,>=6} | in: 7,13
+17. e359889 U1 nodes=12n_515 par={"value":-2,"why":"Floer-thin"} -> 12n_515.U: upsilon in [-2,-2] | in: 15
+== nu = 3 : pinned at 16 ; chain 3,4,5,6,7,8,9,10,11,12,13,16
+== tau = 2 : pinned at 16 ; chain 3,4,5,6,7,8,9,10,11,12,13,16
+== upsilon = -2 : pinned at 17 ; chain 1,2,14,15,17

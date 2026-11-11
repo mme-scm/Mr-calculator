@@ -1,7 +1,15 @@
 # chains for 10_160
-1. e4939 C1 nodes=10_160 par={} -> 10_160.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-2. e4940 C4 nodes=10_160 par={} -> 10_160.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 1
-3. e4941 C5 nodes=10_160 par={"g4":2,"src":"KnotInfo g4"} -> 10_160.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 2
-4. e4942 C8 nodes=10_160 par={"tau":2,"why":"prime, at most 10 crossings, not in E"} -> 10_160.C: (tau=2,nu=3):r_0{>=0} | in: 3
-== nu = 3 : pinned at 4 ; chain 1,2,3,4
-== tau = 2 : pinned at 4 ; chain 1,2,3,4
+1. e4724 U4a nodes=10_148* par={"g4":1} -> 10_148*.U: upsilon in [-1,1] | in: -
+2. e4940 C1 nodes=10_160 par={} -> 10_160.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+3. e4941 C4 nodes=10_160 par={} -> 10_160.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 2
+4. e4942 C5 nodes=10_160 par={"g4":2,"src":"KnotInfo g4"} -> 10_160.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 3
+5. e4943 C8 nodes=10_160 par={"tau":2,"why":"prime, at most 10 crossings, not in E"} -> 10_160.C: (tau=2,nu=3):r_0{>=0} | in: 4
+6. e4946 U4a nodes=10_160 par={"g4":2} -> 10_160.U: upsilon in [-2,2] | in: -
+7. e8251 U4a nodes=11a_147 par={"g4":1} -> 11a_147.U: upsilon in [-1,1] | in: -
+8. e8252 U2a nodes=11a_147 par={"tau":1} -> 11a_147.U: upsilon in [-1,-1] | in: 7
+9. e324324 U5 nodes=10_148*,11a_147 par={} -> 10_148*.U: upsilon in [-1,-1] | in: 1,8
+10. e324582 U5 nodes=10_160,10_148* par={} -> 10_160.U: upsilon in [-2,-1] | in: 6,9
+11. e359696 U1 nodes=10_160 par={"value":-2,"why":"Floer-thin"} -> 10_160.U: upsilon in [-2,-2] | in: 10
+== nu = 3 : pinned at 5 ; chain 2,3,4,5
+== tau = 2 : pinned at 5 ; chain 2,3,4,5
+== upsilon = -2 : pinned at 11 ; chain 1,6,7,8,9,10,11

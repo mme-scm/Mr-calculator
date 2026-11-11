@@ -71,7 +71,7 @@ def regina_tri(M):
     return regina.Triangulation3(M._to_string())
 
 
-def regina_sigs(T, cap=200, height=None, extra=1, visit_cap=4000):
+def regina_sigs(T, cap=200, height=None, extra=1, visit_cap=4000, exhaustive_below=10):
     """Isomorphism signatures of the simplified triangulation and of the triangulations
     reachable from it by 2-3/3-2 moves within `height` extra tetrahedra, of size at most
     (simplified size + extra), capped at `cap` signatures.  height=None picks a height by
@@ -79,7 +79,7 @@ def regina_sigs(T, cap=200, height=None, extra=1, visit_cap=4000):
     import regina
     T = regina.Triangulation3(T)
     T.intelligentSimplify()
-    if T.size() <= 10:
+    if T.size() <= exhaustive_below:
         for _ in range(4):
             try:
                 if not T.simplifyExhaustive(2, 1):
@@ -89,6 +89,7 @@ def regina_sigs(T, cap=200, height=None, extra=1, visit_cap=4000):
     sigs = [T.isoSig()]
     seen = set(sigs)
     n0 = T.size()
+    regina_sigs.last_n0 = n0
     if height is None:
         height = 3 if n0 <= 5 else 2 if n0 <= 9 else 1
     visited = [0]
@@ -123,6 +124,7 @@ class Identifier:
         self.pool_alex = {}    # alexander tuple -> [base names]
         self.pool = {}         # base name -> record
         self.cache = {}
+        self.nonhyp_cache = {}
         self.use_census = use_census
         self._load()
 
@@ -206,13 +208,19 @@ class Identifier:
                         'cert': {'type': 'hyp-unidentified', 'sig': sig, 'sig_mirror': sm, 'verified': True,
                                  'amphichiral': sig == sm}}
             return {'name': None, 'kind': 'unknown', 'cert': {'type': 'none', 'why': 'geometric but not verified'}}
-        # non-hyperbolic route
+        # non-hyperbolic route.  Regina's solid-torus test can be very slow on knot exteriors, so it is
+        # only run when the Alexander polynomial does not already rule the unknot out.
         try:
-            if is_solid_torus(M):
-                return {'name': '0_1', 'kind': 'unknot', 'cert': {'type': 'regina-solid-torus'}}
+            alex = tuple(alg.alexander_from_seifert(alg.seifert_matrix(pd)))
         except Exception:
-            pass
-        return self._nonhyp(pd, M)
+            alex = None
+        if alex is None or alex == (1,):
+            try:
+                if is_solid_torus(M):
+                    return {'name': '0_1', 'kind': 'unknot', 'cert': {'type': 'regina-solid-torus'}}
+            except Exception:
+                pass
+        return self._nonhyp(pd, M, alex)
 
     def _census_lookup(self, M, sig):
         import snappy
@@ -238,10 +246,8 @@ class Identifier:
             self.new_census.append(r)
         return self.census.get(sig)
 
-    def _nonhyp(self, pd, M):
-        try:
-            alex = tuple(alg.alexander_from_seifert(alg.seifert_matrix(pd)))
-        except Exception as e:
+    def _nonhyp(self, pd, M, alex=None):
+        if alex is None:
             return {'name': None, 'kind': 'unknown', 'cert': {'type': 'none', 'why': 'seifert matrix failed'}}
         cands = self.pool_alex.get(alex)
         if not cands:
@@ -250,9 +256,23 @@ class Identifier:
                              'alex': list(alex)}}
         base = None
         hitsig = None
-        for cap, height, vc in ((200, None, 3000), (600, 3, 5000)):
+        # results of the same kind recur: remember the outcome per (Alexander polynomial, quick isosig)
+        try:
+            RT = regina_tri(M)
+            RT.intelligentSimplify()
+            qkey = (alex, RT.isoSig())
+        except Exception:
+            qkey = None
+        if qkey is not None and qkey in self.nonhyp_cache:
+            base, hitsig = self.nonhyp_cache[qkey]
+            if base is None:
+                return {'name': None, 'kind': 'unknown',
+                        'cert': {'type': 'none', 'why': 'non-hyperbolic, no isosig match (cached)',
+                                 'alex': list(alex)}}
+        for cap, height, vc in (((200, None, 1500), (600, 3, 5000)) if base is None else ()):
             try:
-                sigs = regina_sigs(regina_tri(M), cap=cap, height=height, visit_cap=vc)
+                sigs = regina_sigs(regina_tri(M), cap=cap, height=height, visit_cap=vc,
+                                   exhaustive_below=8 if cap == 200 else 10)
             except Exception as e:
                 return {'name': None, 'kind': 'unknown', 'cert': {'type': 'none', 'why': 'regina failed'}}
             for s in sigs:
@@ -260,8 +280,13 @@ class Identifier:
                 if b is not None and b in cands:
                     base, hitsig = b, s
                     break
-            if base is not None or len(pd) > 40:
+            # the deeper search is only worth its time on small triangulations
+            if base is not None or getattr(regina_sigs, 'last_n0', 99) > 6:
                 break
+        if qkey is not None:
+            if len(self.nonhyp_cache) > 50000:
+                self.nonhyp_cache.clear()
+            self.nonhyp_cache[qkey] = (base, hitsig)
         if base is None:
             return {'name': None, 'kind': 'unknown',
                     'cert': {'type': 'none', 'why': 'non-hyperbolic, no isosig match', 'alex': list(alex),

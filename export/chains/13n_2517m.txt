@@ -1,7 +1,15 @@
 # chains for 13n_2517*
-1. e216375 C1 nodes=13n_2517* par={} -> 13n_2517*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-2. e216376 C4 nodes=13n_2517* par={} -> 13n_2517*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 1
-3. e216377 C5 nodes=13n_2517* par={"g4":1,"src":"KnotInfo g4"} -> 13n_2517*.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 2
-4. e216378 C8 nodes=13n_2517* par={"tau":-1,"why":"homogeneous diagram"} -> 13n_2517*.C: (tau=-1,nu=-1):r_0{>=0} | in: 3
-== nu = -1 : pinned at 4 ; chain 1,2,3,4
-== tau = -1 : pinned at 4 ; chain 1,2,3,4
+1. e7830 U4a nodes=11a_128 par={"g4":1} -> 11a_128.U: upsilon in [-1,1] | in: -
+2. e7831 U2a nodes=11a_128 par={"tau":0} -> 11a_128.U: upsilon in [0,0] | in: 1
+3. e216476 U4a nodes=13n_2517 par={"g4":1} -> 13n_2517.U: upsilon in [-1,1] | in: -
+4. e216480 C1 nodes=13n_2517* par={} -> 13n_2517*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+5. e216481 C4 nodes=13n_2517* par={} -> 13n_2517*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 4
+6. e216482 C5 nodes=13n_2517* par={"g4":1,"src":"KnotInfo g4"} -> 13n_2517*.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 5
+7. e216483 C8 nodes=13n_2517* par={"tau":-1,"why":"homogeneous diagram"} -> 13n_2517*.C: (tau=-1,nu=-1):r_0{>=0} | in: 6
+8. e216486 U4a nodes=13n_2517* par={"g4":1} -> 13n_2517*.U: upsilon in [-1,1] | in: -
+9. e348575 U6 nodes=11a_128,13n_2517* par={"a":1,"b":1,"h":1} -> 13n_2517*.U: upsilon in [0,1] | in: 2,8
+10. e361035 U1 nodes=13n_2517 par={"value":-1,"why":"Floer-thin"} -> 13n_2517.U: upsilon in [-1,-1] | in: 3
+11. e382462 U4b nodes=13n_2517,13n_2517* par={"kind":"mirror"} -> 13n_2517*.U: upsilon in [1,1] | in: 9,10
+== nu = -1 : pinned at 7 ; chain 4,5,6,7
+== tau = -1 : pinned at 7 ; chain 4,5,6,7
+== upsilon = 1 : pinned at 11 ; chain 1,2,3,8,9,10,11

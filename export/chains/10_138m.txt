@@ -1,7 +1,18 @@
 # chains for 10_138*
-1. e4520 C1 nodes=10_138* par={} -> 10_138*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-2. e4521 C4 nodes=10_138* par={} -> 10_138*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 1
-3. e4522 C5 nodes=10_138* par={"g4":1,"src":"KnotInfo g4"} -> 10_138*.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 2
-4. e4523 C8 nodes=10_138* par={"tau":-1,"why":"prime, at most 10 crossings, not in E"} -> 10_138*.C: (tau=-1,nu=-1):r_0{>=0} | in: 3
-== nu = -1 : pinned at 4 ; chain 1,2,3,4
-== tau = -1 : pinned at 4 ; chain 1,2,3,4
+1. e12 U4a nodes=3_1 par={"g4":1} -> 3_1.U: upsilon in [-1,1] | in: -
+2. e13 U2a nodes=3_1 par={"tau":1} -> 3_1.U: upsilon in [-1,-1] | in: 1
+3. e4521 C1 nodes=10_138* par={} -> 10_138*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+4. e4522 C4 nodes=10_138* par={} -> 10_138*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 3
+5. e4523 C5 nodes=10_138* par={"g4":1,"src":"KnotInfo g4"} -> 10_138*.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 4
+6. e4524 C8 nodes=10_138* par={"tau":-1,"why":"prime, at most 10 crossings, not in E"} -> 10_138*.C: (tau=-1,nu=-1):r_0{>=0} | in: 5
+7. e4527 U4a nodes=10_138* par={"g4":1} -> 10_138*.U: upsilon in [-1,1] | in: -
+8. e11562 U4a nodes=11a_297 par={"g4":1} -> 11a_297.U: upsilon in [-1,1] | in: -
+9. e11563 U2a nodes=11a_297 par={"tau":-1} -> 11a_297.U: upsilon in [1,1] | in: 8
+10. e269849 U4a nodes=3_1#10_138* par={"g4":4} -> 3_1#10_138*.U: upsilon in [-4,4] | in: -
+11. e319755 U4b nodes=3_1#10_138*,3_1,10_138* par={"kind":"sum","mult":[1,1]} -> 3_1#10_138*.U: upsilon in [-2,0] | in: 2,7,10
+12. e324060 U5 nodes=10_138*,11a_297 par={} -> 10_138*.U: upsilon in [0,1] | in: 7,9
+13. e362345 U3 nodes=3_1#10_138* par={} -> 3_1#10_138*.U: upsilon in [0,0] | in: 11
+14. e374966 U4b nodes=3_1#10_138*,3_1,10_138* par={"kind":"sum","mult":[1,1]} -> 10_138*.U: upsilon in [1,1] | in: 2,12,13
+== nu = -1 : pinned at 6 ; chain 3,4,5,6
+== tau = -1 : pinned at 6 ; chain 3,4,5,6
+== upsilon = 1 : pinned at 14 ; chain 1,2,7,8,9,10,11,12,13,14

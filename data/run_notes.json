@@ -1,12 +1,32 @@
 {
  "state": {
-  "milestone 1": "done",
-  "tier <= 11, milestones 2-6": "done at the shrunk scope: crossing changes (PD, braid closure, 3 re-diagrams), twists k = 2 on KnotInfo PD diagrams, fillings (160 slopes, 1.5 s recognition limit), coincidences (signature step budgeted), mutations (PD and braid closure), coupling, validation, ablation",
-  "tiers 12-13": "in progress: crossing changes on KnotInfo PD diagrams; then mutations, fillings (reduced slope set), coincidences, cables, upsilon",
-  "remaining-time estimate": "about 3 hours of computation for tiers 12-13, cables, upsilon, final ablation and export"
+  "milestones 1-7": "done at the shrunk scope for all tiers (see REPORT.md): crossing changes, k = 2 twists (and k = 3 from small knots), mutations, fillings, coincidences, cables (S3/S4), coupling, validation, ablation, upsilon",
+  "still running": "extra coverage: k = 3 twists for 9-11 crossings, k = 4 probe, composite shards, braid-closure crossing changes for 12-13 crossings, twists on braid closures and re-diagrams, coincidence signatures (budgeted), cable calculator inputs",
+  "remaining-time estimate": "about 1.5 hours for the extra coverage and the final re-solve, ablation, export and check"
  },
- "scope": {},
- "failed_or_skipped": [],
+ "scope": {
+  "node set": "as specified: 12965 table knots and their mirrors, 1517 composite nodes, positive torus knots with pq <= 60 and mirrors, 2268 cable nodes (companions with at most 8 crossings, s in {2,3}, |r| <= P_cab = 15)",
+  "diagrams": "at most 11 crossings: KnotInfo PD code, braid closure(s) of KnotInfo braid word(s), 3 seeded re-diagrams (specification value). 12-13 crossings: KnotInfo PD code and braid closure built, 0 re-diagrams (shrunk from 3)",
+  "crossing changes": "at most 11 crossings: every crossing of all 5 diagrams of every prime knot and of composites with crossing sum <= 9. 12-13 crossings: every crossing of the KnotInfo PD diagram (braid-closure diagrams only for the first 31 of 305 shards). Mirror nodes: not recomputed (implied by F3/C3/U4b)",
+  "twists": "k = 2 only (k_max shrunk from 6/5/4 to 2), |a-b| <= 2, both handednesses, on the KnotInfo PD diagram of every prime knot with at most 11 crossings; a k = 3 probe on prime knots with at most 8 crossings; no twists from 12-13 crossing diagrams, composite, torus or cable diagrams",
+  "mutations": "every diagrammatic Conway circle, three rotations: PD and braid-closure diagrams for at most 11 crossings, PD diagrams for 12-13 crossings",
+  "slope set": "X1/X3 (all nodes): |p| <= 30, q <= 4 (specification), plus integers |p| <= 60 for torus knots and the S3/S4 slopes for cables. Fillings actually built: |p| <= 30, q <= 4 for prime knots with at most 11 crossings; |p| <= 30, q <= 2 for 12 crossings; |p| <= 30, q = 1 for 13 crossings; torus slope set for torus knots; none for composites and cables (S3/S4 need no recognition)",
+  "recognition time limit": "1.5 s per filling (at most 11 crossings), 0.3 s (12 crossings), 0.2 s (13 crossings), 0.5 s for torus-knot fillings (shrunk from 60 s); enforced inside the Regina retriangulation search instead of a subprocess",
+  "coincidence certificates": "candidates are fillings with equal |p| and volume within 2e-7; verification and isometry signature only for candidates, in priority order (clusters containing a node with pinned r_2 or r_0 first) under a time budget; self-coincidences p/q, -p/q of amphichiral knots are skipped because their equations are implied by F5/C5",
+  "peripheral nodes": "a result that is not a core node is instantiated as a node only if it is reached from two distinct core nodes or a homogeneous diagram of it was found (the criterion of section 4); other identified results are counted but not instantiated",
+  "calculator": "KnotInfo PD codes of all table knots; construction diagrams of composites, torus knots, family constructions; cable diagrams with at most 40 crossings (10 s limit); peripheral nodes (30 s limit)"
+ },
+ "failed_or_skipped": [
+  "Crossing changes on composite diagrams with crossing sum 10-13 were not completed (identification of composite results is slow); sum <= 9 done.",
+  "Crossing changes on braid-closure diagrams of 12-13 crossing knots: only 31 of 305 shards (results with more than 13 crossings need census look-ups; stopped for time).",
+  "Twists: only k = 2 on KnotInfo PD diagrams of knots with at most 11 crossings, plus a k = 3 probe on knots with at most 8 crossings; the specification values (k_max 6/5/4, five diagrams, all tiers) were estimated at about a month of computation.",
+  "Crossing-change and twist passes on cable diagrams and on re-diagrams of torus knots were not run.",
+  "Fillings of composite nodes and of cable nodes (other than the S3/S4 identities) were not built.",
+  "The signature step of the coincidence search stopped at its time budget; candidates without a signature are listed in the log of scripts/find_coincidences.py and give no S1 equation.",
+  "Peripheral nodes received no move passes (the one-round rule of section 4 was not exercised).",
+  "The widening round (P_cab + 5, k_max + 1, slopes + 10 / q + 1, re-diagrams + 2) was not run as a whole; only the k = 3 twist probe was. The taper criterion of section 11 is therefore not established: the run was stopped early for time.",
+  "Convention tests of section 3: all passed before every pass. Operator soundness tests: all passed."
+ ],
  "sections": {
   "Cost estimate at the specification values (after milestone 1)": [
    "Measured on this machine (4 cores): identification of a crossing-change result 27 ms on KnotInfo diagrams and about 120 ms on re-diagrams (14-18 crossings, kinks, more non-hyperbolic results); identification of a twist result about 120 ms for k <= 4 on a 10-crossing diagram and more for k = 5, 6 (20 to 30 extra crossings); a filling costs about 0.3 ms when SnapPy finds a geometric solution, and the recognition time limit for each of the 2 to 6 slopes per knot where it does not.",
