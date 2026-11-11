@@ -1,7 +1,16 @@
 # Wanted rules
 
 Statements that would have helped but are absent from the catalogue of section 2. None of them is used
-anywhere in the pipeline.
+anywhere in the pipeline; each line records the situation that motivated it.
 
 | # | statement (not used) | situation that motivated it |
 |---|---|---|
+| 1 | A formula for the Seifert genus (and fiberedness, tau) of a cable C_{r,s}(K) in terms of K, r, s. | g, fibered and tau of a non-table node must come from the calculator (section 4). On large cable diagrams the calculator is not run or exceeds the time limit, so C5, C11 (which needs g(C)), X3, F15 and U4a are unavailable for those cable nodes although the companion data are known. |
+| 2 | Any rule for r_2 or r_0 of a connected sum (F4 and C6 say there is none). | Composite nodes keep unbounded r_2 and r_0 rays even when every summand is fully pinned. |
+| 3 | An upper bound for r_2 (or r_0) of a general knot from tabulated or calculator data. | r_2 and r_0 are only bounded above through family rules and surgery equations (F10, S1, S3, S4); for most nodes the domain keeps an infinite ray, so these two invariants are pinned for few nodes. |
+| 4 | A C-rule for full twists (an analogue of F9/U6 for tau^#), or permission to use C7 along the crossing changes that make up a twist. | Twist edges carry only F9 and U6; tau^# of non-alternating 11-13 crossing knots that are not quasipositive/homogeneous is only reachable through crossing-change edges (C7) and braid bounds (C9). |
+| 5 | "Alternating" for knots outside KnotInfo's table (census knots K14a..., K15a...), or a rule that an alternating diagram suffices for C8/U2a. | C8 and U2a use the tabulated alternating flag only; for peripheral census knots C8 is applied only when a homogeneous diagram of the right chirality happens to be among the move results, and U2a never. |
+| 6 | The quasipositive flag for mirror images / for 13-crossing knots (KnotInfo leaves it blank there). | C8 through quasipositivity is unavailable for all 13-crossing knots; their tau^# must come from alternation, homogeneous diagrams, C7 and C9. |
+| 7 | The full Seifert invariants of a torus-knot filling in S2 (S2 only gives the orders of the exceptional fibres). | The S2 name cannot be compared with a Regina name by itself; the pipeline has to recognise the torus-knot filling with Regina as well and only checks S2's fibre orders, so torus fillings that Regina does not recognise within the time limit give no S1(c) equation. |
+| 8 | A statement that unidentified hyperbolic knots are nontrivial / differ from the named exceptions without calculator data. | The "K is not X" hypotheses (section 2 preamble) need HFK ranks or an Alexander polynomial for nodes that are not table or census knots; peripheral hyperbolic nodes without calculator data therefore do not receive X2-X5, C10, C15. |
+| 9 | A rule relating the invariants of a knot and of a satellite other than a cable (Whitehead doubles etc.). | Crossing changes and twists frequently produce non-hyperbolic knots that match no node of the pool; they are discarded as unidentified. |
