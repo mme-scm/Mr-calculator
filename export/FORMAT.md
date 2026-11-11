@@ -1,7 +1,8 @@
 # Export format
 
-All files are UTF-8. JSON lines are written with sorted keys and no spaces. A file `X.jsonl` may be
-continued in `X.1.jsonl`, `X.2.jsonl`, ... (each part below 50 MB); readers concatenate the parts in order.
+All files are UTF-8. JSON lines are written with sorted keys and no spaces. Each of `knots.jsonl`,
+`edges.jsonl`, `constraints.jsonl`, `events.jsonl` may be continued in `X.1.jsonl`, `X.2.jsonl`, ... (the
+exporter starts a new part at 45 MiB); readers concatenate the parts in order.
 
 ## 1. Files
 
@@ -36,8 +37,12 @@ Operations (all keep the canonical form):
 * `only(S)`: intersection with a finite set `S` (result has no rays).
 * `remove(x)`: delete one value; if `x` is on the up-ray, the values `up, ..., x-step` become explicit and
   the ray starts at `x+step` (symmetrically for the down-ray).
-* `intersect`: explicit values in both; up-ray = max of the two up-rays if both have one (else none);
-  down-ray = min of the two if both have one.
+* `intersect` (both operands on the same lattice): the set intersection, i.e. the explicit values of either
+  operand that are members of the other (rays included), plus the lattice values in `[up_X, dn_Y]` whenever
+  the up-ray of one operand and the down-ray of the other overlap; up-ray = max of the two up-rays if both
+  have one (else none); down-ray = min of the two if both have one.
+* `coarsen(s')` (`s'` a multiple of the step): the members on the lattice `s'`·Z — explicit values divisible
+  by `s'`, `up` rounded up and `dn` rounded down to that lattice; the result has step `s'`.
 * `min` / `max`: `None` (unbounded) if the corresponding ray exists.
 
 ### 2.2 `F` domain (M, r_2)
@@ -49,7 +54,8 @@ Operations (all keep the canonical form):
 * A box whose `mlo` and `mhi` are both finite is converted at once to enum: every lattice M in the range gets
   the RSet `up = lattice-ceiling(max(rlo, |M| if absM))`, or ALL if there is no lower bound.
 * `tighten_m(lo, hi)`: intersect the M-range (box: bounds rounded inwards to the lattice; empty if crossed).
-* `restrict_m(S)`: keep only M in the finite set S (a box becomes enum on S ∩ box).
+* `restrict_m(S)`: keep only M in the finite set S (a box becomes enum on S ∩ box); members of S that are
+  not on the lattice of the domain are ignored. The result is always an enum.
 
 ### 2.3 `C` domain (tau, nu, r_0)
 
@@ -57,14 +63,15 @@ Operations (all keep the canonical form):
   (null = unbounded below). TOP is `{"b":[null,null,null,null,false,null]}`. With `c4`, bounds are propagated
   on construction: `nlo >= 2 tlo - 1`, `nhi <= 2 thi + 1`, `tlo >= ceil((nlo-1)/2)`, `thi <= floor((nhi+1)/2)`
   (one pass, in this order).
-* enum: `{"e": [[tau, nu, RSet(step 1)], ...]}` sorted by (tau, nu).
+* enum: `{"e": [[tau, nu, RSet(step 1)], ...]}` sorted by (tau, nu); entries with an empty RSet are dropped.
 * A box with all four of `tlo, thi, nlo, nhi` finite is converted to enum: all (tau, nu) in the rectangle
   (satisfying C4 if `c4`), each with RSet `up = r0lo` (ALL if null).
 * `tighten(tlo, thi, nlo, nhi)`: intersect ranges (enum: filter keys).
 
 ### 2.4 `U` domain
 
-`{"u": [lo, hi]}` (null = infinite). Empty when `lo > hi`.
+`{"u": [lo, hi]}` (null = infinite). Empty when `lo > hi` (not normalised). Every `U` operator intersects the
+current interval with the stated one (`lo = max`, `hi = min`).
 
 ### 2.5 Digest
 
@@ -82,9 +89,19 @@ signature, tau, genus, fibered, alternating, symmetry_type, u, c4, quasipositive
 null for non-table nodes), `calculator` (tau, nu, epsilon, genus, fibered, lspace where computed),
 `used` (the inputs the rules used: g, g4_upper, fibered, tau, slice, nontrivial, certified_L,
 certified_not_L, slopes), `domains` (`F`, `C`, `U` in the encoding above), `pins` (invariant → value),
-`pin_events` (invariant → id of the event after which the projection became a singleton),
-`last_events`, `upsilon_unverified`, `chain` (file name or null).
+`pin_events` (invariant → id of the first event after which the projection is a singleton),
+`last_events`, `upsilon_unverified`, `chain` (path relative to the export directory, or null).
 Invariant names: `M`, `r_2`, `nu`, `r_0`, `tau`, `upsilon`.
+
+"Pinned" means: the domain is a non-empty enum (for `U`: `lo = hi`) and — `M`: exactly one entry;
+`tau`, `nu`: all keys have the same tau, resp. nu; `r_2`, `r_0`: no RSet of the domain has a ray and the
+union of their explicit values is a single value. A box never pins anything.
+
+`knots.csv` / sheet `knots` of `knots.xlsx`: one row per node; `<inv>_pin` (empty = not pinned), `<inv>_lo`,
+`<inv>_hi` are the ends of the projection of the final domain onto the invariant (empty = unbounded; for an
+`F` box with `absM` the lower end of r_2 is the least lattice value `>= max(rlo, |M|)` over the M-range);
+`M_r2_joint` and `tau_nu_r0_joint` hold the finite joint domain as a JSON list when it has at most 20
+elements; an empty cell means unknown.
 
 ### 3.2 `edges.jsonl`
 
@@ -109,9 +126,12 @@ strand runs d → b. Edge labels 1..2n follow the orientation.
 ### 3.4 `events.jsonl`
 
 `{"id": k, "c": <constraint id>, "rule": <ID>, "node": <node>, "dom": "F"|"C"|"U", "in": [event ids], "dg": digest}`.
-`in` lists the latest earlier events of every (node, domain) the constraint reads (section 4), including the
-target itself; a domain that has no earlier event is TOP and contributes no id. `dg` is the digest of the
-target domain after the event. Ids are consecutive from 0.
+`in` lists (sorted increasingly, without duplicates) the latest earlier events of every (node, domain) the
+constraint reads (section 4), including the target itself; a domain that has no earlier event is TOP and
+contributes no id. `dg` is the digest of the target domain after the event. Ids are consecutive from 0.
+The events of one application of a constraint are consecutive, have the same `c` and the same `in`, and
+there is at most one per output of the operator; all of them are computed from the domains before the first
+of them. (A later application of the same constraint has a different `in`.)
 
 ## 4. Operators
 
@@ -157,7 +177,8 @@ Notation: `cdiv(a,b) = ceil(a/b)`, `fdiv = floor`. `phi2(M;p,q) = |p - qM| + (2 
   (tau, nu): if `ge3`: `ge(3)`; if `a`: `remove(3 - |1 - nu|)`; if `b` and `|nu| = 3`: `remove(3)` (in this order).
 * `C11` par `g` — `v = 2g-1`; `tighten(nu in [v,v])`, then (enum only) `only({v})`.
 * `C12` par `m`, `tau` — `tighten(nu in [tau,tau])`, then (enum only) `only({m})`.
-* `C13` par `kind`: `n3m3` → (nu, r_0) = (0, 4); `odd32` with `n` → (2n-1, 6n-1); applied as C11.
+* `C13` par `kind`: `n3m3` → (nu, r_0) = (0, 4); `odd32` with `n` → (2n-1, 6n-1); applied as C11. No other
+  kind exists.
 * `C14` par `n`, `norm` — nu = 2n-1, r_0 = (norm + 2n - 3)/2 (must be an integer); applied as C11.
 * `C15` — enum only; at key (tau, nu) remove every `r_0 >= 0` in `{nu+2} ∪ {2n+2-nu : 1 <= n < nu}`
   (increasing order).
@@ -167,7 +188,8 @@ Notation: `cdiv(a,b) = ceil(a/b)`, `fdiv = floor`. `phi2(M;p,q) = |p - qM| + (2 
 
 ### 4.3 Unary, domain U
 
-* `U4a` par `why` in {slice, amphichiral, unknot} → `[0,0]`; par `g4` → intersect with `[-g4, g4]`.
+All of them intersect the current interval with the stated one.
+* `U4a` par `why` in {slice, amphichiral, unknot} → `[0,0]`; par `g4` → `[-g4, g4]`.
 * `U2a` par `tau` → `[-tau,-tau]`. `U3` → `[0,0]`. `U1` par `value` → `[value,value]`.
   `U7` par `p`, `q` → `[ups, ups]`, `ups` = upsilon(T(p,q)).
 
@@ -177,7 +199,8 @@ par: `x1`, `x2`, `x4`, `x5`, `x5m` (flags, absent = false), `x3_g` (genus or abs
 `parameters.json/slope_sets`, or `{"base": id, "extra": [[p,q],...]}` meaning the base list followed by the
 extra slopes not already in it).
 Both domains must be enum and non-empty, else unchanged. For M in F and nu occurring in C let `Delta(M,nu)`
-be the maximum of the following (none if no rule is switched on):
+be the maximum of the following (none if no rule is switched on, or if the only rule switched on is x3 and no
+slope qualifies):
 * x1: `|M - nu|`, `0`, and `cdiv(phic(nu;p,q) - phi2(M;p,q), q)` for every slope;
 * x2: `1`;
 * x3_g = g: `cdiv(phic + 2 - phi2, q)` for every slope with `|p| <= (2g-1)·q`;
@@ -210,8 +233,11 @@ Both new domains are computed from the old ones.
 
 `A' = A ∩ mirror(B)`, then `B' = B ∩ mirror(A')`. Mirror: F: M → -M (box: `[-mhi, -mlo]`); C: (tau, nu) →
 (-tau, -nu); U: `[-hi, -lo]`. Intersection: enum∩enum key-wise RSet intersection; box∩box component-wise
-(`absM`, `c4` are or-ed); enum∩box: keep the keys allowed by the box and apply `ge` of the box's lower bound
-on r (for F: `max(rlo, |M| if absM)`; for C: `r0lo`).
+(`absM`, `c4` are or-ed); enum∩box: keep the keys allowed by the box (for C including `|2 tau - nu| <= 1`
+when the box has `c4`) and apply `ge` of the box's lower bound on r (for F: `max(rlo, |M| if absM)`; for C:
+`r0lo`). Two `F` domains with different `s` are first restricted to the coarser lattice (the larger `s`,
+which the smaller must divide): an enum keeps the entries with M on that lattice and `coarsen`s their RSets,
+a box only changes its `s`; the result has the larger `s`.
 
 ### 4.7 Mutation `F6`; nodes `[A, B]`
 
@@ -219,7 +245,8 @@ Both become `A ∩ B`.
 
 ### 4.8 Connected sum `F4`, `C6`, `U4b` (par kind = sum); nodes `[N, P1(, P2)]`, par `mult`
 
-`x(N) = Σ mult_i x(P_i)` (two different parts with multiplicities 1, or one part with multiplicity 2).
+`x(N) = Σ mult_i x(P_i)` (two different parts with multiplicities `[1, 1]`, or one part with multiplicity
+`[2]`; no other shape exists).
 Output order N, P1, P2.
 * F, all parts enum: `restrict_m(N)` to the attainable sums; then each part keeps the M values that occur in
   a combination whose sum survived in N. If N is still a box after the restriction the parts are unchanged.
@@ -243,7 +270,8 @@ Meaning `a·E(A; sA) = b·E(B; sB)` on domain F (E_2) or C (E_C). Output order A
 * Two nodes. Box sides first (twice in a row: A then B): if this side is a box and the other is enum with
   every RSet bounded above, let `mx` = max of the other side's factor·E; bound this side by `E <= fdiv(mx,
   own factor)` exactly as in the box step of `F10` (4.1/4.2) with `max(V)` replaced by that number. If a
-  side is still a box: both unchanged. Otherwise, with items `(key, phi, RSet)`:
+  side is still a box no further narrowing is done (a box side keeps the bounds obtained in the box step: a
+  `C` box without `c4` stays a box with tightened nu). Otherwise, with items `(key, phi, RSet)`:
   the support of side B is the set `vals = {b(q' v + phi') : v explicit}`, the upward progressions
   `(b(q' up + phi'), b q' step)` for every up-ray, and a flag if any down-ray exists.
   Narrowing side A by the support of B: if the flag is set, A is unchanged. Otherwise at each key:
@@ -272,7 +300,9 @@ latest events of the domains read.
 The numbered lines are the union, over the pinned invariants of the node (order `M, r_2, nu, r_0, tau,
 upsilon`), of the ancestor closures (through `in`) of the pin events, in increasing event id, numbered from 1;
 `in:` lists the numbers of the event's inputs (`-` if none). Each `==` line lists the numbers of the ancestor
-closure of that pin event. The file ends with a newline.
+closure of that pin event. The file ends with a newline. `<rule>` is the rule of the event, `nodes=` are the
+nodes of the constraint (not of the event) joined by commas, `par=` is the JSON of `par` with sorted keys and
+no spaces. The statement of any empty domain is `EMPTY`.
 
 Statements (text of the target domain after the event), truncated to `max_statement_text` characters
 (see `parameters.json`) followed by `... [digest <dg>]` when longer:

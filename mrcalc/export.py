@@ -172,7 +172,8 @@ def export_all(problem, solver, out_dir=EXPORT, ablation=None, extra=None, write
             shutil.rmtree(chdir)
         os.makedirs(chdir)
     rows = []
-    with open(os.path.join(out_dir, 'knots.jsonl'), 'w') as f:
+    f = Writer(os.path.join(out_dir, 'knots.jsonl'))
+    if True:
         for n in sorted(problem.nodes, key=lambda x: (problem.nodes[x]['tier'] if problem.nodes[x]['tier'] is not None else 99, x)):
             info = problem.nodes[n]
             pins = solver.pins(n)
@@ -192,11 +193,12 @@ def export_all(problem, solver, out_dir=EXPORT, ablation=None, extra=None, write
                 'upsilon_unverified': info.get('upsilon_unverified'),
                 'chain': ('chains/%s.txt' % names.file_name(n)) if pins else None,
             }
-            f.write(_dumps(rec) + '\n')
+            f.write(rec)
             rows.append(table_row(rec, solver, n))
             if pins and write_chains:
                 with open(os.path.join(chdir, names.file_name(n) + '.txt'), 'w') as g:
                     g.write(chain_text(n, pins, pe, events, ev_text, cons_by_id))
+    f.close()
     # --- parameters
     import importlib.metadata as md
     versions = {}

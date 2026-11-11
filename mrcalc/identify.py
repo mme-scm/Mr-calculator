@@ -245,7 +245,7 @@ class Identifier:
                              'alex': list(alex)}}
         base = None
         hitsig = None
-        for cap, height, vc in ((200, None, 4000), (1500, 3, 30000)):
+        for cap, height, vc in ((200, None, 3000), (600, 3, 5000)):
             try:
                 sigs = regina_sigs(regina_tri(M), cap=cap, height=height, visit_cap=vc)
             except Exception as e:

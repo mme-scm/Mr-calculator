@@ -134,7 +134,11 @@ class RSet:
         return RSet(vals, up, down, self.step)
 
     def intersect(self, o):
+        """Set intersection (both operands on the same lattice)."""
         vals = [v for v in self.vals if v in o] + [v for v in o.vals if v in self]
+        for u, dn in ((self.up, o.down), (o.up, self.down)):
+            if u is not None and dn is not None and u <= dn:
+                vals += list(range(u, dn + 1, self.step))
         up = None
         if self.up is not None and o.up is not None:
             up = max(self.up, o.up)
@@ -142,6 +146,14 @@ class RSet:
         if self.down is not None and o.down is not None:
             down = min(self.down, o.down)
         return RSet(vals, up, down, self.step)
+
+    def coarsen(self, step):
+        """The members lying on the coarser lattice step*Z (step a multiple of self.step)."""
+        if step == self.step:
+            return self
+        return RSet([v for v in self.vals if v % step == 0],
+                    None if self.up is None else _up(self.up, step),
+                    None if self.down is None else _dn(self.down, step), step)
 
     def union(self, o):
         vals = list(self.vals) + list(o.vals)
@@ -320,8 +332,14 @@ class Dom2:
             mlo, mhi, rlo, absM = self.box
             lo = rlo
             if absM:
-                lo = 0 if lo is None else max(lo, 0)
-            return lo, None
+                if mlo is not None and mlo > 0:
+                    least = _up(mlo, self.step)
+                elif mhi is not None and mhi < 0:
+                    least = -_dn(mhi, self.step)
+                else:
+                    least = 0
+                lo = least if lo is None else max(lo, least)
+            return (None if lo is None else _up(lo, self.step)), None
         if not self.items:
             return None, None
         los = [r.min() for r in self.items.values()]

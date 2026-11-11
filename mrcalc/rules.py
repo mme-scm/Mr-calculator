@@ -40,8 +40,23 @@ def same(a, b):
     return a is b or a == b
 
 
+def coarsen2(d, step):
+    """Members of an F domain on the coarser lattice step*Z."""
+    if d.step == step:
+        return d
+    if d.items is not None:
+        return Dom2(step, items={m: rs.coarsen(step) for m, rs in d.items.items() if m % step == 0})
+    return Dom2(step, box=d.box)
+
+
 def intersect2(a, b):
-    """Intersection of two Dom2 on the same lattice."""
+    """Intersection of two Dom2.  Domains on different lattices are first restricted to the
+    coarser lattice (the finer step divides the coarser one)."""
+    if a.step != b.step:
+        s = max(a.step, b.step)
+        if s % min(a.step, b.step):
+            raise ValueError('incompatible lattices')
+        a, b = coarsen2(a, s), coarsen2(b, s)
     if a.items is not None and b.items is not None:
         return Dom2(a.step, items={m: r.intersect(b.items[m]) for m, r in a.items.items() if m in b.items})
     if a.items is None and b.items is None:
