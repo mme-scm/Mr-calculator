@@ -18,11 +18,19 @@ def problem():
     return P
 
 
+def light_solver():
+    """A solver that keeps the state only (no events): the problem is the real one and has millions of
+    constraints; with events and their domains two solvers would need more than 10 GB."""
+    S = solver.Solver()
+    S.keep, S.record = None, False
+    return S
+
+
 def test_incremental_equals_full(problem):
-    full = solver.Solver()
+    full = light_solver()
     full.add(problem.cons)
     full.run()
-    inc = solver.Solver()
+    inc = light_solver()
     base = [c for c in problem.cons if c['rule'] not in EDGE_RULES]
     edges = [c for c in problem.cons if c['rule'] in EDGE_RULES]
     inc.add(base)
@@ -40,7 +48,7 @@ def test_incremental_equals_full(problem):
 
 
 def test_trefoil_and_8_19(problem):
-    S = solver.Solver()
+    S = light_solver()
     S.add(problem.cons)
     S.run()
     assert S.pins('3_1') == {'M': 4, 'r_2': 4, 'nu': 1, 'r_0': 1, 'tau': 1, 'upsilon': -1}

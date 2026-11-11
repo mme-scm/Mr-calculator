@@ -1,5 +1,10 @@
 """Re-solve and export.
 usage: solve.py [upsilon] [ablation] [nochains] [plain] [out=<dir>]
+       solve.py ablate [upsilon] [out=<dir>]             second phase of `ablation` (started by the first)
+       solve.py ablate-run=<name> [upsilon] [out=<dir>]  one ablation run; prints its counts as one JSON line
+
+ablation: the full run solves, exports and leaves a table of its pins; then every ablation run is a process
+of its own (the problem is built again each time), so that the memory in use is that of one problem.
 
 plain: write uncompressed JSONL parts and one file per chain (default: gzip parts and chain archives)."""
 import json
@@ -105,46 +110,23 @@ def validate(problem, S):
             'composite_violations': bad_comp[:20], 'n_composite_violations': len(bad_comp)}
 
 
-def _ablation_run(problem, name, rules, full_pins, pin_mask, bit, conn):
-    """One ablation run (in a forked child that shares the problem with the parent)."""
-    t0 = time.time()
-    try:
-        S = solve(problem, withheld=rules, keep=None, record=False)
-    except solver.Contradiction as e:
-        conn.send({'withheld': name, 'rules': rules, 'error': str(e), 'pins': {i: None for i in INVARIANTS},
-                   'lost': {i: None for i in INVARIANTS}, 'violations': None})
-        return
-    pins = pin_counts(problem, S)
-    lost = {i: 0 for i in INVARIANTS}
-    viol = changed = 0
-    rs = 0
-    for r in rules:
-        rs |= bit.get(r, 0)
-    for n, fp in full_pins.items():
-        now = S.pins(n)
-        for inv, v in fp.items():
-            if inv not in now:
-                lost[inv] += 1
-                if not (pin_mask[(n, inv)] & rs):
-                    viol += 1
-            elif now[inv] != v:
-                changed += 1
-    conn.send({'withheld': name, 'rules': rules, 'pins': pins, 'lost': lost, 'violations': viol,
-               'changed_values': changed, 'seconds': round(time.time() - t0, 1)})
+ABLATION_BASE = 'ablation_base.pkl'      # written by the full run, read by the ablation runs, then removed
 
 
-def ablation(problem, full):
-    """Section 10: withhold one family at a time, and the listed family rules one at a time.
-    A lost pin whose chain in the full run uses no withheld rule is a violation.
-    Each run is a forked child process: it shares the problem and returns only counts."""
-    import gc
-    import multiprocessing as mp
+def ablation_runs():
+    runs = [(fam, list(rules)) for fam, rules in FAMILIES.items()]
+    return runs + [(r, [r]) for r in ('F11', 'F12', 'F13', 'F14', 'C11', 'C12', 'C13', 'C14')]
+
+
+def write_ablation_base(problem, full, out_dir):
+    """What an ablation run needs from the full run: its pins and, for every pin, the set of rules used by
+    its chain (as a bit mask: own rule of every event of the chain)."""
+    import pickle
     full_pins = {}
     for n in problem.nodes:
         p = full.pins(n)
         if p:
             full_pins[n] = p
-    # rules used by the chain of every event: own rule and the rules of the chains of its inputs
     bit = {}
     mask = []
     for e in full.events:
@@ -152,39 +134,95 @@ def ablation(problem, full):
         for i in e.ins:
             m |= mask[i]
         mask.append(m)
-    pin_mask = {(n, inv): mask[full.pin_event[(n, inv)]] for n, p in full_pins.items() for inv in p}
-    del mask
-    runs = [(fam, rules) for fam, rules in FAMILIES.items()]
-    runs += [(r, [r]) for r in ('F11', 'F12', 'F13', 'F14', 'C11', 'C12', 'C13', 'C14')]
-    ctx = mp.get_context('fork')
-    gc.collect()
-    gc.freeze()
-    out = []
-    for name, rules in runs:
+    pin_mask = {n: {inv: mask[full.pin_event[(n, inv)]] for inv in p} for n, p in full_pins.items()}
+    with open(os.path.join(out_dir, ABLATION_BASE), 'wb') as f:
+        pickle.dump({'pins': full_pins, 'mask': pin_mask, 'bit': bit, 'nodes': len(problem.nodes),
+                     'constraints': len(problem.cons)}, f, protocol=4)
+
+
+def ablation_run(name, out_dir, include_upsilon):
+    """One ablation run in a process of its own (section 10): the problem is built again and solved without
+    the rules of `name`; only counts are returned.  A lost pin whose chain in the full run uses no withheld
+    rule is a violation."""
+    import pickle
+    t0 = time.time()
+    rules = dict(ablation_runs())[name]
+    with open(os.path.join(out_dir, ABLATION_BASE), 'rb') as f:
+        base = pickle.load(f)
+    problem = prepare.Problem(include_upsilon=include_upsilon)
+    if (len(problem.nodes), len(problem.cons)) != (base['nodes'], base['constraints']):
+        raise SystemExit('ablation run %s: the problem (%d nodes, %d constraints) is not the problem of the full '
+                         'run (%d, %d)' % (name, len(problem.nodes), len(problem.cons), base['nodes'],
+                                           base['constraints']))
+    try:
+        S = solve(problem, withheld=rules, keep=None, record=False)
+    except solver.Contradiction as e:
+        return {'withheld': name, 'rules': rules, 'error': str(e), 'pins': {i: None for i in INVARIANTS},
+                'lost': {i: None for i in INVARIANTS}, 'violations': None}
+    pins = pin_counts(problem, S)
+    lost = {i: 0 for i in INVARIANTS}
+    viol = changed = 0
+    rs = 0
+    for r in rules:
+        rs |= base['bit'].get(r, 0)
+    pin_mask = base['mask']
+    for n, fp in base['pins'].items():
+        now = S.pins(n)
+        for inv, v in fp.items():
+            if inv not in now:
+                lost[inv] += 1
+                if not (pin_mask[n][inv] & rs):
+                    viol += 1
+            elif now[inv] != v:
+                changed += 1
+    return {'withheld': name, 'rules': rules, 'pins': pins, 'lost': lost, 'violations': viol,
+            'changed_values': changed, 'seconds': round(time.time() - t0, 1)}
+
+
+def ablation_driver(out_dir, include_upsilon):
+    """Second phase of `solve.py ablation`: the full run has exported and left the process; every ablation
+    run is a process of its own, one after the other, so that the memory in use is that of one problem.
+    Writes ablation.json and the sheet `ablation` of knots.xlsx.  Exit code 3 if a run died."""
+    import subprocess
+    out, died = [], 0
+    for name, rules in ablation_runs():
         t0 = time.time()
-        recv, send = ctx.Pipe(duplex=False)
-        proc = ctx.Process(target=_ablation_run, args=(problem, name, list(rules), full_pins, pin_mask, bit, send))
-        proc.start()
-        send.close()
-        try:
-            res = recv.recv()
-        except EOFError:
-            res = {'withheld': name, 'rules': list(rules), 'error': 'run died', 'pins': {i: None for i in INVARIANTS},
-                   'lost': {i: None for i in INVARIANTS}, 'violations': None}
-        proc.join()
+        cmd = [sys.executable, '-W', 'ignore', os.path.abspath(__file__), 'ablate-run=' + name, 'out=' + out_dir]
+        proc = subprocess.run(cmd + (['upsilon'] if include_upsilon else []), stdout=subprocess.PIPE)
+        res = None
+        if proc.returncode == 0:
+            try:
+                res = json.loads(proc.stdout.decode().strip().split('\n')[-1])
+            except ValueError:
+                res = None
+        if res is None:
+            died += 1
+            res = {'withheld': name, 'rules': rules, 'error': 'run died (exit code %d)' % proc.returncode,
+                   'pins': {i: None for i in INVARIANTS}, 'lost': {i: None for i in INVARIANTS}, 'violations': None}
         out.append(res)
         print('ablation %-18s pins %s lost %s violations %s (%.0fs)' % (
             name, res['pins'], res['lost'], res['violations'], time.time() - t0), flush=True)
-    gc.unfreeze()
-    return out
+        with open(os.path.join(out_dir, 'ablation.json'), 'w') as f:
+            json.dump(out, f, indent=1)
+    export.write_ablation_sheet(out_dir, out)
+    os.remove(os.path.join(out_dir, ABLATION_BASE))
+    print('ablation: %d runs, %d died, %s violations' % (
+        len(out), died, sum(r['violations'] or 0 for r in out)), flush=True)
+    return 3 if died else 0
 
 
 def main():
     args = sys.argv[1:]
     kv = dict(a.split('=', 1) for a in args if '=' in a)
     out_dir = kv.get('out', EXPORT)
+    upsilon = 'upsilon' in args
+    if 'ablate-run' in kv:
+        print(json.dumps(ablation_run(kv['ablate-run'], out_dir, upsilon)), flush=True)
+        return
+    if 'ablate' in args:
+        sys.exit(ablation_driver(out_dir, upsilon))
     t0 = time.time()
-    problem = prepare.Problem(include_upsilon='upsilon' in args)
+    problem = prepare.Problem(include_upsilon=upsilon)
     print('problem: %d nodes, %d constraints, %d edges (%.0fs)' % (
         len(problem.nodes), len(problem.cons), len(problem.edges), time.time() - t0), flush=True)
     try:
@@ -198,9 +236,7 @@ def main():
     print('pins:', counts, flush=True)
     abl = None
     if 'ablation' in args:
-        abl = ablation(problem, S)
-        with open(os.path.join(out_dir, 'ablation.json'), 'w') as f:
-            json.dump(abl, f, indent=1)
+        write_ablation_base(problem, S, out_dir)
     elif os.path.exists(os.path.join(out_dir, 'ablation.json')):
         abl = json.load(open(os.path.join(out_dir, 'ablation.json')))
     val = validate(problem, S)
@@ -214,6 +250,11 @@ def main():
                    'events': len(S.events), 'pins': counts, 'stats': dict(problem.stats), 'validation': val},
                   f, indent=1)
     print('exported to %s (%.0fs)' % (out_dir, time.time() - t0), flush=True)
+    if 'ablation' in args:
+        # the ablation runs start only after this process has given its memory back
+        sys.stdout.flush()
+        os.execv(sys.executable, [sys.executable, '-W', 'ignore', os.path.abspath(__file__), 'ablate',
+                                  'out=' + out_dir] + (['upsilon'] if upsilon else []))
 
 
 if __name__ == '__main__':

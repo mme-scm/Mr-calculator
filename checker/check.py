@@ -27,6 +27,7 @@ Data model (all values immutable and canonical, so that equality is equality of 
   U domain  ('u', lo, hi)
 """
 import argparse
+import functools
 import csv
 import gzip
 import hashlib
@@ -1746,15 +1747,16 @@ def short(text, n=400):
 # ======================================================================================
 class Replay(object):
     def __init__(self, cons, limit, rep, keep_text=True):
-        self.cons = cons               # constraint id -> Con
+        self.cons = cons               # ConStore: constraint id -> Con
         self.limit = limit             # max_statement_text
         self.rep = rep
         self.keep_text = keep_text
         self.state = {}                # (node, dom) -> domain   (absent: TOP)
         self.last = {}                 # (node, dom) -> id of the latest event
         self.pin_event = {}            # (node, invariant) -> event id
-        self.ev_con = []               # per event: Con (or None)
-        self.ev_key = []               # per event: (node, dom)
+        self.ev_cid = []               # per event: constraint id (None: unknown constraint)
+        self.ev_node = []              # per event: node
+        self.ev_dom = []               # per event: dom
         self.ev_in = []                # per event: tuple of input event ids (from the replay)
         self.ev_text = []              # per event: statement text
         self.applications = 0
@@ -1865,8 +1867,9 @@ class Replay(object):
         return self
 
     def _record(self, e, con, key, tin, new):
-        self.ev_con.append(con)
-        self.ev_key.append(key)
+        self.ev_cid.append(con.cid if con is not None else None)
+        self.ev_node.append(key[0])
+        self.ev_dom.append(key[1])
         self.ev_in.append(tin)
         if self.keep_text:
             if new is None:
@@ -1915,14 +1918,15 @@ class Replay(object):
         num = {e: k + 1 for k, e in enumerate(union)}
         lines = ['# chains for %s' % node]
         for e in union:
-            con = self.ev_con[e]
+            cid = self.ev_cid[e]
+            con = self.cons.get(cid) if cid is not None else None
             if con is None:
                 rule, nodes, par = '?', '?', '{}'
             else:
                 if con.partext is None:
                     con.partext = json.dumps(con.par, sort_keys=True, separators=(',', ':'))
                 rule, nodes, par = con.rule, ','.join(con.nodes), con.partext
-            key = self.ev_key[e]
+            key = (self.ev_node[e], self.ev_dom[e])
             lines.append('%d. e%d %s nodes=%s par=%s -> %s.%s: %s | in: %s' % (
                 num[e], e, rule, nodes, par, key[0], key[1], self.ev_text[e],
                 ','.join(str(num[j]) for j in self.ev_in[e]) or '-'))
@@ -1936,17 +1940,64 @@ class Replay(object):
 # ======================================================================================
 # the individual checks
 # ======================================================================================
-def load_constraints(directory, rep):
-    cons = {}
-    for rec in read_jsonl(directory, 'constraints.jsonl'):
-        try:
-            con = Con(rec)
-        except Exception as ex:
-            rep.err('constraint', 'malformed constraint %s: %s' % (short(json.dumps(rec), 200), ex))
-            continue
-        if con.cid in cons:
-            rep.err('constraint', 'duplicate constraint id %s' % con.cid)
-        cons[con.cid] = con
+class ConStore(object):
+    """The constraints of an export.  Every line of constraints.jsonl is read and turned into a Con once (so
+    that a malformed constraint is reported); after that only the line is kept, and a Con is built again
+    when an event or a chain line needs it.  Holding five million Con objects costs several GB."""
+    CACHE = 1 << 16
+
+    def __init__(self):
+        self.line = {}                 # constraint id -> its line of constraints.jsonl (bytes)
+        self.with_ref = set()          # ids of the constraints whose ref is an edge id
+        self.bad_ref = {}              # id -> edge id, for edge ids that are not in edges.jsonl
+        self.get = functools.lru_cache(maxsize=self.CACHE)(self._get)
+
+    def __len__(self):
+        return len(self.line)
+
+    def __contains__(self, cid):
+        return cid in self.line
+
+    def _get(self, cid):
+        line = self.line.get(cid)
+        return None if line is None else Con(json.loads(line.decode('utf-8')))
+
+
+def load_edge_ids(directory, rep):
+    ids = set()
+    if jsonl_parts(directory, 'edges.jsonl'):
+        for rec in read_jsonl(directory, 'edges.jsonl'):
+            if rec.get('id') in ids:
+                rep.err('edge', 'duplicate edge id %r' % rec.get('id'))
+            ids.add(rec.get('id'))
+    return ids
+
+
+def load_constraints(directory, rep, edge_ids):
+    cons = ConStore()
+    paths = jsonl_parts(directory, 'constraints.jsonl')
+    if not paths:
+        raise IOError('missing file %s' % os.path.join(directory, 'constraints.jsonl'))
+    for path in paths:
+        with open_text(path) as f:
+            for line in f:
+                if not line.strip():
+                    continue
+                rec = json.loads(line)
+                try:
+                    con = Con(rec)
+                except Exception as ex:
+                    rep.err('constraint', 'malformed constraint %s: %s' % (short(json.dumps(rec), 200), ex))
+                    continue
+                if con.cid in cons:
+                    rep.err('constraint', 'duplicate constraint id %s' % con.cid)
+                    cons.with_ref.discard(con.cid)
+                    cons.bad_ref.pop(con.cid, None)
+                cons.line[con.cid] = line.encode('utf-8')
+                if isinstance(con.ref, str):
+                    cons.with_ref.add(con.cid)
+                    if con.ref not in edge_ids:
+                        cons.bad_ref[con.cid] = con.ref
     return cons
 
 
@@ -1956,13 +2007,13 @@ def load_events(directory, rep):
     for rec in read_jsonl(directory, 'events.jsonl'):
         if rec.get('id') != len(events):
             rep.err('event', 'event ids are not consecutive from 0: line %d has id %r' % (len(events), rec.get('id')))
-        events.append((rec['c'], rec['rule'], intern(rec['node']), intern(rec['dom']), rec['in'], rec['dg']))
+        events.append((rec['c'], intern(rec['rule']), intern(rec['node']), intern(rec['dom']), rec['in'], rec['dg']))
     return events
 
 
 def check_knots(directory, replay, rep):
     """c. final domains, pins, pin events, last events, chain names.  Returns the node records
-    reduced to what the later checks need: node -> (domains json, pins, chain)."""
+    reduced to what the later checks need: node -> (domains as JSON text, pins, chain)."""
     knots = {}
     order = []
     for rec in read_jsonl(directory, 'knots.jsonl'):
@@ -1972,7 +2023,7 @@ def check_knots(directory, replay, rep):
             continue
         order.append(node)
         doms = rec.get('domains') or {}
-        knots[node] = (doms, rec.get('pins') or {}, rec.get('chain'))
+        knots[node] = (json.dumps(doms, separators=(',', ':')), rec.get('pins') or {}, rec.get('chain'))
         for kind in ('F', 'C', 'U'):
             mine = json.loads(CANON[kind](replay.domain(node, kind)))
             if doms.get(kind) != mine:
@@ -2091,6 +2142,7 @@ def check_csv_part(path, knots, seen, rep):
                 rep.err('csv', 'node %s of knots.csv is not in knots.jsonl' % node)
                 continue
             doms, pins, _ = knots[node]
+            doms = json.loads(doms)
             cache = {}
             for inv in INVARIANTS:
                 kind = INV_DOM[inv]
@@ -2117,26 +2169,16 @@ def check_csv_part(path, knots, seen, rep):
     return rows
 
 
-def check_edges(directory, cons, used, rep):
-    """f. edge ids used as `ref`."""
-    ids = set()
-    if jsonl_parts(directory, 'edges.jsonl'):
-        for rec in read_jsonl(directory, 'edges.jsonl'):
-            if rec.get('id') in ids:
-                rep.err('edge', 'duplicate edge id %r' % rec.get('id'))
-            ids.add(rec.get('id'))
-    refs = 0
+def check_edges(edge_ids, cons, used, rep):
+    """f. edge ids used as `ref` (the edge ids were compared when the constraints were read)."""
+    refs = sum(1 for cid in cons.with_ref if cid in used)
     unused_bad = 0
-    for cid, con in cons.items():
-        if isinstance(con.ref, str):
-            if cid in used:
-                refs += 1
-                if con.ref not in ids:
-                    rep.err('edge', 'constraint %s (used by an event) refers to edge %r, not in edges.jsonl'
-                            % (cid, con.ref))
-            elif con.ref not in ids:
-                unused_bad += 1
-    return len(ids), refs, unused_bad
+    for cid, ref in cons.bad_ref.items():
+        if cid in used:
+            rep.err('edge', 'constraint %s (used by an event) refers to edge %r, not in edges.jsonl' % (cid, ref))
+        else:
+            unused_bad += 1
+    return len(edge_ids), refs, unused_bad
 
 
 # ======================================================================================
@@ -2173,7 +2215,8 @@ def main(argv=None):
         SLOPE_SETS.clear()
         for k, v in (params.get('slope_sets') or {}).items():
             SLOPE_SETS[k] = [(p, q) for p, q in v]
-        cons = load_constraints(directory, rep)
+        edge_ids = load_edge_ids(directory, rep)
+        cons = load_constraints(directory, rep, edge_ids)
         events = load_events(directory, rep)
     except (IOError, OSError, KeyError, ValueError) as ex:
         print('error: cannot load the export: %s: %s' % (type(ex).__name__, ex))
@@ -2181,7 +2224,9 @@ def main(argv=None):
     print('loaded %d constraints, %d events (%.1f s)' % (len(cons), len(events), time.time() - t0))
 
     replay = Replay(cons, limit, rep, keep_text=not args.no_chains).run(events)
-    print('replayed %d events in %d applications (%.1f s)' % (len(events), replay.applications, time.time() - t0))
+    n_events = len(events)
+    del events
+    print('replayed %d events in %d applications (%.1f s)' % (n_events, replay.applications, time.time() - t0))
 
     try:
         knots, order = check_knots(directory, replay, rep)
@@ -2195,13 +2240,13 @@ def main(argv=None):
         same, different, extra = check_chains(directory, replay, order, rep)
         print('compared %d chain files (%.1f s)' % (same + different, time.time() - t0))
     rows = check_csv(directory, knots, rep)
-    n_edges, n_refs, unused_bad = check_edges(directory, cons, replay.used_cons, rep)
+    n_edges, n_refs, unused_bad = check_edges(edge_ids, cons, replay.used_cons, rep)
 
     npins = sum(len(replay.pins(n)) for n in order)
     print()
     print('SUMMARY')
     print('  events checked                : %d (constraints: %d, used by events: %d, applications: %d)'
-          % (len(events), len(cons), len(replay.used_cons), replay.applications))
+          % (n_events, len(cons), len(replay.used_cons), replay.applications))
     print('  digest mismatches             : %d' % rep.n('digest'))
     print('  `in` mismatches               : %d' % rep.n('in'))
     print('  targets that do not change    : %d' % rep.n('unchanged'))

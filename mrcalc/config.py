@@ -3,7 +3,9 @@ import json
 import os
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATA = os.path.join(ROOT, 'data')
+# MRCALC_DATA: read the inputs from another directory (a frozen copy of data/, used to compare two versions
+# of the code on the same input while the passes go on).
+DATA = os.environ.get('MRCALC_DATA') or os.path.join(ROOT, 'data')
 EXPORT = os.path.join(ROOT, 'export')
 
 # Census reference signatures.  In the repository they are kept in parts below 50 MB

@@ -397,6 +397,25 @@ def write_csv(rows, out_dir, limit=PART_LIMIT):
         f.close()
 
 
+def _ablation_rows(ws, ablation):
+    ws.append(['withheld', 'rules'] + ['pins_%s' % i for i in INVARIANTS] + ['lost_%s' % i for i in INVARIANTS] +
+              ['lost pins whose full-run chain lacks the withheld family'])
+    for a in ablation or []:
+        ws.append([a['withheld'], ' '.join(a['rules'])] + [a['pins'][i] for i in INVARIANTS] +
+                  [a['lost'][i] for i in INVARIANTS] + [a['violations']])
+
+
+def write_ablation_sheet(out_dir, ablation):
+    """Fill the sheet `ablation` of an existing knots.xlsx (the ablation runs come after the export)."""
+    from openpyxl import load_workbook
+    path = os.path.join(out_dir, 'knots.xlsx')
+    wb = load_workbook(path)
+    at = wb.sheetnames.index('ablation')
+    del wb['ablation']
+    _ablation_rows(wb.create_sheet('ablation', at), ablation)
+    wb.save(path)
+
+
 def write_tables(rows, out_dir, problem, ablation=None):
     """knots.csv (all nodes); knots.xlsx (sheets knots, pins, ablation, parameters; the sheet knots has the
     nodes that are not peripheral); knots_peripheral[.k].xlsx (peripheral nodes, XLSX_ROWS per workbook)."""
@@ -430,12 +449,7 @@ def write_tables(rows, out_dir, problem, ablation=None):
         for inv in INVARIANTS:
             tot[inv] += pt[t][inv]
     ws.append(['total', totn] + [tot[inv] for inv in INVARIANTS])
-    ws = wb.create_sheet('ablation')
-    ws.append(['withheld', 'rules'] + ['pins_%s' % i for i in INVARIANTS] + ['lost_%s' % i for i in INVARIANTS] +
-              ['lost pins whose full-run chain lacks the withheld family'])
-    for a in ablation or []:
-        ws.append([a['withheld'], ' '.join(a['rules'])] + [a['pins'][i] for i in INVARIANTS] +
-                  [a['lost'][i] for i in INVARIANTS] + [a['violations']])
+    _ablation_rows(wb.create_sheet('ablation'), ablation)
     ws = wb.create_sheet('parameters')
     ws.append(['parameter', 'value'])
     for k, v in sorted(problem.params.items()):
