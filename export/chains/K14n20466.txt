@@ -1,0 +1,10 @@
+# chains for K14n20466
+1. e4344 U4a nodes=10_129 par={"why":"slice"} -> 10_129.U: upsilon in [0,0] | in: -
+2. e48311 U4a nodes=12n_210 par={"g4":1} -> 12n_210.U: upsilon in [-1,1] | in: -
+3. e53760 U4a nodes=12n_501 par={"why":"slice"} -> 12n_501.U: upsilon in [0,0] | in: -
+4. e381693 U5 nodes=10_129,12n_210 par={} -> 12n_210.U: upsilon in [0,1] | in: 1,2
+5. e437606 U6 nodes=12n_210,K14n20466* par={"a":2,"b":1,"h":-1} -> K14n20466*.U: upsilon in [-2,2] | in: 4
+6. e440023 U6 nodes=12n_501,K14n20466* par={"a":2,"b":1,"h":-1} -> K14n20466*.U: upsilon in [-2,1] | in: 3,5
+7. e453962 U3 nodes=K14n20466* par={} -> K14n20466*.U: upsilon in [0,0] | in: 6
+8. e490570 U4b nodes=K14n20466,K14n20466* par={"kind":"mirror"} -> K14n20466.U: upsilon in [0,0] | in: 7
+== upsilon = 0 : pinned at 8 ; chain 1,2,3,4,5,6,7,8

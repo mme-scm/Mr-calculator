@@ -24,7 +24,8 @@ from .surgery import GEOMETRIC
 
 REF_HYP = os.path.join(DATA, 'ref_hyp.jsonl')
 REF_NONHYP = os.path.join(DATA, 'ref_nonhyp.jsonl')
-REF_CENSUS = os.path.join(DATA, 'ref_census.jsonl')
+REF_CENSUS = os.path.join(os.environ['MRCALC_STAGE'], 'ref_census.jsonl') if os.environ.get('MRCALC_STAGE') \
+    else os.path.join(DATA, 'ref_census.jsonl')
 
 
 def exterior(pd):

@@ -1,0 +1,25 @@
+# chains for K14n21358
+1. e49204 F1 nodes=12n_257 par={} -> 12n_257.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+2. e49205 F5 nodes=12n_257 par={"why":"slice"} -> 12n_257.F: M=0:r_2{>=0} | in: 1
+3. e49206 C1 nodes=12n_257 par={} -> 12n_257.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+4. e49207 C4 nodes=12n_257 par={} -> 12n_257.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 3
+5. e49208 C5 nodes=12n_257 par={"g4":0,"src":"KnotInfo g4"} -> 12n_257.C: (tau=0,nu=0):r_0{>=0} | in: 4
+6. e49209 C10 nodes=12n_257 par={"a":true,"b":true,"ge3":true} -> 12n_257.C: (tau=0,nu=0):r_0{>=3} | in: 5
+7. e49210 X nodes=12n_257 par={"slopes":"G","x1":true,"x2":true,"x3_g":3,"x4":true,"x5":true,"x5m":true} -> 12n_257.F: M=0:r_2{>=8} | in: 2,6
+8. e49211 U4a nodes=12n_257 par={"why":"slice"} -> 12n_257.U: upsilon in [0,0] | in: -
+9. e57080 F1 nodes=12n_676 par={} -> 12n_676.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+10. e57081 F5 nodes=12n_676 par={"why":"slice"} -> 12n_676.F: M=0:r_2{>=0} | in: 9
+11. e57082 C1 nodes=12n_676 par={} -> 12n_676.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+12. e57083 C4 nodes=12n_676 par={} -> 12n_676.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 11
+13. e57084 C5 nodes=12n_676 par={"g4":0,"src":"KnotInfo g4"} -> 12n_676.C: (tau=0,nu=0):r_0{>=0} | in: 12
+14. e57085 C10 nodes=12n_676 par={"a":true,"b":true,"ge3":true} -> 12n_676.C: (tau=0,nu=0):r_0{>=3} | in: 13
+15. e57086 X nodes=12n_676 par={"slopes":"G","x1":true,"x2":true,"x3_g":3,"x4":true,"x5":true,"x5m":true} -> 12n_676.F: M=0:r_2{>=8} | in: 10,14
+16. e322479 F1 nodes=K14n21358 par={} -> K14n21358.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+17. e322483 F1 nodes=K14n21358* par={} -> K14n21358*.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+18. e437959 F9 nodes=12n_257,K14n21358 par={"a":2,"b":1,"h":-1} -> K14n21358.F: M=0:r_2{>=0} M=4:r_2{>=4} M=8:r_2{>=8} | in: 7,16
+19. e437960 U6 nodes=12n_257,K14n21358 par={"a":2,"b":1,"h":-1} -> K14n21358.U: upsilon in [-2,1] | in: 8
+20. e441536 F9 nodes=12n_676,K14n21358* par={"a":2,"b":1,"h":-1} -> K14n21358*.F: M=0:r_2{>=0} M=4:r_2{>=4} M=8:r_2{>=8} | in: 15,17
+21. e454040 U3 nodes=K14n21358 par={} -> K14n21358.U: upsilon in [0,0] | in: 19
+22. e490790 F3 nodes=K14n21358,K14n21358* par={} -> K14n21358.F: M=0:r_2{>=0} | in: 18,20
+== M = 0 : pinned at 22 ; chain 1,2,3,4,5,6,7,9,10,11,12,13,14,15,16,17,18,20,22
+== upsilon = 0 : pinned at 21 ; chain 8,19,21

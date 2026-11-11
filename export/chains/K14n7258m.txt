@@ -1,0 +1,17 @@
+# chains for K14n7258*
+1. e12 U4a nodes=3_1 par={"g4":1} -> 3_1.U: upsilon in [-1,1] | in: -
+2. e13 U2a nodes=3_1 par={"tau":1} -> 3_1.U: upsilon in [-1,-1] | in: 1
+3. e3791 U4a nodes=10_101 par={"g4":2} -> 10_101.U: upsilon in [-2,2] | in: -
+4. e3792 U2a nodes=10_101 par={"tau":2} -> 10_101.U: upsilon in [-2,-2] | in: 3
+5. e22103 U4a nodes=12a_250 par={"g4":2} -> 12a_250.U: upsilon in [-2,2] | in: -
+6. e22104 U2a nodes=12a_250 par={"tau":2} -> 12a_250.U: upsilon in [-2,-2] | in: 5
+7. e48196 U4a nodes=12n_204 par={"g4":2} -> 12n_204.U: upsilon in [-2,2] | in: -
+8. e265662 U4a nodes=3_1#3_1 par={"g4":2} -> 3_1#3_1.U: upsilon in [-2,2] | in: -
+9. e376334 U4b nodes=3_1#3_1,3_1 par={"kind":"sum","mult":[2]} -> 3_1#3_1.U: upsilon in [-2,-2] | in: 2,8
+10. e381319 U5 nodes=10_101,12n_204 par={} -> 12n_204.U: upsilon in [-2,-1] | in: 4,7
+11. e390527 U5 nodes=12n_204,3_1#3_1 par={} -> 12n_204.U: upsilon in [-2,-2] | in: 9,10
+12. e427316 U6 nodes=12a_250,K14n7258 par={"a":2,"b":1,"h":-1} -> K14n7258.U: upsilon in [-4,-1] | in: 6
+13. e437531 U6 nodes=12n_204,K14n7258 par={"a":2,"b":1,"h":1} -> K14n7258.U: upsilon in [-3,-1] | in: 11,12
+14. e455445 U1 nodes=K14n7258 par={"value":-2,"why":"Floer-thin"} -> K14n7258.U: upsilon in [-2,-2] | in: 13
+15. e485767 U4b nodes=K14n7258,K14n7258* par={"kind":"mirror"} -> K14n7258*.U: upsilon in [2,2] | in: 14
+== upsilon = 2 : pinned at 15 ; chain 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15

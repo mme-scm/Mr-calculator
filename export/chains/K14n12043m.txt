@@ -1,7 +1,20 @@
 # chains for K14n12043*
 1. e37553 U4a nodes=12a_961 par={"g4":1} -> 12a_961.U: upsilon in [-1,1] | in: -
 2. e37554 U2a nodes=12a_961 par={"tau":0} -> 12a_961.U: upsilon in [0,0] | in: 1
-3. e346211 U5 nodes=K14n12043,12a_961 par={} -> K14n12043.U: upsilon in [-1,0] | in: 2
-4. e362384 U1 nodes=K14n12043 par={"value":-1,"why":"Floer-thin"} -> K14n12043.U: upsilon in [-1,-1] | in: 3
-5. e382053 U4b nodes=K14n12043,K14n12043* par={"kind":"mirror"} -> K14n12043*.U: upsilon in [1,1] | in: 4
-== upsilon = 1 : pinned at 5 ; chain 1,2,3,4,5
+3. e308999 C1 nodes=K14n12043 par={} -> K14n12043.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+4. e309000 C4 nodes=K14n12043 par={} -> K14n12043.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 3
+5. e309001 C5 nodes=K14n12043 par={"g4":5,"src":"calculator g"} -> K14n12043.C: (tau=-5,nu=-9):r_0{>=0} (tau=-4,nu=-9):r_0{>=0} (tau=-4,nu=-8):r_0{>=0} (tau=-4,nu=-7):r_0{>=0} (tau... [digest 3e81c493b021] | in: 4
+6. e309002 C8 nodes=K14n12043 par={"tau":1,"why":"homogeneous diagram"} -> K14n12043.C: (tau=1,nu=1):r_0{>=0} (tau=1,nu=2):r_0{>=0} (tau=1,nu=3):r_0{>=0} | in: 5
+7. e309003 C10 nodes=K14n12043 par={"a":true,"b":true,"ge3":true} -> K14n12043.C: (tau=1,nu=1):r_0{>=4} (tau=1,nu=2):r_0{>=3} (tau=1,nu=3):r_0{>=4} | in: 6
+8. e309004 U4a nodes=K14n12043 par={"g4":5} -> K14n12043.U: upsilon in [-5,5] | in: -
+9. e309006 C1 nodes=K14n12043* par={} -> K14n12043*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+10. e309007 C4 nodes=K14n12043* par={} -> K14n12043*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 9
+11. e309008 C5 nodes=K14n12043* par={"g4":5,"src":"calculator g"} -> K14n12043*.C: (tau=-5,nu=-9):r_0{>=0} (tau=-4,nu=-9):r_0{>=0} (tau=-4,nu=-8):r_0{>=0} (tau=-4,nu=-7):r_0{>=0} (tau... [digest 3e81c493b021] | in: 10
+12. e309009 C10 nodes=K14n12043* par={"a":true,"b":true,"ge3":true} -> K14n12043*.C: (tau=-5,nu=-9):r_0{>=3} (tau=-4,nu=-9):r_0{>=3} (tau=-4,nu=-8):r_0{>=3} (tau=-4,nu=-7):r_0{>=3} (tau... [digest caaa570210b8] | in: 11
+13. e309010 U4a nodes=K14n12043* par={"g4":5} -> K14n12043*.U: upsilon in [-5,5] | in: -
+14. e375781 C3 nodes=K14n12043,K14n12043* par={} -> K14n12043*.C: (tau=-1,nu=-3):r_0{>=4} (tau=-1,nu=-2):r_0{>=3} (tau=-1,nu=-1):r_0{>=4} | in: 7,12
+15. e404572 U5 nodes=K14n12043,12a_961 par={} -> K14n12043.U: upsilon in [-1,0] | in: 2,8
+16. e449683 U1 nodes=K14n12043 par={"value":-1,"why":"Floer-thin"} -> K14n12043.U: upsilon in [-1,-1] | in: 15
+17. e476576 U4b nodes=K14n12043,K14n12043* par={"kind":"mirror"} -> K14n12043*.U: upsilon in [1,1] | in: 13,16
+== tau = -1 : pinned at 14 ; chain 3,4,5,6,7,9,10,11,12,14
+== upsilon = 1 : pinned at 17 ; chain 1,2,8,13,15,16,17

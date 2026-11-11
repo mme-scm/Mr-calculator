@@ -1,0 +1,12 @@
+# chains for K14n21090
+1. e44 U4a nodes=5_1 par={"g4":2} -> 5_1.U: upsilon in [-2,2] | in: -
+2. e45 U2a nodes=5_1 par={"tau":2} -> 5_1.U: upsilon in [-2,-2] | in: 1
+3. e66 U4a nodes=5_2 par={"g4":1} -> 5_2.U: upsilon in [-1,1] | in: -
+4. e67 U2a nodes=5_2 par={"tau":1} -> 5_2.U: upsilon in [-1,-1] | in: 3
+5. e57988 U4a nodes=12n_724 par={"g4":2} -> 12n_724.U: upsilon in [-2,2] | in: -
+6. e266167 U4a nodes=5_1#5_2 par={"g4":3} -> 5_1#5_2.U: upsilon in [-3,3] | in: -
+7. e376486 U4b nodes=5_1#5_2,5_1,5_2 par={"kind":"sum","mult":[1,1]} -> 5_1#5_2.U: upsilon in [-3,-3] | in: 2,4,6
+8. e403507 U5 nodes=5_1#5_2,12n_724 par={} -> 12n_724.U: upsilon in [-2,-2] | in: 5,7
+9. e441981 U6 nodes=12n_724,K14n21090 par={"a":2,"b":1,"h":-1} -> K14n21090.U: upsilon in [-4,-1] | in: 8
+10. e454011 U1 nodes=K14n21090 par={"value":-2,"why":"Floer-thin"} -> K14n21090.U: upsilon in [-2,-2] | in: 9
+== upsilon = -2 : pinned at 10 ; chain 1,2,3,4,5,6,7,8,9,10

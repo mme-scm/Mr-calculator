@@ -1,6 +1,12 @@
 # chains for K14n2707
 1. e19154 U4a nodes=12a_115 par={"g4":1} -> 12a_115.U: upsilon in [-1,1] | in: -
 2. e19155 U2a nodes=12a_115 par={"tau":0} -> 12a_115.U: upsilon in [0,0] | in: 1
-3. e346285 U5 nodes=K14n2707,12a_115 par={} -> K14n2707.U: upsilon in [-1,0] | in: 2
-4. e362451 U1 nodes=K14n2707 par={"value":-1,"why":"Floer-thin"} -> K14n2707.U: upsilon in [-1,-1] | in: 3
-== upsilon = -1 : pinned at 4 ; chain 1,2,3,4
+3. e329419 C1 nodes=K14n2707 par={} -> K14n2707.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+4. e329420 C4 nodes=K14n2707 par={} -> K14n2707.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 3
+5. e329421 C5 nodes=K14n2707 par={"g4":5,"src":"calculator g"} -> K14n2707.C: (tau=-5,nu=-9):r_0{>=0} (tau=-4,nu=-9):r_0{>=0} (tau=-4,nu=-8):r_0{>=0} (tau=-4,nu=-7):r_0{>=0} (tau... [digest 3e81c493b021] | in: 4
+6. e329422 C8 nodes=K14n2707 par={"tau":1,"why":"homogeneous diagram"} -> K14n2707.C: (tau=1,nu=1):r_0{>=0} (tau=1,nu=2):r_0{>=0} (tau=1,nu=3):r_0{>=0} | in: 5
+7. e329424 U4a nodes=K14n2707 par={"g4":5} -> K14n2707.U: upsilon in [-5,5] | in: -
+8. e404817 U5 nodes=K14n2707,12a_115 par={} -> K14n2707.U: upsilon in [-1,0] | in: 2,7
+9. e449750 U1 nodes=K14n2707 par={"value":-1,"why":"Floer-thin"} -> K14n2707.U: upsilon in [-1,-1] | in: 8
+== tau = 1 : pinned at 6 ; chain 3,4,5,6
+== upsilon = -1 : pinned at 9 ; chain 1,2,7,8,9

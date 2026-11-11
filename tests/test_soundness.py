@@ -360,9 +360,15 @@ RULES = ['F1', 'C1', 'C4', '0_1', 'F5', 'F8', 'F11', 'F12', 'F13', 'F14', 'F15',
          'F9', 'U6', 'S1', 'S3', 'S4', 'U4a', 'U2a', 'U3', 'U1', 'U7']
 
 
+@pytest.fixture(autouse=True)
+def _slopes():
+    solver.SLOPES['S'] = SLOPES          # other test modules clear the shared slope table
+    yield
+
+
 @pytest.mark.parametrize('rule', RULES)
 def test_operator_sound(rule):
-    rng = random.Random(hash(rule) % 1000 + 11)
+    rng = random.Random(sum(map(ord, rule)) + 11)
     checked = 0
     for trial in range(60):
         c = rand_constraint(rng, rule)

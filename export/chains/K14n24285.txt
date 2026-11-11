@@ -2,7 +2,13 @@
 1. e12 U4a nodes=3_1 par={"g4":1} -> 3_1.U: upsilon in [-1,1] | in: -
 2. e13 U2a nodes=3_1 par={"tau":1} -> 3_1.U: upsilon in [-1,-1] | in: 1
 3. e16451 U4a nodes=11n_175 par={"g4":2} -> 11n_175.U: upsilon in [-2,2] | in: -
-4. e328729 U5 nodes=11n_175,3_1 par={} -> 11n_175.U: upsilon in [-2,-1] | in: 2,3
-5. e346264 U5 nodes=K14n24285,11n_175 par={} -> K14n24285.U: upsilon in [-3,-1] | in: 4
-6. e362429 U1 nodes=K14n24285 par={"value":-3,"why":"Floer-thin"} -> K14n24285.U: upsilon in [-3,-3] | in: 5
-== upsilon = -3 : pinned at 6 ; chain 1,2,3,4,5,6
+4. e325186 C1 nodes=K14n24285 par={} -> K14n24285.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+5. e325187 C4 nodes=K14n24285 par={} -> K14n24285.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 4
+6. e325188 C5 nodes=K14n24285 par={"g4":5,"src":"calculator g"} -> K14n24285.C: (tau=-5,nu=-9):r_0{>=0} (tau=-4,nu=-9):r_0{>=0} (tau=-4,nu=-8):r_0{>=0} (tau=-4,nu=-7):r_0{>=0} (tau... [digest 3e81c493b021] | in: 5
+7. e325189 C8 nodes=K14n24285 par={"tau":3,"why":"homogeneous diagram"} -> K14n24285.C: (tau=3,nu=5):r_0{>=0} (tau=3,nu=6):r_0{>=0} (tau=3,nu=7):r_0{>=0} | in: 6
+8. e325191 U4a nodes=K14n24285 par={"g4":5} -> K14n24285.U: upsilon in [-5,5] | in: -
+9. e386811 U5 nodes=11n_175,3_1 par={} -> 11n_175.U: upsilon in [-2,-1] | in: 2,3
+10. e404782 U5 nodes=K14n24285,11n_175 par={} -> K14n24285.U: upsilon in [-3,-1] | in: 8,9
+11. e449728 U1 nodes=K14n24285 par={"value":-3,"why":"Floer-thin"} -> K14n24285.U: upsilon in [-3,-3] | in: 10
+== tau = 3 : pinned at 7 ; chain 4,5,6,7
+== upsilon = -3 : pinned at 11 ; chain 1,2,3,8,9,10,11

@@ -1,8 +1,8 @@
 {
  "state": {
-  "milestones": "all seven milestones were run for all tiers at the shrunk scope listed in REPORT.md; the run was stopped for time, not because pins tapered out",
-  "taper": "not reached: the k = 3 twist round still produced new pins (about 2600 M pins from knots with at most 11 crossings); the k = 4 probe from knots with at most 8 crossings produced none",
-  "remaining-time estimate": "k = 3 twists for the rest of the 12-crossing knots: about 2 hours; for 13 crossings: about 12 hours; k = 2 twists for 13 crossings: about 2 hours; the full specification scope: about a month (section \"Cost estimate\")"
+  "status": "checkpoint: all seven milestones have been run for all tiers at a reduced scope; the passes continue at the specification values (Round A: twists up to k_max 6/5/4 on KnotInfo PD diagrams, then braid closures and re-diagrams, composites, cables, then the widening round)",
+  "taper": "not reached: widening k from 2 to 3 for knots with at most 11 crossings added about 2600 M pins; the k = 4 probe on the 36 knots with at most 8 crossings added none, which is too small a sample to conclude anything",
+  "remaining-time estimate": "Round A (PD diagrams, k up to 6/5/4): about 3 days on this machine; the same on braid closures and three re-diagrams per knot: about 2-3 weeks; cables and the widening round after that"
  },
  "scope": {
   "node set": "as specified: 12965 table knots and their mirrors, 1517 composite nodes, positive torus knots with pq <= 60 and mirrors, 2268 cable nodes (companions with at most 8 crossings, s in {2,3}, |r| <= P_cab = 15)",
@@ -18,7 +18,7 @@
   "identification": "Regina solid-torus test only when the Alexander polynomial is trivial; Regina isosig matching of non-hyperbolic results against the pool of torus knots, composites, family constructions and small cables with a bounded retriangulation search"
  },
  "failed_or_skipped": [
-  "STOPPED EARLY (for time): the taper criterion of section 11 is not met. The widening round as specified (P_cab + 5, k_max + 1 in each tier, slopes |p| + 10 and q + 1, re-diagrams + 2) was not run; widening k from 2 to 3 for knots with at most 11 crossings still produced new pins.",
+  "IN PROGRESS, NOT COMPLETE: the taper criterion of section 11 is not yet met and the widening round has not been run. This export is a checkpoint; passes not yet completed are listed below and under \"Pass progress\".",
   "Twists: specification values k_max 6/5/4 on five diagrams per knot were not run (estimated at about a month). Run: k = 2, 3 on KnotInfo PD diagrams up to 11 crossings, k = 3 on part of the 12-crossing knots, k = 4 probe up to 8 crossings.",
   "Crossing changes on composite diagrams with crossing sum 10-13: not completed (sum <= 9 done). Mutations on composite diagrams with crossing sum 10-13: not run.",
   "Crossing changes on braid-closure diagrams of 12-13 crossing knots: 31 of 305 shards. Re-diagrams of 12-13 crossing knots: none.",
@@ -37,7 +37,8 @@
    "Crossing changes at the specification values: about 2 CPU-hours for nodes of at most 11 crossings, about 29 CPU-hours for 12-13 crossings (5 diagrams per knot).",
    "Twists at the specification values (k_max 6/5/4, five diagrams per knot): about 210 CPU-hours for at most 10 crossings, 250 for 11 crossings, 2400 for 12-13 crossings: about a month on this machine. Shrunk (values below).",
    "Fillings at the specification values (160 slopes, 60 s recognition limit): up to 650 CPU-hours; with a 1.5 s limit about 18 CPU-hours for all table knots.",
-   "Cables: 2268 cable diagrams of 13 to 110 crossings; crossing changes on all of them are estimated at 150 CPU-hours or more. Not run (see skipped passes)."
+   "Cables: 2268 cable diagrams of 13 to 110 crossings; crossing changes on all of them are estimated at 150 CPU-hours or more. Not run (see skipped passes).",
+   "Revised after removing the main bottleneck (Regina solid-torus test now only when the Alexander polynomial is trivial): identification costs about 13-27 ms per k = 3 result and about 50 ms per k = 4 result. Twists at the specification values on KnotInfo PD diagrams only: about 39 CPU-hours (at most 10 crossings), 29 (11 crossings), 216 (12-13 crossings), i.e. about 3 days on 4 cores; on all five diagrams per knot about 2-3 weeks. The 12-13 crossing tier dominates because it holds 94% of the knots; within it k = 4 dominates."
   ],
   "Pins after each round (M / r_2 / nu / r_0 / tau / upsilon), all nodes": [
    "initialisers, unary rules, families, mirror, composite, coupling; crossing changes for at most 11 crossings: 3312 / 56 / 16396 / 221 / 21032 / 16404",

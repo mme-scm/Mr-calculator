@@ -1,0 +1,18 @@
+# chains for C(-8,3;3_1*)
+1. e276808 C1 nodes=C(8,3;3_1) par={} -> C(8,3;3_1).C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+2. e276809 C4 nodes=C(8,3;3_1) par={} -> C(8,3;3_1).C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 1
+3. e276810 C5 nodes=C(8,3;3_1) par={"g4":10,"src":"calculator g"} -> C(8,3;3_1).C: (tau=-10,nu=-19):r_0{>=0} (tau=-9,nu=-19):r_0{>=0} (tau=-9,nu=-18):r_0{>=0} (tau=-9,nu=-17):r_0{>=0}... [digest a35a541822fa] | in: 2
+4. e276811 C10 nodes=C(8,3;3_1) par={"a":true,"b":true,"ge3":true} -> C(8,3;3_1).C: (tau=-10,nu=-19):r_0{>=3} (tau=-9,nu=-19):r_0{>=3} (tau=-9,nu=-18):r_0{>=3} (tau=-9,nu=-17):r_0{>=3}... [digest be00dc9cd543] | in: 3
+5. e276812 C11 nodes=C(8,3;3_1) par={"g":10} -> C(8,3;3_1).C: (tau=9,nu=19):r_0{19} (tau=10,nu=19):r_0{19} | in: 4
+6. e276813 U4a nodes=C(8,3;3_1) par={"g4":10} -> C(8,3;3_1).U: upsilon in [-10,10] | in: -
+7. e276951 C1 nodes=C(-8,3;3_1*) par={} -> C(-8,3;3_1*).C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+8. e276952 C4 nodes=C(-8,3;3_1*) par={} -> C(-8,3;3_1*).C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 7
+9. e276953 C5 nodes=C(-8,3;3_1*) par={"g4":10,"src":"calculator g"} -> C(-8,3;3_1*).C: (tau=-10,nu=-19):r_0{>=0} (tau=-9,nu=-19):r_0{>=0} (tau=-9,nu=-18):r_0{>=0} (tau=-9,nu=-17):r_0{>=0}... [digest a35a541822fa] | in: 8
+10. e276954 C10 nodes=C(-8,3;3_1*) par={"a":true,"b":true,"ge3":true} -> C(-8,3;3_1*).C: (tau=-10,nu=-19):r_0{>=3} (tau=-9,nu=-19):r_0{>=3} (tau=-9,nu=-18):r_0{>=3} (tau=-9,nu=-17):r_0{>=3}... [digest be00dc9cd543] | in: 9
+11. e276955 U4a nodes=C(-8,3;3_1*) par={"g4":10} -> C(-8,3;3_1*).U: upsilon in [-10,10] | in: -
+12. e375127 C3 nodes=C(8,3;3_1),C(-8,3;3_1*) par={} -> C(-8,3;3_1*).C: (tau=-10,nu=-19):r_0{19} (tau=-9,nu=-19):r_0{19} | in: 5,10
+13. e449804 U1 nodes=C(8,3;3_1) par={"value":-6,"why":"L-space flag (staircase)"} -> C(8,3;3_1).U: upsilon in [-6,-6] | in: 6
+14. e493239 U4b nodes=C(8,3;3_1),C(-8,3;3_1*) par={"kind":"mirror"} -> C(-8,3;3_1*).U: upsilon in [6,6] | in: 11,13
+== nu = -19 : pinned at 12 ; chain 1,2,3,4,5,7,8,9,10,12
+== r_0 = 19 : pinned at 12 ; chain 1,2,3,4,5,7,8,9,10,12
+== upsilon = 6 : pinned at 14 ; chain 6,11,13,14

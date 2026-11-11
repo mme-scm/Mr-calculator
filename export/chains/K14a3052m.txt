@@ -1,0 +1,28 @@
+# chains for K14a3052*
+1. e26385 F1 nodes=12a_447 par={} -> 12a_447.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+2. e26386 F5 nodes=12a_447 par={"why":"slice"} -> 12a_447.F: M=0:r_2{>=0} | in: 1
+3. e26387 C1 nodes=12a_447 par={} -> 12a_447.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+4. e26388 C4 nodes=12a_447 par={} -> 12a_447.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 3
+5. e26389 C5 nodes=12a_447 par={"g4":0,"src":"KnotInfo g4"} -> 12a_447.C: (tau=0,nu=0):r_0{>=0} | in: 4
+6. e26390 C10 nodes=12a_447 par={"a":true,"b":true,"ge3":true} -> 12a_447.C: (tau=0,nu=0):r_0{>=3} | in: 5
+7. e26391 X nodes=12a_447 par={"slopes":"G","x1":true,"x2":true,"x3_g":3,"x4":true,"x5":true,"x5m":true} -> 12a_447.F: M=0:r_2{>=8} | in: 2,6
+8. e26392 U4a nodes=12a_447 par={"why":"slice"} -> 12a_447.U: upsilon in [0,0] | in: -
+9. e26721 F1 nodes=12a_464 par={} -> 12a_464.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+10. e26722 F5 nodes=12a_464 par={"why":"slice"} -> 12a_464.F: M=0:r_2{>=0} | in: 9
+11. e26723 C1 nodes=12a_464 par={} -> 12a_464.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+12. e26724 C4 nodes=12a_464 par={} -> 12a_464.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 11
+13. e26725 C5 nodes=12a_464 par={"g4":0,"src":"KnotInfo g4"} -> 12a_464.C: (tau=0,nu=0):r_0{>=0} | in: 12
+14. e26726 C10 nodes=12a_464 par={"a":true,"b":true,"ge3":true} -> 12a_464.C: (tau=0,nu=0):r_0{>=3} | in: 13
+15. e26727 X nodes=12a_464 par={"slopes":"G","x1":true,"x2":true,"x3_g":4,"x4":true} -> 12a_464.F: M=0:r_2{>=8} | in: 10,14
+16. e26728 U4a nodes=12a_464 par={"why":"slice"} -> 12a_464.U: upsilon in [0,0] | in: -
+17. e299531 F1 nodes=K14a3052 par={} -> K14a3052.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+18. e299535 F1 nodes=K14a3052* par={} -> K14a3052*.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+19. e430188 F9 nodes=12a_447,K14a3052 par={"a":2,"b":1,"h":-1} -> K14a3052.F: M=0:r_2{>=0} M=4:r_2{>=4} M=8:r_2{>=8} | in: 7,17
+20. e430189 U6 nodes=12a_447,K14a3052 par={"a":2,"b":1,"h":-1} -> K14a3052.U: upsilon in [-2,1] | in: 8
+21. e430399 F9 nodes=12a_464,K14a3052* par={"a":2,"b":1,"h":-1} -> K14a3052*.F: M=0:r_2{>=0} M=4:r_2{>=4} M=8:r_2{>=8} | in: 15,18
+22. e430400 U6 nodes=12a_464,K14a3052* par={"a":2,"b":1,"h":-1} -> K14a3052*.U: upsilon in [-2,1] | in: 16
+23. e451600 U3 nodes=K14a3052 par={} -> K14a3052.U: upsilon in [0,0] | in: 20
+24. e487435 F3 nodes=K14a3052,K14a3052* par={} -> K14a3052*.F: M=0:r_2{>=0} | in: 19,21
+25. e487436 U4b nodes=K14a3052,K14a3052* par={"kind":"mirror"} -> K14a3052*.U: upsilon in [0,0] | in: 22,23
+== M = 0 : pinned at 24 ; chain 1,2,3,4,5,6,7,9,10,11,12,13,14,15,17,18,19,21,24
+== upsilon = 0 : pinned at 25 ; chain 8,16,20,22,23,25

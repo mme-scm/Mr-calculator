@@ -1,7 +1,19 @@
 # chains for K14a15988
 1. e8807 U4a nodes=11a_173 par={"g4":1} -> 11a_173.U: upsilon in [-1,1] | in: -
 2. e8808 U2a nodes=11a_173 par={"tau":1} -> 11a_173.U: upsilon in [-1,-1] | in: 1
-3. e346136 U5 nodes=K14a15988*,11a_173 par={} -> K14a15988*.U: upsilon in [-2,-1] | in: 2
-4. e362421 U1 nodes=K14a15988* par={"value":-2,"why":"Floer-thin"} -> K14a15988*.U: upsilon in [-2,-2] | in: 3
-5. e381992 U4b nodes=K14a15988,K14a15988* par={"kind":"mirror"} -> K14a15988.U: upsilon in [2,2] | in: 4
-== upsilon = 2 : pinned at 5 ; chain 1,2,3,4,5
+3. e294305 C1 nodes=K14a15988 par={} -> K14a15988.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+4. e294306 C4 nodes=K14a15988 par={} -> K14a15988.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 3
+5. e294307 C10 nodes=K14a15988 par={"a":true,"b":true,"ge3":true} -> K14a15988.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 3 | in: 4
+6. e294309 C1 nodes=K14a15988* par={} -> K14a15988*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+7. e294310 C4 nodes=K14a15988* par={} -> K14a15988*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 6
+8. e294311 C5 nodes=K14a15988* par={"g4":5,"src":"calculator g"} -> K14a15988*.C: (tau=-5,nu=-9):r_0{>=0} (tau=-4,nu=-9):r_0{>=0} (tau=-4,nu=-8):r_0{>=0} (tau=-4,nu=-7):r_0{>=0} (tau... [digest 3e81c493b021] | in: 7
+9. e294312 C8 nodes=K14a15988* par={"tau":2,"why":"homogeneous diagram"} -> K14a15988*.C: (tau=2,nu=3):r_0{>=0} (tau=2,nu=4):r_0{>=0} (tau=2,nu=5):r_0{>=0} | in: 8
+10. e294313 C10 nodes=K14a15988* par={"a":true,"b":true,"ge3":true} -> K14a15988*.C: (tau=2,nu=3):r_0{>=4} (tau=2,nu=4):r_0{>=3} (tau=2,nu=5):r_0{>=3} | in: 9
+11. e294314 U4a nodes=K14a15988* par={"g4":5} -> K14a15988*.U: upsilon in [-5,5] | in: -
+12. e375698 C3 nodes=K14a15988,K14a15988* par={} -> K14a15988.C: (tau=-2,nu=-5):r_0{>=3} (tau=-2,nu=-4):r_0{>=3} (tau=-2,nu=-3):r_0{>=4} | in: 5,10
+13. e375699 U4b nodes=K14a15988,K14a15988* par={"kind":"mirror"} -> K14a15988.U: upsilon in [-5,5] | in: 11
+14. e404443 U5 nodes=K14a15988*,11a_173 par={} -> K14a15988*.U: upsilon in [-2,-1] | in: 2,11
+15. e449720 U1 nodes=K14a15988* par={"value":-2,"why":"Floer-thin"} -> K14a15988*.U: upsilon in [-2,-2] | in: 14
+16. e467631 U4b nodes=K14a15988,K14a15988* par={"kind":"mirror"} -> K14a15988.U: upsilon in [2,2] | in: 13,15
+== tau = -2 : pinned at 12 ; chain 3,4,5,6,7,8,9,10,12
+== upsilon = 2 : pinned at 16 ; chain 1,2,11,13,14,15,16

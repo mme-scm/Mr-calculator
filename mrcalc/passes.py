@@ -19,7 +19,8 @@ import os
 from . import identify as I, names, nodeset, pd as P
 from .config import DATA, k_max_for
 
-PASS_DIR = os.path.join(DATA, 'passes')
+_STAGE = os.environ.get('MRCALC_STAGE')
+PASS_DIR = os.path.join(_STAGE, 'passes') if _STAGE else os.path.join(DATA, 'passes')
 DIAG_DIR = os.path.join(DATA, 'diagrams')
 
 _idr = None
@@ -269,9 +270,11 @@ def done_shards(pname):
 
 def write_shard(pname, shard, recs, errors):
     os.makedirs(os.path.join(PASS_DIR, pname), exist_ok=True)
-    with gzip.open(shard_path(pname, shard) + '.gz', 'wt') as f:
+    final = shard_path(pname, shard) + '.gz'
+    with gzip.open(final + '.tmp', 'wt') as f:
         for r in recs:
             f.write(json.dumps(r, separators=(',', ':')) + '\n')
+    os.replace(final + '.tmp', final)          # atomic: a concurrent sync never sees a partial shard
     if errors:
         with open(os.path.join(PASS_DIR, pname, 'errors.jsonl'), 'a') as f:
             for e in errors:

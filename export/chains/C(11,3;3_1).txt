@@ -8,9 +8,19 @@
 7. e9 C8 nodes=3_1 par={"tau":1,"why":"alternating"} -> 3_1.C: (tau=1,nu=1):r_0{>=0} | in: 6
 8. e10 C10 nodes=3_1 par={"named":1} -> 3_1.C: (tau=1,nu=1):r_0{1} | in: 7
 9. e11 X nodes=3_1 par={"slopes":"T","x1":true,"x2":true,"x3_g":1,"x4":true} -> 3_1.F: M=-4:r_2{>=8} M=0:r_2{>=4} M=4:r_2{>=4} | in: 3,8
-10. e276754 F1 nodes=C(11,3;3_1) par={} -> C(11,3;3_1).F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
-11. e285144 F11 nodes=3_1 par={"p":2,"q":3} -> 3_1.F: M=4:r_2{4} | in: 9
-12. e357010 S3 nodes=C(11,3;3_1),3_1 par={"a":1,"b":1,"sA":[34,1],"sB":[34,9]} -> C(11,3;3_1).F: M=0:r_2{4} M=4:r_2{8} M=8:r_2{12} M=12:r_2{16} M=16:r_2{20} M=20:r_2{24} M=24:r_2{28} M=28:r_2{32} M... [digest 2f0b2304ebe8] | in: 10,11
-13. e357012 S3 nodes=C(11,3;3_1),3_1 par={"a":1,"b":1,"sA":[32,1],"sB":[32,9]} -> C(11,3;3_1).F: M=36:r_2{36} | in: 11,12
-== M = 36 : pinned at 13 ; chain 1,2,3,4,5,6,7,8,9,10,11,12,13
-== r_2 = 36 : pinned at 13 ; chain 1,2,3,4,5,6,7,8,9,10,11,12,13
+10. e276821 F1 nodes=C(11,3;3_1) par={} -> C(11,3;3_1).F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+11. e276822 C1 nodes=C(11,3;3_1) par={} -> C(11,3;3_1).C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+12. e276823 C4 nodes=C(11,3;3_1) par={} -> C(11,3;3_1).C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 11
+13. e276824 C5 nodes=C(11,3;3_1) par={"g4":13,"src":"calculator g"} -> C(11,3;3_1).C: (tau=-13,nu=-25):r_0{>=0} (tau=-12,nu=-25):r_0{>=0} (tau=-12,nu=-24):r_0{>=0} (tau=-12,nu=-23):r_0{>... [digest ace0ddc9d88d] | in: 12
+14. e276825 C10 nodes=C(11,3;3_1) par={"a":true,"b":true,"ge3":true} -> C(11,3;3_1).C: (tau=-13,nu=-25):r_0{>=3} (tau=-12,nu=-25):r_0{>=3} (tau=-12,nu=-24):r_0{>=3} (tau=-12,nu=-23):r_0{>... [digest 7d1a5101afc9] | in: 13
+15. e276826 C11 nodes=C(11,3;3_1) par={"g":13} -> C(11,3;3_1).C: (tau=12,nu=25):r_0{25} (tau=13,nu=25):r_0{25} | in: 14
+16. e276827 U4a nodes=C(11,3;3_1) par={"g4":13} -> C(11,3;3_1).U: upsilon in [-13,13] | in: -
+17. e342081 F11 nodes=3_1 par={"p":2,"q":3} -> 3_1.F: M=4:r_2{4} | in: 9
+18. e444119 S3 nodes=C(11,3;3_1),3_1 par={"a":1,"b":1,"sA":[34,1],"sB":[34,9]} -> C(11,3;3_1).F: M=0:r_2{4} M=4:r_2{8} M=8:r_2{12} M=12:r_2{16} M=16:r_2{20} M=20:r_2{24} M=24:r_2{28} M=28:r_2{32} M... [digest 2f0b2304ebe8] | in: 10,17
+19. e444120 S3 nodes=C(11,3;3_1),3_1 par={"a":1,"b":1,"sA":[32,1],"sB":[32,9]} -> C(11,3;3_1).F: M=36:r_2{36} | in: 17,18
+20. e449806 U1 nodes=C(11,3;3_1) par={"value":-8,"why":"L-space flag (staircase)"} -> C(11,3;3_1).U: upsilon in [-8,-8] | in: 16
+== M = 36 : pinned at 19 ; chain 1,2,3,4,5,6,7,8,9,10,17,18,19
+== r_2 = 36 : pinned at 19 ; chain 1,2,3,4,5,6,7,8,9,10,17,18,19
+== nu = 25 : pinned at 15 ; chain 11,12,13,14,15
+== r_0 = 25 : pinned at 15 ; chain 11,12,13,14,15
+== upsilon = -8 : pinned at 20 ; chain 16,20
