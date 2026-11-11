@@ -1,138 +1,383 @@
 # chains for 12n_381
 1. e0 0_1 nodes=0_1 par={} -> 0_1.F: M=0:r_2{0} | in: -
-2. e34 F1 nodes=5_1 par={} -> 5_1.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
-3. e35 F8 nodes=5_1 par={"c":2,"u":2} -> 5_1.F: M=-8:r_2{>=8} M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} M=8:r_2{>=8} | in: 2
-4. e36 F15 nodes=5_1 par={"fibered":true,"g":2,"tau":2} -> 5_1.F: M=-8:r_2{>=12} M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=4} M=8:r_2{>=8} | in: 3
-5. e37 C1 nodes=5_1 par={} -> 5_1.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-6. e38 C4 nodes=5_1 par={} -> 5_1.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 5
-7. e39 C5 nodes=5_1 par={"g4":2,"src":"KnotInfo g4"} -> 5_1.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 6
-8. e40 C8 nodes=5_1 par={"tau":2,"why":"alternating"} -> 5_1.C: (tau=2,nu=3):r_0{>=0} | in: 7
-9. e41 C10 nodes=5_1 par={"a":true,"ge3":true} -> 5_1.C: (tau=2,nu=3):r_0{>=3} | in: 8
-10. e42 C11 nodes=5_1 par={"g":2} -> 5_1.C: (tau=2,nu=3):r_0{3} | in: 9
-11. e43 X nodes=5_1 par={"slopes":"T","x1":true,"x2":true,"x3_g":2,"x4":true} -> 5_1.F: M=-8:r_2{>=16} M=-4:r_2{>=12} M=0:r_2{>=8} M=4:r_2{>=4} M=8:r_2{>=8} | in: 4,10
-12. e46 F1 nodes=5_1* par={} -> 5_1*.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
-13. e47 F8 nodes=5_1* par={"c":2,"u":2} -> 5_1*.F: M=-8:r_2{>=8} M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} M=8:r_2{>=8} | in: 12
-14. e48 F15 nodes=5_1* par={"fibered":true,"g":2,"tau":-2} -> 5_1*.F: M=-8:r_2{>=8} M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=8} M=8:r_2{>=12} | in: 13
-15. e49 C1 nodes=5_1* par={} -> 5_1*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-16. e50 C4 nodes=5_1* par={} -> 5_1*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 15
-17. e51 C5 nodes=5_1* par={"g4":2,"src":"KnotInfo g4"} -> 5_1*.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 16
-18. e52 C8 nodes=5_1* par={"tau":-2,"why":"alternating"} -> 5_1*.C: (tau=-2,nu=-3):r_0{>=0} | in: 17
-19. e53 C10 nodes=5_1* par={"a":true,"ge3":true} -> 5_1*.C: (tau=-2,nu=-3):r_0{>=3} | in: 18
-20. e54 X nodes=5_1* par={"slopes":"T","x1":true,"x2":true,"x3_g":2,"x4":true} -> 5_1*.F: M=-8:r_2{>=8} M=-4:r_2{>=4} M=0:r_2{>=8} M=4:r_2{>=12} M=8:r_2{>=16} | in: 14,19
-21. e239 F1 nodes=7_6 par={} -> 7_6.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
-22. e240 F8 nodes=7_6 par={"c":1,"u":1} -> 7_6.F: M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} | in: 21
-23. e241 F15 nodes=7_6 par={"fibered":true,"g":2,"tau":1} -> 7_6.F: M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} | in: 22
-24. e242 C1 nodes=7_6 par={} -> 7_6.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-25. e243 C4 nodes=7_6 par={} -> 7_6.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 24
-26. e244 C5 nodes=7_6 par={"g4":1,"src":"KnotInfo g4"} -> 7_6.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 25
-27. e245 C8 nodes=7_6 par={"tau":1,"why":"alternating"} -> 7_6.C: (tau=1,nu=1):r_0{>=0} | in: 26
-28. e246 C10 nodes=7_6 par={"a":true,"b":true,"ge3":true} -> 7_6.C: (tau=1,nu=1):r_0{>=4} | in: 27
-29. e247 X nodes=7_6 par={"slopes":"G","x1":true,"x2":true,"x3_g":2,"x4":true,"x5":true,"x5m":true} -> 7_6.F: M=-4:r_2{>=12} M=0:r_2{>=8} M=4:r_2{>=12} | in: 23,28
-30. e250 F1 nodes=7_6* par={} -> 7_6*.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
-31. e251 F8 nodes=7_6* par={"c":1,"u":1} -> 7_6*.F: M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} | in: 30
-32. e252 F15 nodes=7_6* par={"fibered":true,"g":2,"tau":-1} -> 7_6*.F: M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} | in: 31
-33. e253 C1 nodes=7_6* par={} -> 7_6*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-34. e254 C4 nodes=7_6* par={} -> 7_6*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 33
-35. e255 C5 nodes=7_6* par={"g4":1,"src":"KnotInfo g4"} -> 7_6*.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 34
-36. e256 C8 nodes=7_6* par={"tau":-1,"why":"alternating"} -> 7_6*.C: (tau=-1,nu=-1):r_0{>=0} | in: 35
-37. e257 C10 nodes=7_6* par={"a":true,"b":true,"ge3":true} -> 7_6*.C: (tau=-1,nu=-1):r_0{>=3} | in: 36
-38. e258 X nodes=7_6* par={"slopes":"G","x1":true,"x2":true,"x3_g":2,"x4":true,"x5":true,"x5m":true} -> 7_6*.F: M=-4:r_2{>=8} M=0:r_2{>=8} M=4:r_2{>=12} | in: 32,37
-39. e1507 F1 nodes=9_39 par={} -> 9_39.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
-40. e1508 F8 nodes=9_39 par={"c":1,"u":1} -> 9_39.F: M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} | in: 39
-41. e1509 F15 nodes=9_39 par={"fibered":false,"g":2,"tau":-1} -> 9_39.F: M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} | in: 40
-42. e1510 C1 nodes=9_39 par={} -> 9_39.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-43. e1511 C4 nodes=9_39 par={} -> 9_39.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 42
-44. e1512 C5 nodes=9_39 par={"g4":1,"src":"KnotInfo g4"} -> 9_39.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 43
-45. e1513 C8 nodes=9_39 par={"tau":-1,"why":"alternating"} -> 9_39.C: (tau=-1,nu=-1):r_0{>=0} | in: 44
-46. e1514 C10 nodes=9_39 par={"a":true,"b":true,"ge3":true} -> 9_39.C: (tau=-1,nu=-1):r_0{>=3} | in: 45
-47. e1515 X nodes=9_39 par={"slopes":"G","x1":true,"x2":true,"x3_g":2,"x4":true,"x5":true,"x5m":true} -> 9_39.F: M=-4:r_2{>=8} M=0:r_2{>=8} M=4:r_2{>=12} | in: 41,46
-48. e1518 F1 nodes=9_39* par={} -> 9_39*.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
-49. e1519 F8 nodes=9_39* par={"c":1,"u":1} -> 9_39*.F: M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} | in: 48
-50. e1520 F15 nodes=9_39* par={"fibered":false,"g":2,"tau":1} -> 9_39*.F: M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} | in: 49
-51. e1521 C1 nodes=9_39* par={} -> 9_39*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-52. e1522 C4 nodes=9_39* par={} -> 9_39*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 51
-53. e1523 C5 nodes=9_39* par={"g4":1,"src":"KnotInfo g4"} -> 9_39*.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 52
-54. e1524 C8 nodes=9_39* par={"tau":1,"why":"alternating"} -> 9_39*.C: (tau=1,nu=1):r_0{>=0} | in: 53
-55. e1525 C10 nodes=9_39* par={"a":true,"b":true,"ge3":true} -> 9_39*.C: (tau=1,nu=1):r_0{>=4} | in: 54
-56. e1526 X nodes=9_39* par={"slopes":"G","x1":true,"x2":true,"x3_g":2,"x4":true,"x5":true,"x5m":true} -> 9_39*.F: M=-4:r_2{>=12} M=0:r_2{>=8} M=4:r_2{>=12} | in: 50,55
-57. e3538 U4a nodes=10_89 par={"g4":1} -> 10_89.U: upsilon in [-1,1] | in: -
-58. e3539 U2a nodes=10_89 par={"tau":-1} -> 10_89.U: upsilon in [1,1] | in: 57
-59. e3914 F1 nodes=10_107 par={} -> 10_107.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
-60. e3915 F8 nodes=10_107 par={"c":null,"u":1} -> 10_107.F: M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} | in: 59
-61. e3916 F15 nodes=10_107 par={"fibered":true,"g":3,"tau":0} -> 10_107.F: M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} | in: 60
-62. e3917 C1 nodes=10_107 par={} -> 10_107.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-63. e3918 C4 nodes=10_107 par={} -> 10_107.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 62
-64. e3919 C5 nodes=10_107 par={"g4":1,"src":"KnotInfo g4"} -> 10_107.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 63
-65. e3920 C8 nodes=10_107 par={"tau":0,"why":"alternating"} -> 10_107.C: (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} | in: 64
-66. e3921 C10 nodes=10_107 par={"a":true,"b":true,"ge3":true} -> 10_107.C: (tau=0,nu=-1):r_0{>=3} (tau=0,nu=0):r_0{>=3} (tau=0,nu=1):r_0{>=4} | in: 65
-67. e3922 X nodes=10_107 par={"slopes":"G","x1":true,"x2":true,"x3_g":3,"x4":true} -> 10_107.F: M=-4:r_2{>=8} M=0:r_2{>=8} M=4:r_2{>=12} | in: 61,66
-68. e3925 F1 nodes=10_107* par={} -> 10_107*.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
-69. e3926 F8 nodes=10_107* par={"c":null,"u":1} -> 10_107*.F: M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} | in: 68
-70. e3927 F15 nodes=10_107* par={"fibered":true,"g":3,"tau":0} -> 10_107*.F: M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} | in: 69
-71. e3928 C1 nodes=10_107* par={} -> 10_107*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-72. e3929 C4 nodes=10_107* par={} -> 10_107*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 71
-73. e3930 C5 nodes=10_107* par={"g4":1,"src":"KnotInfo g4"} -> 10_107*.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 72
-74. e3931 C8 nodes=10_107* par={"tau":0,"why":"alternating"} -> 10_107*.C: (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} | in: 73
-75. e3932 C10 nodes=10_107* par={"a":true,"b":true,"ge3":true} -> 10_107*.C: (tau=0,nu=-1):r_0{>=3} (tau=0,nu=0):r_0{>=3} (tau=0,nu=1):r_0{>=4} | in: 74
-76. e3933 X nodes=10_107* par={"slopes":"G","x1":true,"x2":true,"x3_g":3,"x4":true} -> 10_107*.F: M=-4:r_2{>=8} M=0:r_2{>=8} M=4:r_2{>=12} | in: 70,75
-77. e11219 F1 nodes=11a_282 par={} -> 11a_282.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
-78. e11220 F8 nodes=11a_282 par={"c":null,"u":1} -> 11a_282.F: M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} | in: 77
-79. e11221 F15 nodes=11a_282 par={"fibered":true,"g":4,"tau":-1} -> 11a_282.F: M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} | in: 78
-80. e11222 C1 nodes=11a_282 par={} -> 11a_282.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-81. e11223 C4 nodes=11a_282 par={} -> 11a_282.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 80
-82. e11224 C5 nodes=11a_282 par={"g4":1,"src":"KnotInfo g4"} -> 11a_282.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 81
-83. e11225 C8 nodes=11a_282 par={"tau":-1,"why":"alternating"} -> 11a_282.C: (tau=-1,nu=-1):r_0{>=0} | in: 82
-84. e11226 C10 nodes=11a_282 par={"a":true,"b":true,"ge3":true} -> 11a_282.C: (tau=-1,nu=-1):r_0{>=3} | in: 83
-85. e11227 X nodes=11a_282 par={"slopes":"G","x1":true,"x2":true,"x3_g":4,"x4":true} -> 11a_282.F: M=-4:r_2{>=8} M=0:r_2{>=8} M=4:r_2{>=12} | in: 79,84
-86. e11230 F1 nodes=11a_282* par={} -> 11a_282*.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
-87. e11231 F8 nodes=11a_282* par={"c":null,"u":1} -> 11a_282*.F: M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} | in: 86
-88. e11232 F15 nodes=11a_282* par={"fibered":true,"g":4,"tau":1} -> 11a_282*.F: M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} | in: 87
-89. e11233 C1 nodes=11a_282* par={} -> 11a_282*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-90. e11234 C4 nodes=11a_282* par={} -> 11a_282*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 89
-91. e11235 C5 nodes=11a_282* par={"g4":1,"src":"KnotInfo g4"} -> 11a_282*.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 90
-92. e11236 C8 nodes=11a_282* par={"tau":1,"why":"alternating"} -> 11a_282*.C: (tau=1,nu=1):r_0{>=0} | in: 91
-93. e11237 C10 nodes=11a_282* par={"a":true,"b":true,"ge3":true} -> 11a_282*.C: (tau=1,nu=1):r_0{>=4} | in: 92
-94. e11238 X nodes=11a_282* par={"slopes":"G","x1":true,"x2":true,"x3_g":4,"x4":true} -> 11a_282*.F: M=-4:r_2{>=12} M=0:r_2{>=8} M=4:r_2{>=12} | in: 88,93
-95. e51454 F1 nodes=12n_381 par={} -> 12n_381.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
-96. e51455 F8 nodes=12n_381 par={"c":null,"u":1} -> 12n_381.F: M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} | in: 95
-97. e51456 F15 nodes=12n_381 par={"fibered":false,"g":2,"tau":1} -> 12n_381.F: M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} | in: 96
-98. e51457 C1 nodes=12n_381 par={} -> 12n_381.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-99. e51458 C4 nodes=12n_381 par={} -> 12n_381.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 98
-100. e51459 C5 nodes=12n_381 par={"g4":1,"src":"KnotInfo g4"} -> 12n_381.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 99
-101. e51460 C8 nodes=12n_381 par={"tau":1,"why":"quasipositive"} -> 12n_381.C: (tau=1,nu=1):r_0{>=0} | in: 100
-102. e51461 C10 nodes=12n_381 par={"a":true,"b":true,"ge3":true} -> 12n_381.C: (tau=1,nu=1):r_0{>=4} | in: 101
-103. e51462 X nodes=12n_381 par={"slopes":"G","x1":true,"x2":true,"x3_g":2,"x4":true,"x5":true,"x5m":true} -> 12n_381.F: M=-4:r_2{>=12} M=0:r_2{>=8} M=4:r_2{>=12} | in: 97,102
-104. e51463 U4a nodes=12n_381 par={"g4":1} -> 12n_381.U: upsilon in [-1,1] | in: -
-105. e51464 F1 nodes=12n_381* par={} -> 12n_381*.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
-106. e51465 F8 nodes=12n_381* par={"c":null,"u":1} -> 12n_381*.F: M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} | in: 105
-107. e51466 F15 nodes=12n_381* par={"fibered":false,"g":2,"tau":-1} -> 12n_381*.F: M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} | in: 106
-108. e51467 C1 nodes=12n_381* par={} -> 12n_381*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-109. e51468 C4 nodes=12n_381* par={} -> 12n_381*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 108
-110. e51469 C5 nodes=12n_381* par={"g4":1,"src":"KnotInfo g4"} -> 12n_381*.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 109
-111. e51470 C9 nodes=12n_381* par={"n":5,"w":-6} -> 12n_381*.C: (tau=-1,nu=-1):r_0{>=0} | in: 110
-112. e51471 C10 nodes=12n_381* par={"a":true,"b":true,"ge3":true} -> 12n_381*.C: (tau=-1,nu=-1):r_0{>=3} | in: 111
-113. e51472 X nodes=12n_381* par={"slopes":"G","x1":true,"x2":true,"x3_g":2,"x4":true,"x5":true,"x5m":true} -> 12n_381*.F: M=-4:r_2{>=8} M=0:r_2{>=8} M=4:r_2{>=12} | in: 107,112
-114. e51473 U4a nodes=12n_381* par={"g4":1} -> 12n_381*.U: upsilon in [-1,1] | in: -
-115. e276838 F11 nodes=5_1 par={"p":2,"q":5} -> 5_1.F: M=4:r_2{4} M=8:r_2{8} | in: 11
-116. e276839 F12 nodes=5_1 par={"n":2} -> 5_1.F: M=8:r_2{8} | in: 115
-117. e277042 F3 nodes=5_1,5_1* par={} -> 5_1*.F: M=-8:r_2{8} | in: 20,116
-118. e277052 F3 nodes=7_6,7_6* par={} -> 7_6*.F: M=-4:r_2{>=12} M=0:r_2{>=8} M=4:r_2{>=12} | in: 29,38
-119. e277152 F3 nodes=9_39,9_39* par={} -> 9_39.F: M=-4:r_2{>=12} M=0:r_2{>=8} M=4:r_2{>=12} | in: 47,56
-120. e277348 F3 nodes=10_107,10_107* par={} -> 10_107.F: M=-4:r_2{>=12} M=0:r_2{>=8} M=4:r_2{>=12} | in: 67,76
-121. e278030 F3 nodes=11a_282,11a_282* par={} -> 11a_282.F: M=-4:r_2{>=12} M=0:r_2{>=8} M=4:r_2{>=12} | in: 85,94
-122. e282264 F3 nodes=12n_381,12n_381* par={} -> 12n_381*.F: M=-4:r_2{>=12} M=0:r_2{>=8} M=4:r_2{>=12} | in: 103,113
-123. e314162 F7 nodes=10_107,0_1 par={} -> 10_107.F: M=-4:r_2{>=12} M=0:r_2{>=8} | in: 1,120
-124. e314198 F7 nodes=11a_282,0_1 par={} -> 11a_282.F: M=-4:r_2{>=12} M=0:r_2{>=8} | in: 1,121
-125. e314266 F7 nodes=9_39,0_1 par={} -> 9_39.F: M=-4:r_2{>=12} M=0:r_2{>=8} | in: 1,119
-126. e314313 F7 nodes=7_6*,10_107 par={} -> 7_6*.F: M=-4:r_2{>=12} M=0:r_2{>=8} | in: 118,123
-127. e315158 U5 nodes=10_89,12n_381* par={} -> 12n_381*.U: upsilon in [1,1] | in: 58,114
-128. e316165 F7 nodes=5_1*,11a_282 par={} -> 11a_282.F: M=-4:r_2{>=12} | in: 117,124
-129. e316166 F7 nodes=7_6*,11a_282 par={} -> 7_6*.F: M=-4:r_2{>=12} | in: 126,128
-130. e321613 F7 nodes=9_39,7_6* par={} -> 9_39.F: M=-4:r_2{>=12} | in: 125,129
-131. e321717 F7 nodes=12n_381*,9_39 par={} -> 12n_381*.F: M=-4:r_2{>=12} | in: 122,130
-132. e323384 F3 nodes=12n_381,12n_381* par={} -> 12n_381.F: M=4:r_2{>=12} | in: 103,131
-133. e329261 U4b nodes=12n_381,12n_381* par={"kind":"mirror"} -> 12n_381.U: upsilon in [-1,-1] | in: 104,127
-== M = 4 : pinned at 132 ; chain 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,105,106,107,108,109,110,111,112,113,115,116,117,118,119,120,121,122,123,124,125,126,128,129,130,131,132
-== nu = 1 : pinned at 101 ; chain 98,99,100,101
-== tau = 1 : pinned at 101 ; chain 98,99,100,101
-== upsilon = -1 : pinned at 133 ; chain 57,58,104,114,127,133
+2. e3 F1 nodes=3_1 par={} -> 3_1.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+3. e4 F8 nodes=3_1 par={"c":1,"u":1} -> 3_1.F: M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} | in: 2
+4. e5 F15 nodes=3_1 par={"fibered":true,"g":1,"tau":1} -> 3_1.F: M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=4} | in: 3
+5. e6 C1 nodes=3_1 par={} -> 3_1.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+6. e7 C4 nodes=3_1 par={} -> 3_1.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 5
+7. e8 C5 nodes=3_1 par={"g4":1,"src":"KnotInfo g4"} -> 3_1.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 6
+8. e9 C8 nodes=3_1 par={"tau":1,"why":"alternating"} -> 3_1.C: (tau=1,nu=1):r_0{>=0} | in: 7
+9. e10 C10 nodes=3_1 par={"named":1} -> 3_1.C: (tau=1,nu=1):r_0{1} | in: 8
+10. e11 X nodes=3_1 par={"slopes":"T","x1":true,"x2":true,"x3_g":1,"x4":true} -> 3_1.F: M=-4:r_2{>=8} M=0:r_2{>=4} M=4:r_2{>=4} | in: 4,9
+11. e34 F1 nodes=5_1 par={} -> 5_1.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+12. e35 F8 nodes=5_1 par={"c":2,"u":2} -> 5_1.F: M=-8:r_2{>=8} M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} M=8:r_2{>=8} | in: 11
+13. e36 F15 nodes=5_1 par={"fibered":true,"g":2,"tau":2} -> 5_1.F: M=-8:r_2{>=12} M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=4} M=8:r_2{>=8} | in: 12
+14. e37 C1 nodes=5_1 par={} -> 5_1.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+15. e38 C4 nodes=5_1 par={} -> 5_1.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 14
+16. e39 C5 nodes=5_1 par={"g4":2,"src":"KnotInfo g4"} -> 5_1.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 15
+17. e40 C8 nodes=5_1 par={"tau":2,"why":"alternating"} -> 5_1.C: (tau=2,nu=3):r_0{>=0} | in: 16
+18. e41 C10 nodes=5_1 par={"a":true,"ge3":true} -> 5_1.C: (tau=2,nu=3):r_0{>=3} | in: 17
+19. e42 C11 nodes=5_1 par={"g":2} -> 5_1.C: (tau=2,nu=3):r_0{3} | in: 18
+20. e43 X nodes=5_1 par={"slopes":"T","x1":true,"x2":true,"x3_g":2,"x4":true} -> 5_1.F: M=-8:r_2{>=16} M=-4:r_2{>=12} M=0:r_2{>=8} M=4:r_2{>=4} M=8:r_2{>=8} | in: 13,19
+21. e46 F1 nodes=5_1* par={} -> 5_1*.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+22. e47 F8 nodes=5_1* par={"c":2,"u":2} -> 5_1*.F: M=-8:r_2{>=8} M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} M=8:r_2{>=8} | in: 21
+23. e48 F15 nodes=5_1* par={"fibered":true,"g":2,"tau":-2} -> 5_1*.F: M=-8:r_2{>=8} M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=8} M=8:r_2{>=12} | in: 22
+24. e49 C1 nodes=5_1* par={} -> 5_1*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+25. e50 C4 nodes=5_1* par={} -> 5_1*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 24
+26. e51 C5 nodes=5_1* par={"g4":2,"src":"KnotInfo g4"} -> 5_1*.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 25
+27. e52 C8 nodes=5_1* par={"tau":-2,"why":"alternating"} -> 5_1*.C: (tau=-2,nu=-3):r_0{>=0} | in: 26
+28. e53 C10 nodes=5_1* par={"a":true,"ge3":true} -> 5_1*.C: (tau=-2,nu=-3):r_0{>=3} | in: 27
+29. e54 X nodes=5_1* par={"slopes":"T","x1":true,"x2":true,"x3_g":2,"x4":true} -> 5_1*.F: M=-8:r_2{>=8} M=-4:r_2{>=4} M=0:r_2{>=8} M=4:r_2{>=12} M=8:r_2{>=16} | in: 23,28
+30. e126 F1 nodes=7_1 par={} -> 7_1.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+31. e127 F8 nodes=7_1 par={"c":3,"u":3} -> 7_1.F: M=-12:r_2{>=12} M=-8:r_2{>=8} M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} M=8:r_2{>=8} M=12:r_2{>=12} | in: 30
+32. e128 F15 nodes=7_1 par={"fibered":true,"g":3,"tau":3} -> 7_1.F: M=-12:r_2{>=16} M=-8:r_2{>=12} M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} M=8:r_2{>=8} M=12:r_2{>=12} | in: 31
+33. e129 C1 nodes=7_1 par={} -> 7_1.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+34. e130 C4 nodes=7_1 par={} -> 7_1.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 33
+35. e131 C5 nodes=7_1 par={"g4":3,"src":"KnotInfo g4"} -> 7_1.C: (tau=-3,nu=-5):r_0{>=0} (tau=-2,nu=-5):r_0{>=0} (tau=-2,nu=-4):r_0{>=0} (tau=-2,nu=-3):r_0{>=0} (tau... [digest 525edc963b57] | in: 34
+36. e132 C8 nodes=7_1 par={"tau":3,"why":"alternating"} -> 7_1.C: (tau=3,nu=5):r_0{>=0} | in: 35
+37. e133 C10 nodes=7_1 par={"a":true,"b":true,"ge3":true} -> 7_1.C: (tau=3,nu=5):r_0{>=3} | in: 36
+38. e134 C11 nodes=7_1 par={"g":3} -> 7_1.C: (tau=3,nu=5):r_0{5} | in: 37
+39. e135 X nodes=7_1 par={"slopes":"T","x1":true,"x2":true,"x3_g":3,"x4":true} -> 7_1.F: M=-12:r_2{>=24} M=-8:r_2{>=20} M=-4:r_2{>=16} M=0:r_2{>=12} M=4:r_2{>=8} M=8:r_2{>=8} M=12:r_2{>=12} | in: 32,38
+40. e149 F1 nodes=7_2 par={} -> 7_2.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+41. e150 F8 nodes=7_2 par={"c":1,"u":1} -> 7_2.F: M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} | in: 40
+42. e151 F15 nodes=7_2 par={"fibered":false,"g":1,"tau":1} -> 7_2.F: M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} | in: 41
+43. e152 C1 nodes=7_2 par={} -> 7_2.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+44. e153 C4 nodes=7_2 par={} -> 7_2.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 43
+45. e154 C5 nodes=7_2 par={"g4":1,"src":"KnotInfo g4"} -> 7_2.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 44
+46. e155 C8 nodes=7_2 par={"tau":1,"why":"alternating"} -> 7_2.C: (tau=1,nu=1):r_0{>=0} | in: 45
+47. e156 C10 nodes=7_2 par={"a":true,"b":true,"ge3":true} -> 7_2.C: (tau=1,nu=1):r_0{>=4} | in: 46
+48. e157 X nodes=7_2 par={"slopes":"G","x1":true,"x2":true,"x3_g":1,"x4":true,"x5":true,"x5m":true} -> 7_2.F: M=-4:r_2{>=12} M=0:r_2{>=8} M=4:r_2{>=12} | in: 42,47
+49. e171 F1 nodes=7_3 par={} -> 7_3.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+50. e172 F8 nodes=7_3 par={"c":2,"u":2} -> 7_3.F: M=-8:r_2{>=8} M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} M=8:r_2{>=8} | in: 49
+51. e173 F15 nodes=7_3 par={"fibered":false,"g":2,"tau":2} -> 7_3.F: M=-8:r_2{>=12} M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} M=8:r_2{>=12} | in: 50
+52. e174 C1 nodes=7_3 par={} -> 7_3.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+53. e175 C4 nodes=7_3 par={} -> 7_3.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 52
+54. e176 C5 nodes=7_3 par={"g4":2,"src":"KnotInfo g4"} -> 7_3.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 53
+55. e177 C8 nodes=7_3 par={"tau":2,"why":"alternating"} -> 7_3.C: (tau=2,nu=3):r_0{>=0} | in: 54
+56. e178 C10 nodes=7_3 par={"a":true,"b":true,"ge3":true} -> 7_3.C: (tau=2,nu=3):r_0{>=4} | in: 55
+57. e179 C15 nodes=7_3 par={} -> 7_3.C: (tau=2,nu=3):r_0{4,>=6} | in: 56
+58. e180 X nodes=7_3 par={"slopes":"G","x1":true,"x2":true,"x3_g":2,"x4":true,"x5":true,"x5m":true} -> 7_3.F: M=-8:r_2{>=20} M=-4:r_2{>=16} M=0:r_2{>=12} M=4:r_2{>=8} M=8:r_2{>=12} | in: 51,57
+59. e216 F1 nodes=7_5 par={} -> 7_5.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+60. e217 F8 nodes=7_5 par={"c":2,"u":2} -> 7_5.F: M=-8:r_2{>=8} M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} M=8:r_2{>=8} | in: 59
+61. e218 F15 nodes=7_5 par={"fibered":false,"g":2,"tau":2} -> 7_5.F: M=-8:r_2{>=12} M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} M=8:r_2{>=12} | in: 60
+62. e219 C1 nodes=7_5 par={} -> 7_5.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+63. e220 C4 nodes=7_5 par={} -> 7_5.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 62
+64. e221 C5 nodes=7_5 par={"g4":2,"src":"KnotInfo g4"} -> 7_5.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 63
+65. e222 C8 nodes=7_5 par={"tau":2,"why":"alternating"} -> 7_5.C: (tau=2,nu=3):r_0{>=0} | in: 64
+66. e223 C10 nodes=7_5 par={"a":true,"b":true,"ge3":true} -> 7_5.C: (tau=2,nu=3):r_0{>=4} | in: 65
+67. e224 C15 nodes=7_5 par={} -> 7_5.C: (tau=2,nu=3):r_0{4,>=6} | in: 66
+68. e225 X nodes=7_5 par={"slopes":"G","x1":true,"x2":true,"x3_g":2,"x4":true,"x5":true,"x5m":true} -> 7_5.F: M=-8:r_2{>=20} M=-4:r_2{>=16} M=0:r_2{>=12} M=4:r_2{>=8} M=8:r_2{>=12} | in: 61,67
+69. e239 F1 nodes=7_6 par={} -> 7_6.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+70. e240 F8 nodes=7_6 par={"c":1,"u":1} -> 7_6.F: M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} | in: 69
+71. e241 F15 nodes=7_6 par={"fibered":true,"g":2,"tau":1} -> 7_6.F: M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} | in: 70
+72. e242 C1 nodes=7_6 par={} -> 7_6.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+73. e243 C4 nodes=7_6 par={} -> 7_6.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 72
+74. e244 C5 nodes=7_6 par={"g4":1,"src":"KnotInfo g4"} -> 7_6.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 73
+75. e245 C8 nodes=7_6 par={"tau":1,"why":"alternating"} -> 7_6.C: (tau=1,nu=1):r_0{>=0} | in: 74
+76. e246 C10 nodes=7_6 par={"a":true,"b":true,"ge3":true} -> 7_6.C: (tau=1,nu=1):r_0{>=4} | in: 75
+77. e247 X nodes=7_6 par={"slopes":"G","x1":true,"x2":true,"x3_g":2,"x4":true,"x5":true,"x5m":true} -> 7_6.F: M=-4:r_2{>=12} M=0:r_2{>=8} M=4:r_2{>=12} | in: 71,76
+78. e250 F1 nodes=7_6* par={} -> 7_6*.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+79. e251 F8 nodes=7_6* par={"c":1,"u":1} -> 7_6*.F: M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} | in: 78
+80. e252 F15 nodes=7_6* par={"fibered":true,"g":2,"tau":-1} -> 7_6*.F: M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} | in: 79
+81. e253 C1 nodes=7_6* par={} -> 7_6*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+82. e254 C4 nodes=7_6* par={} -> 7_6*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 81
+83. e255 C5 nodes=7_6* par={"g4":1,"src":"KnotInfo g4"} -> 7_6*.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 82
+84. e256 C8 nodes=7_6* par={"tau":-1,"why":"alternating"} -> 7_6*.C: (tau=-1,nu=-1):r_0{>=0} | in: 83
+85. e257 C10 nodes=7_6* par={"a":true,"b":true,"ge3":true} -> 7_6*.C: (tau=-1,nu=-1):r_0{>=3} | in: 84
+86. e258 X nodes=7_6* par={"slopes":"G","x1":true,"x2":true,"x3_g":2,"x4":true,"x5":true,"x5m":true} -> 7_6*.F: M=-4:r_2{>=8} M=0:r_2{>=8} M=4:r_2{>=12} | in: 80,85
+87. e914 F1 nodes=9_12 par={} -> 9_12.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+88. e915 F8 nodes=9_12 par={"c":1,"u":1} -> 9_12.F: M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} | in: 87
+89. e916 F15 nodes=9_12 par={"fibered":false,"g":2,"tau":1} -> 9_12.F: M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} | in: 88
+90. e917 C1 nodes=9_12 par={} -> 9_12.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+91. e918 C4 nodes=9_12 par={} -> 9_12.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 90
+92. e919 C5 nodes=9_12 par={"g4":1,"src":"KnotInfo g4"} -> 9_12.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 91
+93. e920 C8 nodes=9_12 par={"tau":1,"why":"alternating"} -> 9_12.C: (tau=1,nu=1):r_0{>=0} | in: 92
+94. e921 C10 nodes=9_12 par={"a":true,"b":true,"ge3":true} -> 9_12.C: (tau=1,nu=1):r_0{>=4} | in: 93
+95. e922 X nodes=9_12 par={"slopes":"G","x1":true,"x2":true,"x3_g":2,"x4":true,"x5":true,"x5m":true} -> 9_12.F: M=-4:r_2{>=12} M=0:r_2{>=8} M=4:r_2{>=12} | in: 89,94
+96. e1451 F1 nodes=9_36* par={} -> 9_36*.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+97. e1452 F8 nodes=9_36* par={"c":2,"u":2} -> 9_36*.F: M=-8:r_2{>=8} M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} M=8:r_2{>=8} | in: 96
+98. e1453 F15 nodes=9_36* par={"fibered":true,"g":3,"tau":2} -> 9_36*.F: M=-8:r_2{>=12} M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} M=8:r_2{>=12} | in: 97
+99. e1454 C1 nodes=9_36* par={} -> 9_36*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+100. e1455 C4 nodes=9_36* par={} -> 9_36*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 99
+101. e1456 C5 nodes=9_36* par={"g4":2,"src":"KnotInfo g4"} -> 9_36*.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 100
+102. e1457 C8 nodes=9_36* par={"tau":2,"why":"alternating"} -> 9_36*.C: (tau=2,nu=3):r_0{>=0} | in: 101
+103. e1458 C10 nodes=9_36* par={"a":true,"b":true,"ge3":true} -> 9_36*.C: (tau=2,nu=3):r_0{>=4} | in: 102
+104. e1459 X nodes=9_36* par={"slopes":"G","x1":true,"x2":true,"x3_g":3,"x4":true} -> 9_36*.F: M=-8:r_2{>=16} M=-4:r_2{>=16} M=0:r_2{>=12} M=4:r_2{>=8} M=8:r_2{>=12} | in: 98,103
+105. e1507 F1 nodes=9_39 par={} -> 9_39.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+106. e1508 F8 nodes=9_39 par={"c":1,"u":1} -> 9_39.F: M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} | in: 105
+107. e1509 F15 nodes=9_39 par={"fibered":false,"g":2,"tau":-1} -> 9_39.F: M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} | in: 106
+108. e1510 C1 nodes=9_39 par={} -> 9_39.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+109. e1511 C4 nodes=9_39 par={} -> 9_39.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 108
+110. e1512 C5 nodes=9_39 par={"g4":1,"src":"KnotInfo g4"} -> 9_39.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 109
+111. e1513 C8 nodes=9_39 par={"tau":-1,"why":"alternating"} -> 9_39.C: (tau=-1,nu=-1):r_0{>=0} | in: 110
+112. e1514 C10 nodes=9_39 par={"a":true,"b":true,"ge3":true} -> 9_39.C: (tau=-1,nu=-1):r_0{>=3} | in: 111
+113. e1515 X nodes=9_39 par={"slopes":"G","x1":true,"x2":true,"x3_g":2,"x4":true,"x5":true,"x5m":true} -> 9_39.F: M=-4:r_2{>=8} M=0:r_2{>=8} M=4:r_2{>=12} | in: 107,112
+114. e1518 F1 nodes=9_39* par={} -> 9_39*.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+115. e1519 F8 nodes=9_39* par={"c":1,"u":1} -> 9_39*.F: M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} | in: 114
+116. e1520 F15 nodes=9_39* par={"fibered":false,"g":2,"tau":1} -> 9_39*.F: M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} | in: 115
+117. e1521 C1 nodes=9_39* par={} -> 9_39*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+118. e1522 C4 nodes=9_39* par={} -> 9_39*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 117
+119. e1523 C5 nodes=9_39* par={"g4":1,"src":"KnotInfo g4"} -> 9_39*.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 118
+120. e1524 C8 nodes=9_39* par={"tau":1,"why":"alternating"} -> 9_39*.C: (tau=1,nu=1):r_0{>=0} | in: 119
+121. e1525 C10 nodes=9_39* par={"a":true,"b":true,"ge3":true} -> 9_39*.C: (tau=1,nu=1):r_0{>=4} | in: 120
+122. e1526 X nodes=9_39* par={"slopes":"G","x1":true,"x2":true,"x3_g":2,"x4":true,"x5":true,"x5m":true} -> 9_39*.F: M=-4:r_2{>=12} M=0:r_2{>=8} M=4:r_2{>=12} | in: 116,121
+123. e2689 F1 nodes=10_49 par={} -> 10_49.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+124. e2690 F8 nodes=10_49 par={"c":null,"u":3} -> 10_49.F: M=-12:r_2{>=12} M=-8:r_2{>=8} M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} M=8:r_2{>=8} M=12:r_2{>=12} | in: 123
+125. e2691 F15 nodes=10_49 par={"fibered":false,"g":3,"tau":3} -> 10_49.F: M=-12:r_2{>=16} M=-8:r_2{>=12} M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} M=8:r_2{>=12} M=12:r_2{>=16} | in: 124
+126. e2692 C1 nodes=10_49 par={} -> 10_49.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+127. e2693 C4 nodes=10_49 par={} -> 10_49.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 126
+128. e2694 C5 nodes=10_49 par={"g4":3,"src":"KnotInfo g4"} -> 10_49.C: (tau=-3,nu=-5):r_0{>=0} (tau=-2,nu=-5):r_0{>=0} (tau=-2,nu=-4):r_0{>=0} (tau=-2,nu=-3):r_0{>=0} (tau... [digest 525edc963b57] | in: 127
+129. e2695 C8 nodes=10_49 par={"tau":3,"why":"alternating"} -> 10_49.C: (tau=3,nu=5):r_0{>=0} | in: 128
+130. e2696 C10 nodes=10_49 par={"a":true,"b":true,"ge3":true} -> 10_49.C: (tau=3,nu=5):r_0{>=3} | in: 129
+131. e2697 C15 nodes=10_49 par={} -> 10_49.C: (tau=3,nu=5):r_0{4,6,>=8} | in: 130
+132. e2698 X nodes=10_49 par={"slopes":"G","x1":true,"x2":true,"x3_g":3,"x4":true,"x5":true,"x5m":true} -> 10_49.F: M=-12:r_2{>=24} M=-8:r_2{>=20} M=-4:r_2{>=16} M=0:r_2{>=12} M=4:r_2{>=8} M=8:r_2{>=12} M=12:r_2{>=16... [digest b108705bd440] | in: 125,131
+133. e3003 F1 nodes=10_63 par={} -> 10_63.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+134. e3004 F8 nodes=10_63 par={"c":null,"u":2} -> 10_63.F: M=-8:r_2{>=8} M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} M=8:r_2{>=8} | in: 133
+135. e3005 F15 nodes=10_63 par={"fibered":false,"g":2,"tau":2} -> 10_63.F: M=-8:r_2{>=12} M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} M=8:r_2{>=12} | in: 134
+136. e3006 C1 nodes=10_63 par={} -> 10_63.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+137. e3007 C4 nodes=10_63 par={} -> 10_63.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 136
+138. e3008 C5 nodes=10_63 par={"g4":2,"src":"KnotInfo g4"} -> 10_63.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 137
+139. e3009 C8 nodes=10_63 par={"tau":2,"why":"alternating"} -> 10_63.C: (tau=2,nu=3):r_0{>=0} | in: 138
+140. e3010 C10 nodes=10_63 par={"a":true,"b":true,"ge3":true} -> 10_63.C: (tau=2,nu=3):r_0{>=4} | in: 139
+141. e3011 C15 nodes=10_63 par={} -> 10_63.C: (tau=2,nu=3):r_0{4,>=6} | in: 140
+142. e3012 X nodes=10_63 par={"slopes":"G","x1":true,"x2":true,"x3_g":2,"x4":true,"x5":true,"x5m":true} -> 10_63.F: M=-8:r_2{>=20} M=-4:r_2{>=16} M=0:r_2{>=12} M=4:r_2{>=8} M=8:r_2{>=12} | in: 135,141
+143. e3070 F1 nodes=10_66 par={} -> 10_66.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+144. e3071 F8 nodes=10_66 par={"c":null,"u":3} -> 10_66.F: M=-12:r_2{>=12} M=-8:r_2{>=8} M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} M=8:r_2{>=8} M=12:r_2{>=12} | in: 143
+145. e3072 F15 nodes=10_66 par={"fibered":false,"g":3,"tau":3} -> 10_66.F: M=-12:r_2{>=16} M=-8:r_2{>=12} M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} M=8:r_2{>=12} M=12:r_2{>=16} | in: 144
+146. e3073 C1 nodes=10_66 par={} -> 10_66.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+147. e3074 C4 nodes=10_66 par={} -> 10_66.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 146
+148. e3075 C5 nodes=10_66 par={"g4":3,"src":"KnotInfo g4"} -> 10_66.C: (tau=-3,nu=-5):r_0{>=0} (tau=-2,nu=-5):r_0{>=0} (tau=-2,nu=-4):r_0{>=0} (tau=-2,nu=-3):r_0{>=0} (tau... [digest 525edc963b57] | in: 147
+149. e3076 C8 nodes=10_66 par={"tau":3,"why":"alternating"} -> 10_66.C: (tau=3,nu=5):r_0{>=0} | in: 148
+150. e3077 C10 nodes=10_66 par={"a":true,"b":true,"ge3":true} -> 10_66.C: (tau=3,nu=5):r_0{>=3} | in: 149
+151. e3078 C15 nodes=10_66 par={} -> 10_66.C: (tau=3,nu=5):r_0{4,6,>=8} | in: 150
+152. e3079 X nodes=10_66 par={"slopes":"G","x1":true,"x2":true,"x3_g":3,"x4":true,"x5":true,"x5m":true} -> 10_66.F: M=-12:r_2{>=24} M=-8:r_2{>=20} M=-4:r_2{>=16} M=0:r_2{>=12} M=4:r_2{>=8} M=8:r_2{>=12} M=12:r_2{>=16... [digest b108705bd440] | in: 145,151
+153. e3914 F1 nodes=10_107 par={} -> 10_107.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+154. e3915 F8 nodes=10_107 par={"c":null,"u":1} -> 10_107.F: M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} | in: 153
+155. e3916 F15 nodes=10_107 par={"fibered":true,"g":3,"tau":0} -> 10_107.F: M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} | in: 154
+156. e3917 C1 nodes=10_107 par={} -> 10_107.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+157. e3918 C4 nodes=10_107 par={} -> 10_107.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 156
+158. e3919 C5 nodes=10_107 par={"g4":1,"src":"KnotInfo g4"} -> 10_107.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 157
+159. e3920 C8 nodes=10_107 par={"tau":0,"why":"alternating"} -> 10_107.C: (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} | in: 158
+160. e3921 C10 nodes=10_107 par={"a":true,"b":true,"ge3":true} -> 10_107.C: (tau=0,nu=-1):r_0{>=3} (tau=0,nu=0):r_0{>=3} (tau=0,nu=1):r_0{>=4} | in: 159
+161. e3922 X nodes=10_107 par={"slopes":"G","x1":true,"x2":true,"x3_g":3,"x4":true} -> 10_107.F: M=-4:r_2{>=8} M=0:r_2{>=8} M=4:r_2{>=12} | in: 155,160
+162. e3925 F1 nodes=10_107* par={} -> 10_107*.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+163. e3926 F8 nodes=10_107* par={"c":null,"u":1} -> 10_107*.F: M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} | in: 162
+164. e3927 F15 nodes=10_107* par={"fibered":true,"g":3,"tau":0} -> 10_107*.F: M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} | in: 163
+165. e3928 C1 nodes=10_107* par={} -> 10_107*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+166. e3929 C4 nodes=10_107* par={} -> 10_107*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 165
+167. e3930 C5 nodes=10_107* par={"g4":1,"src":"KnotInfo g4"} -> 10_107*.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 166
+168. e3931 C8 nodes=10_107* par={"tau":0,"why":"alternating"} -> 10_107*.C: (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} | in: 167
+169. e3932 C10 nodes=10_107* par={"a":true,"b":true,"ge3":true} -> 10_107*.C: (tau=0,nu=-1):r_0{>=3} (tau=0,nu=0):r_0{>=3} (tau=0,nu=1):r_0{>=4} | in: 168
+170. e3933 X nodes=10_107* par={"slopes":"G","x1":true,"x2":true,"x3_g":3,"x4":true} -> 10_107*.F: M=-4:r_2{>=8} M=0:r_2{>=8} M=4:r_2{>=12} | in: 164,169
+171. e4162 F1 nodes=10_120 par={} -> 10_120.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+172. e4163 F8 nodes=10_120 par={"c":null,"u":3} -> 10_120.F: M=-12:r_2{>=12} M=-8:r_2{>=8} M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} M=8:r_2{>=8} M=12:r_2{>=12} | in: 171
+173. e4164 F15 nodes=10_120 par={"fibered":false,"g":2,"tau":2} -> 10_120.F: M=-12:r_2{>=16} M=-8:r_2{>=12} M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} M=8:r_2{>=12} M=12:r_2{>=16} | in: 172
+174. e4165 C1 nodes=10_120 par={} -> 10_120.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+175. e4166 C4 nodes=10_120 par={} -> 10_120.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 174
+176. e4167 C5 nodes=10_120 par={"g4":2,"src":"KnotInfo g4"} -> 10_120.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 175
+177. e4168 C8 nodes=10_120 par={"tau":2,"why":"alternating"} -> 10_120.C: (tau=2,nu=3):r_0{>=0} | in: 176
+178. e4169 C10 nodes=10_120 par={"a":true,"b":true,"ge3":true} -> 10_120.C: (tau=2,nu=3):r_0{>=4} | in: 177
+179. e4170 C15 nodes=10_120 par={} -> 10_120.C: (tau=2,nu=3):r_0{4,>=6} | in: 178
+180. e4171 X nodes=10_120 par={"slopes":"G","x1":true,"x2":true,"x3_g":2,"x4":true,"x5":true,"x5m":true} -> 10_120.F: M=-12:r_2{>=24} M=-8:r_2{>=20} M=-4:r_2{>=16} M=0:r_2{>=12} M=4:r_2{>=8} M=8:r_2{>=12} M=12:r_2{>=16... [digest b108705bd440] | in: 173,179
+181. e4237 F1 nodes=10_124 par={} -> 10_124.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+182. e4238 F8 nodes=10_124 par={"c":null,"u":4} -> 10_124.F: M=-16:r_2{>=16} M=-12:r_2{>=12} M=-8:r_2{>=8} M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} M=8:r_2{>=8} M... [digest c04c8d2f1268] | in: 181
+183. e4239 F15 nodes=10_124 par={"fibered":true,"g":4,"tau":4} -> 10_124.F: M=-16:r_2{>=20} M=-12:r_2{>=16} M=-8:r_2{>=12} M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} M=8:r_2{>=8} ... [digest 6ff835931f5a] | in: 182
+184. e4240 C1 nodes=10_124 par={} -> 10_124.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+185. e4241 C4 nodes=10_124 par={} -> 10_124.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 184
+186. e4242 C5 nodes=10_124 par={"g4":4,"src":"KnotInfo g4"} -> 10_124.C: (tau=-4,nu=-7):r_0{>=0} (tau=-3,nu=-7):r_0{>=0} (tau=-3,nu=-6):r_0{>=0} (tau=-3,nu=-5):r_0{>=0} (tau... [digest ac35ae83a15c] | in: 185
+187. e4243 C8 nodes=10_124 par={"tau":4,"why":"quasipositive"} -> 10_124.C: (tau=4,nu=7):r_0{>=0} | in: 186
+188. e4244 C10 nodes=10_124 par={"a":true,"b":true,"ge3":true} -> 10_124.C: (tau=4,nu=7):r_0{>=3} | in: 187
+189. e4245 C11 nodes=10_124 par={"g":4} -> 10_124.C: (tau=4,nu=7):r_0{7} | in: 188
+190. e4246 X nodes=10_124 par={"slopes":"T","x1":true,"x2":true,"x3_g":4,"x4":true} -> 10_124.F: M=-16:r_2{>=32} M=-12:r_2{>=28} M=-8:r_2{>=24} M=-4:r_2{>=20} M=0:r_2{>=16} M=4:r_2{>=12} M=8:r_2{>=... [digest 261afad83a40] | in: 183,189
+191. e4316 F1 nodes=10_128 par={} -> 10_128.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+192. e4317 F8 nodes=10_128 par={"c":null,"u":3} -> 10_128.F: M=-12:r_2{>=12} M=-8:r_2{>=8} M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} M=8:r_2{>=8} M=12:r_2{>=12} | in: 191
+193. e4318 F15 nodes=10_128 par={"fibered":false,"g":3,"tau":3} -> 10_128.F: M=-12:r_2{>=16} M=-8:r_2{>=12} M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} M=8:r_2{>=12} M=12:r_2{>=16} | in: 192
+194. e4319 C1 nodes=10_128 par={} -> 10_128.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+195. e4320 C4 nodes=10_128 par={} -> 10_128.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 194
+196. e4321 C5 nodes=10_128 par={"g4":3,"src":"KnotInfo g4"} -> 10_128.C: (tau=-3,nu=-5):r_0{>=0} (tau=-2,nu=-5):r_0{>=0} (tau=-2,nu=-4):r_0{>=0} (tau=-2,nu=-3):r_0{>=0} (tau... [digest 525edc963b57] | in: 195
+197. e4322 C8 nodes=10_128 par={"tau":3,"why":"quasipositive"} -> 10_128.C: (tau=3,nu=5):r_0{>=0} | in: 196
+198. e4323 C10 nodes=10_128 par={"a":true,"b":true,"ge3":true} -> 10_128.C: (tau=3,nu=5):r_0{>=3} | in: 197
+199. e4324 C15 nodes=10_128 par={} -> 10_128.C: (tau=3,nu=5):r_0{4,6,>=8} | in: 198
+200. e4325 X nodes=10_128 par={"slopes":"G","x1":true,"x2":true,"x3_g":3,"x4":true,"x5":true,"x5m":true} -> 10_128.F: M=-12:r_2{>=24} M=-8:r_2{>=20} M=-4:r_2{>=16} M=0:r_2{>=12} M=4:r_2{>=8} M=8:r_2{>=12} M=12:r_2{>=16... [digest b108705bd440] | in: 193,199
+201. e7574 F1 nodes=11a_117 par={} -> 11a_117.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+202. e7575 F8 nodes=11a_117 par={"c":null,"u":2} -> 11a_117.F: M=-8:r_2{>=8} M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} M=8:r_2{>=8} | in: 201
+203. e7576 F15 nodes=11a_117 par={"fibered":false,"g":3,"tau":2} -> 11a_117.F: M=-8:r_2{>=12} M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} M=8:r_2{>=12} | in: 202
+204. e7577 C1 nodes=11a_117 par={} -> 11a_117.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+205. e7578 C4 nodes=11a_117 par={} -> 11a_117.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 204
+206. e7579 C5 nodes=11a_117 par={"g4":2,"src":"KnotInfo g4"} -> 11a_117.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 205
+207. e7580 C8 nodes=11a_117 par={"tau":2,"why":"alternating"} -> 11a_117.C: (tau=2,nu=3):r_0{>=0} | in: 206
+208. e7581 C10 nodes=11a_117 par={"a":true,"b":true,"ge3":true} -> 11a_117.C: (tau=2,nu=3):r_0{>=4} | in: 207
+209. e7582 C15 nodes=11a_117 par={} -> 11a_117.C: (tau=2,nu=3):r_0{4,>=6} | in: 208
+210. e7583 X nodes=11a_117 par={"slopes":"G","x1":true,"x2":true,"x3_g":3,"x4":true,"x5":true,"x5m":true} -> 11a_117.F: M=-8:r_2{>=20} M=-4:r_2{>=16} M=0:r_2{>=12} M=4:r_2{>=8} M=8:r_2{>=12} | in: 203,209
+211. e9455 F1 nodes=11a_203 par={} -> 11a_203.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+212. e9456 F8 nodes=11a_203 par={"c":null,"u":3} -> 11a_203.F: M=-12:r_2{>=12} M=-8:r_2{>=8} M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} M=8:r_2{>=8} M=12:r_2{>=12} | in: 211
+213. e9457 F15 nodes=11a_203 par={"fibered":true,"g":4,"tau":3} -> 11a_203.F: M=-12:r_2{>=16} M=-8:r_2{>=12} M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} M=8:r_2{>=12} M=12:r_2{>=16} | in: 212
+214. e9458 C1 nodes=11a_203 par={} -> 11a_203.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+215. e9459 C4 nodes=11a_203 par={} -> 11a_203.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 214
+216. e9460 C5 nodes=11a_203 par={"g4":3,"src":"KnotInfo g4"} -> 11a_203.C: (tau=-3,nu=-5):r_0{>=0} (tau=-2,nu=-5):r_0{>=0} (tau=-2,nu=-4):r_0{>=0} (tau=-2,nu=-3):r_0{>=0} (tau... [digest 525edc963b57] | in: 215
+217. e9461 C8 nodes=11a_203 par={"tau":3,"why":"alternating"} -> 11a_203.C: (tau=3,nu=5):r_0{>=0} | in: 216
+218. e9462 C10 nodes=11a_203 par={"a":true,"b":true,"ge3":true} -> 11a_203.C: (tau=3,nu=5):r_0{>=3} | in: 217
+219. e9463 X nodes=11a_203 par={"slopes":"G","x1":true,"x2":true,"x3_g":4,"x4":true} -> 11a_203.F: M=-12:r_2{>=20} M=-8:r_2{>=16} M=-4:r_2{>=16} M=0:r_2{>=12} M=4:r_2{>=8} M=8:r_2{>=12} M=12:r_2{>=16... [digest fb93e0f577bd] | in: 213,218
+220. e9477 F1 nodes=11a_204 par={} -> 11a_204.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+221. e9478 F8 nodes=11a_204 par={"c":null,"u":2} -> 11a_204.F: M=-8:r_2{>=8} M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} M=8:r_2{>=8} | in: 220
+222. e9479 F15 nodes=11a_204 par={"fibered":false,"g":3,"tau":2} -> 11a_204.F: M=-8:r_2{>=12} M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} M=8:r_2{>=12} | in: 221
+223. e9480 C1 nodes=11a_204 par={} -> 11a_204.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+224. e9481 C4 nodes=11a_204 par={} -> 11a_204.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 223
+225. e9482 C5 nodes=11a_204 par={"g4":2,"src":"KnotInfo g4"} -> 11a_204.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 224
+226. e9483 C8 nodes=11a_204 par={"tau":2,"why":"alternating"} -> 11a_204.C: (tau=2,nu=3):r_0{>=0} | in: 225
+227. e9484 C10 nodes=11a_204 par={"a":true,"b":true,"ge3":true} -> 11a_204.C: (tau=2,nu=3):r_0{>=4} | in: 226
+228. e9485 C15 nodes=11a_204 par={} -> 11a_204.C: (tau=2,nu=3):r_0{4,>=6} | in: 227
+229. e9486 X nodes=11a_204 par={"slopes":"G","x1":true,"x2":true,"x3_g":3,"x4":true,"x5":true,"x5m":true} -> 11a_204.F: M=-8:r_2{>=20} M=-4:r_2{>=16} M=0:r_2{>=12} M=4:r_2{>=8} M=8:r_2{>=12} | in: 222,228
+230. e10284 F1 nodes=11a_240 par={} -> 11a_240.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+231. e10285 F8 nodes=11a_240 par={"c":null,"u":4} -> 11a_240.F: M=-16:r_2{>=16} M=-12:r_2{>=12} M=-8:r_2{>=8} M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} M=8:r_2{>=8} M... [digest c04c8d2f1268] | in: 230
+232. e10286 F15 nodes=11a_240 par={"fibered":false,"g":4,"tau":4} -> 11a_240.F: M=-16:r_2{>=20} M=-12:r_2{>=16} M=-8:r_2{>=12} M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} M=8:r_2{>=12}... [digest b13d76a5b5b0] | in: 231
+233. e10287 C1 nodes=11a_240 par={} -> 11a_240.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+234. e10288 C4 nodes=11a_240 par={} -> 11a_240.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 233
+235. e10289 C5 nodes=11a_240 par={"g4":4,"src":"KnotInfo g4"} -> 11a_240.C: (tau=-4,nu=-7):r_0{>=0} (tau=-3,nu=-7):r_0{>=0} (tau=-3,nu=-6):r_0{>=0} (tau=-3,nu=-5):r_0{>=0} (tau... [digest ac35ae83a15c] | in: 234
+236. e10290 C8 nodes=11a_240 par={"tau":4,"why":"alternating"} -> 11a_240.C: (tau=4,nu=7):r_0{>=0} | in: 235
+237. e10291 C10 nodes=11a_240 par={"a":true,"b":true,"ge3":true} -> 11a_240.C: (tau=4,nu=7):r_0{>=3} | in: 236
+238. e10292 C15 nodes=11a_240 par={} -> 11a_240.C: (tau=4,nu=7):r_0{4,6,8,>=10} | in: 237
+239. e10293 X nodes=11a_240 par={"slopes":"G","x1":true,"x2":true,"x3_g":4,"x4":true,"x5":true,"x5m":true} -> 11a_240.F: M=-16:r_2{>=32} M=-12:r_2{>=28} M=-8:r_2{>=24} M=-4:r_2{>=20} M=0:r_2{>=16} M=4:r_2{>=12} M=8:r_2{>=... [digest 5475076cdb67] | in: 232,238
+240. e10399 F1 nodes=11a_245 par={} -> 11a_245.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+241. e10400 F8 nodes=11a_245 par={"c":null,"u":3} -> 11a_245.F: M=-12:r_2{>=12} M=-8:r_2{>=8} M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} M=8:r_2{>=8} M=12:r_2{>=12} | in: 240
+242. e10401 F15 nodes=11a_245 par={"fibered":false,"g":3,"tau":3} -> 11a_245.F: M=-12:r_2{>=16} M=-8:r_2{>=12} M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} M=8:r_2{>=12} M=12:r_2{>=16} | in: 241
+243. e10402 C1 nodes=11a_245 par={} -> 11a_245.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+244. e10403 C4 nodes=11a_245 par={} -> 11a_245.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 243
+245. e10404 C5 nodes=11a_245 par={"g4":3,"src":"KnotInfo g4"} -> 11a_245.C: (tau=-3,nu=-5):r_0{>=0} (tau=-2,nu=-5):r_0{>=0} (tau=-2,nu=-4):r_0{>=0} (tau=-2,nu=-3):r_0{>=0} (tau... [digest 525edc963b57] | in: 244
+246. e10405 C8 nodes=11a_245 par={"tau":3,"why":"alternating"} -> 11a_245.C: (tau=3,nu=5):r_0{>=0} | in: 245
+247. e10406 C10 nodes=11a_245 par={"a":true,"b":true,"ge3":true} -> 11a_245.C: (tau=3,nu=5):r_0{>=3} | in: 246
+248. e10407 C15 nodes=11a_245 par={} -> 11a_245.C: (tau=3,nu=5):r_0{4,6,>=8} | in: 247
+249. e10408 X nodes=11a_245 par={"slopes":"G","x1":true,"x2":true,"x3_g":3,"x4":true,"x5":true,"x5m":true} -> 11a_245.F: M=-12:r_2{>=24} M=-8:r_2{>=20} M=-4:r_2{>=16} M=0:r_2{>=12} M=4:r_2{>=8} M=8:r_2{>=12} M=12:r_2{>=16... [digest b108705bd440] | in: 242,248
+250. e10709 F1 nodes=11a_259 par={} -> 11a_259.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+251. e10710 F8 nodes=11a_259 par={"c":null,"u":3} -> 11a_259.F: M=-12:r_2{>=12} M=-8:r_2{>=8} M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} M=8:r_2{>=8} M=12:r_2{>=12} | in: 250
+252. e10711 F15 nodes=11a_259 par={"fibered":true,"g":4,"tau":3} -> 11a_259.F: M=-12:r_2{>=16} M=-8:r_2{>=12} M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} M=8:r_2{>=12} M=12:r_2{>=16} | in: 251
+253. e10712 C1 nodes=11a_259 par={} -> 11a_259.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+254. e10713 C4 nodes=11a_259 par={} -> 11a_259.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 253
+255. e10714 C5 nodes=11a_259 par={"g4":3,"src":"KnotInfo g4"} -> 11a_259.C: (tau=-3,nu=-5):r_0{>=0} (tau=-2,nu=-5):r_0{>=0} (tau=-2,nu=-4):r_0{>=0} (tau=-2,nu=-3):r_0{>=0} (tau... [digest 525edc963b57] | in: 254
+256. e10715 C8 nodes=11a_259 par={"tau":3,"why":"alternating"} -> 11a_259.C: (tau=3,nu=5):r_0{>=0} | in: 255
+257. e10716 C10 nodes=11a_259 par={"a":true,"b":true,"ge3":true} -> 11a_259.C: (tau=3,nu=5):r_0{>=3} | in: 256
+258. e10717 X nodes=11a_259 par={"slopes":"G","x1":true,"x2":true,"x3_g":4,"x4":true} -> 11a_259.F: M=-12:r_2{>=20} M=-8:r_2{>=16} M=-4:r_2{>=16} M=0:r_2{>=12} M=4:r_2{>=8} M=8:r_2{>=12} M=12:r_2{>=16... [digest fb93e0f577bd] | in: 252,257
+259. e11063 F1 nodes=11a_275 par={} -> 11a_275.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+260. e11064 F8 nodes=11a_275 par={"c":null,"u":2} -> 11a_275.F: M=-8:r_2{>=8} M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} M=8:r_2{>=8} | in: 259
+261. e11065 F15 nodes=11a_275 par={"fibered":false,"g":3,"tau":2} -> 11a_275.F: M=-8:r_2{>=12} M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} M=8:r_2{>=12} | in: 260
+262. e11066 C1 nodes=11a_275 par={} -> 11a_275.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+263. e11067 C4 nodes=11a_275 par={} -> 11a_275.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 262
+264. e11068 C5 nodes=11a_275 par={"g4":2,"src":"KnotInfo g4"} -> 11a_275.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 263
+265. e11069 C8 nodes=11a_275 par={"tau":2,"why":"alternating"} -> 11a_275.C: (tau=2,nu=3):r_0{>=0} | in: 264
+266. e11070 C10 nodes=11a_275 par={"a":true,"b":true,"ge3":true} -> 11a_275.C: (tau=2,nu=3):r_0{>=4} | in: 265
+267. e11071 C15 nodes=11a_275 par={} -> 11a_275.C: (tau=2,nu=3):r_0{4,>=6} | in: 266
+268. e11072 X nodes=11a_275 par={"slopes":"G","x1":true,"x2":true,"x3_g":3,"x4":true,"x5":true,"x5m":true} -> 11a_275.F: M=-8:r_2{>=20} M=-4:r_2{>=16} M=0:r_2{>=12} M=4:r_2{>=8} M=8:r_2{>=12} | in: 261,267
+269. e11073 U4a nodes=11a_275 par={"g4":2} -> 11a_275.U: upsilon in [-2,2] | in: -
+270. e11074 U2a nodes=11a_275 par={"tau":2} -> 11a_275.U: upsilon in [-2,-2] | in: 269
+271. e11219 F1 nodes=11a_282 par={} -> 11a_282.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+272. e11220 F8 nodes=11a_282 par={"c":null,"u":1} -> 11a_282.F: M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} | in: 271
+273. e11221 F15 nodes=11a_282 par={"fibered":true,"g":4,"tau":-1} -> 11a_282.F: M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} | in: 272
+274. e11222 C1 nodes=11a_282 par={} -> 11a_282.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+275. e11223 C4 nodes=11a_282 par={} -> 11a_282.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 274
+276. e11224 C5 nodes=11a_282 par={"g4":1,"src":"KnotInfo g4"} -> 11a_282.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 275
+277. e11225 C8 nodes=11a_282 par={"tau":-1,"why":"alternating"} -> 11a_282.C: (tau=-1,nu=-1):r_0{>=0} | in: 276
+278. e11226 C10 nodes=11a_282 par={"a":true,"b":true,"ge3":true} -> 11a_282.C: (tau=-1,nu=-1):r_0{>=3} | in: 277
+279. e11227 X nodes=11a_282 par={"slopes":"G","x1":true,"x2":true,"x3_g":4,"x4":true} -> 11a_282.F: M=-4:r_2{>=8} M=0:r_2{>=8} M=4:r_2{>=12} | in: 273,278
+280. e11230 F1 nodes=11a_282* par={} -> 11a_282*.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+281. e11231 F8 nodes=11a_282* par={"c":null,"u":1} -> 11a_282*.F: M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} | in: 280
+282. e11232 F15 nodes=11a_282* par={"fibered":true,"g":4,"tau":1} -> 11a_282*.F: M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} | in: 281
+283. e11233 C1 nodes=11a_282* par={} -> 11a_282*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+284. e11234 C4 nodes=11a_282* par={} -> 11a_282*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 283
+285. e11235 C5 nodes=11a_282* par={"g4":1,"src":"KnotInfo g4"} -> 11a_282*.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 284
+286. e11236 C8 nodes=11a_282* par={"tau":1,"why":"alternating"} -> 11a_282*.C: (tau=1,nu=1):r_0{>=0} | in: 285
+287. e11237 C10 nodes=11a_282* par={"a":true,"b":true,"ge3":true} -> 11a_282*.C: (tau=1,nu=1):r_0{>=4} | in: 286
+288. e11238 X nodes=11a_282* par={"slopes":"G","x1":true,"x2":true,"x3_g":4,"x4":true} -> 11a_282*.F: M=-4:r_2{>=12} M=0:r_2{>=8} M=4:r_2{>=12} | in: 282,287
+289. e40458 F1 nodes=12a_1098 par={} -> 12a_1098.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+290. e40459 F8 nodes=12a_1098 par={"c":null,"u":2} -> 12a_1098.F: M=-8:r_2{>=8} M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} M=8:r_2{>=8} | in: 289
+291. e40460 F15 nodes=12a_1098 par={"fibered":false,"g":3,"tau":2} -> 12a_1098.F: M=-8:r_2{>=12} M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} M=8:r_2{>=12} | in: 290
+292. e40461 C1 nodes=12a_1098 par={} -> 12a_1098.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+293. e40462 C4 nodes=12a_1098 par={} -> 12a_1098.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 292
+294. e40463 C5 nodes=12a_1098 par={"g4":2,"src":"KnotInfo g4"} -> 12a_1098.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 293
+295. e40464 C8 nodes=12a_1098 par={"tau":2,"why":"alternating"} -> 12a_1098.C: (tau=2,nu=3):r_0{>=0} | in: 294
+296. e40465 C10 nodes=12a_1098 par={"a":true,"b":true,"ge3":true} -> 12a_1098.C: (tau=2,nu=3):r_0{>=4} | in: 295
+297. e40466 C15 nodes=12a_1098 par={} -> 12a_1098.C: (tau=2,nu=3):r_0{4,>=6} | in: 296
+298. e40467 X nodes=12a_1098 par={"slopes":"G","x1":true,"x2":true,"x3_g":3,"x4":true,"x5":true,"x5m":true} -> 12a_1098.F: M=-8:r_2{>=20} M=-4:r_2{>=16} M=0:r_2{>=12} M=4:r_2{>=8} M=8:r_2{>=12} | in: 291,297
+299. e45759 F1 nodes=12n_79 par={} -> 12n_79.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+300. e45760 F8 nodes=12n_79 par={"c":null,"u":1} -> 12n_79.F: M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} | in: 299
+301. e45761 F15 nodes=12n_79 par={"fibered":true,"g":2,"tau":1} -> 12n_79.F: M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} | in: 300
+302. e45762 C1 nodes=12n_79 par={} -> 12n_79.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+303. e45763 C4 nodes=12n_79 par={} -> 12n_79.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 302
+304. e45764 C5 nodes=12n_79 par={"g4":1,"src":"KnotInfo g4"} -> 12n_79.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 303
+305. e45765 C8 nodes=12n_79 par={"tau":1,"why":"quasipositive"} -> 12n_79.C: (tau=1,nu=1):r_0{>=0} | in: 304
+306. e45766 C10 nodes=12n_79 par={"a":true,"b":true,"ge3":true} -> 12n_79.C: (tau=1,nu=1):r_0{>=4} | in: 305
+307. e45767 X nodes=12n_79 par={"slopes":"G","x1":true,"x2":true,"x3_g":2,"x4":true,"x5":true,"x5m":true} -> 12n_79.F: M=-4:r_2{>=12} M=0:r_2{>=8} M=4:r_2{>=12} | in: 301,306
+308. e51476 F1 nodes=12n_381 par={} -> 12n_381.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+309. e51477 F8 nodes=12n_381 par={"c":null,"u":1} -> 12n_381.F: M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} | in: 308
+310. e51478 F15 nodes=12n_381 par={"fibered":false,"g":2,"tau":1} -> 12n_381.F: M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} | in: 309
+311. e51479 C1 nodes=12n_381 par={} -> 12n_381.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+312. e51480 C4 nodes=12n_381 par={} -> 12n_381.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 311
+313. e51481 C5 nodes=12n_381 par={"g4":1,"src":"KnotInfo g4"} -> 12n_381.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 312
+314. e51482 C8 nodes=12n_381 par={"tau":1,"why":"quasipositive"} -> 12n_381.C: (tau=1,nu=1):r_0{>=0} | in: 313
+315. e51483 C10 nodes=12n_381 par={"a":true,"b":true,"ge3":true} -> 12n_381.C: (tau=1,nu=1):r_0{>=4} | in: 314
+316. e51484 X nodes=12n_381 par={"slopes":"G","x1":true,"x2":true,"x3_g":2,"x4":true,"x5":true,"x5m":true} -> 12n_381.F: M=-4:r_2{>=12} M=0:r_2{>=8} M=4:r_2{>=12} | in: 310,315
+317. e51485 U4a nodes=12n_381 par={"g4":1} -> 12n_381.U: upsilon in [-1,1] | in: -
+318. e51486 F1 nodes=12n_381* par={} -> 12n_381*.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+319. e51487 F8 nodes=12n_381* par={"c":null,"u":1} -> 12n_381*.F: M=-4:r_2{>=4} M=0:r_2{>=0} M=4:r_2{>=4} | in: 318
+320. e51488 F15 nodes=12n_381* par={"fibered":false,"g":2,"tau":-1} -> 12n_381*.F: M=-4:r_2{>=8} M=0:r_2{>=0} M=4:r_2{>=8} | in: 319
+321. e51489 C1 nodes=12n_381* par={} -> 12n_381*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+322. e51490 C4 nodes=12n_381* par={} -> 12n_381*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 321
+323. e51491 C5 nodes=12n_381* par={"g4":1,"src":"KnotInfo g4"} -> 12n_381*.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 322
+324. e51492 C9 nodes=12n_381* par={"n":5,"w":-6} -> 12n_381*.C: (tau=-1,nu=-1):r_0{>=0} | in: 323
+325. e51493 C10 nodes=12n_381* par={"a":true,"b":true,"ge3":true} -> 12n_381*.C: (tau=-1,nu=-1):r_0{>=3} | in: 324
+326. e51494 X nodes=12n_381* par={"slopes":"G","x1":true,"x2":true,"x3_g":2,"x4":true,"x5":true,"x5m":true} -> 12n_381*.F: M=-4:r_2{>=8} M=0:r_2{>=8} M=4:r_2{>=12} | in: 320,325
+327. e265569 F1 nodes=3_1#5_1 par={} -> 3_1#5_1.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+328. e284018 F11 nodes=3_1 par={"p":2,"q":3} -> 3_1.F: M=4:r_2{4} | in: 10
+329. e284019 F11 nodes=5_1 par={"p":2,"q":5} -> 5_1.F: M=4:r_2{4} M=8:r_2{8} | in: 20
+330. e284020 F12 nodes=5_1 par={"n":2} -> 5_1.F: M=8:r_2{8} | in: 329
+331. e284021 F11 nodes=7_1 par={"p":2,"q":7} -> 7_1.F: M=8:r_2{8} M=12:r_2{12} | in: 39
+332. e284022 F12 nodes=7_1 par={"n":3} -> 7_1.F: M=12:r_2{12} | in: 331
+333. e284055 F11 nodes=10_124 par={"p":3,"q":5} -> 10_124.F: M=8:r_2{8} M=12:r_2{12} | in: 190
+334. e284117 F13 nodes=7_2 par={"m":5,"tau":1} -> 7_2.F: M=4:r_2{20} | in: 48
+335. e284151 F14 nodes=10_124 par={"p":3,"q":5} -> 10_124.F: M=12:r_2{12} | in: 333
+336. e284223 F3 nodes=5_1,5_1* par={} -> 5_1*.F: M=-8:r_2{8} | in: 29,330
+337. e284233 F3 nodes=7_6,7_6* par={} -> 7_6*.F: M=-4:r_2{>=12} M=0:r_2{>=8} M=4:r_2{>=12} | in: 77,86
+338. e284333 F3 nodes=9_39,9_39* par={} -> 9_39.F: M=-4:r_2{>=12} M=0:r_2{>=8} M=4:r_2{>=12} | in: 113,122
+339. e284529 F3 nodes=10_107,10_107* par={} -> 10_107.F: M=-4:r_2{>=12} M=0:r_2{>=8} M=4:r_2{>=12} | in: 161,170
+340. e285211 F3 nodes=11a_282,11a_282* par={} -> 11a_282.F: M=-4:r_2{>=12} M=0:r_2{>=8} M=4:r_2{>=12} | in: 279,288
+341. e289423 F3 nodes=12n_381,12n_381* par={} -> 12n_381*.F: M=-4:r_2{>=12} M=0:r_2{>=8} M=4:r_2{>=12} | in: 316,326
+342. e317223 F4 nodes=3_1#5_1,3_1,5_1 par={"mult":[1,1]} -> 3_1#5_1.F: M=12:r_2{>=12} | in: 327,328,330
+343. e321009 F7 nodes=10_107,0_1 par={} -> 10_107.F: M=-4:r_2{>=12} M=0:r_2{>=8} | in: 1,339
+344. e321045 F7 nodes=11a_282,0_1 par={} -> 11a_282.F: M=-4:r_2{>=12} M=0:r_2{>=8} | in: 1,340
+345. e321113 F7 nodes=9_39,0_1 par={} -> 9_39.F: M=-4:r_2{>=12} M=0:r_2{>=8} | in: 1,338
+346. e321160 F7 nodes=7_6*,10_107 par={} -> 7_6*.F: M=-4:r_2{>=12} M=0:r_2{>=8} | in: 337,343
+347. e321231 F7 nodes=12a_1098,10_120 par={} -> 10_120.F: M=-8:r_2{>=20} M=-4:r_2{>=16} M=0:r_2{>=12} M=4:r_2{>=8} M=8:r_2{>=12} M=12:r_2{>=16} | in: 180,298
+348. e321232 F7 nodes=5_1,10_120 par={} -> 10_120.F: M=8:r_2{>=12} M=12:r_2{>=16} | in: 330,347
+349. e321233 F7 nodes=7_5,10_120 par={} -> 7_5.F: M=4:r_2{>=8} M=8:r_2{>=12} | in: 68,348
+350. e321251 F7 nodes=10_128,10_124 par={} -> 10_128.F: M=8:r_2{>=12} M=12:r_2{>=16} | in: 200,335
+351. e321255 F7 nodes=10_49,10_124 par={} -> 10_49.F: M=8:r_2{>=12} M=12:r_2{>=16} | in: 132,335
+352. e321290 F7 nodes=7_3,10_128 par={} -> 7_3.F: M=4:r_2{>=8} M=8:r_2{>=12} | in: 58,350
+353. e321816 F7 nodes=3_1#5_1,10_49 par={} -> 10_49.F: M=12:r_2{>=16} | in: 342,351
+354. e321817 F7 nodes=7_3,10_49 par={} -> 7_3.F: M=8:r_2{>=12} | in: 352,353
+355. e321890 F7 nodes=12n_79,10_63 par={} -> 10_63.F: M=-4:r_2{>=16} M=0:r_2{>=12} M=4:r_2{>=8} M=8:r_2{>=12} | in: 142,307
+356. e321892 F7 nodes=7_2,10_63 par={} -> 10_63.F: M=4:r_2{>=8} M=8:r_2{>=12} | in: 334,355
+357. e321893 F7 nodes=7_3,10_63 par={} -> 10_63.F: M=8:r_2{>=12} | in: 354,356
+358. e321903 F7 nodes=10_63,10_66 par={} -> 10_66.F: M=8:r_2{>=12} M=12:r_2{>=16} | in: 152,357
+359. e321904 F7 nodes=7_1,10_66 par={} -> 10_66.F: M=12:r_2{>=16} | in: 332,358
+360. e321905 F7 nodes=7_5,10_66 par={} -> 7_5.F: M=8:r_2{>=12} | in: 349,359
+361. e322183 F7 nodes=5_1,11a_117 par={} -> 11a_117.F: M=8:r_2{>=12} | in: 210,330
+362. e322640 F7 nodes=11a_117,11a_203 par={} -> 11a_203.F: M=8:r_2{>=12} M=12:r_2{>=16} | in: 219,361
+363. e322641 F7 nodes=11a_204,11a_203 par={} -> 11a_204.F: M=4:r_2{>=8} M=8:r_2{>=12} | in: 229,362
+364. e322646 F7 nodes=9_12,11a_204 par={} -> 9_12.F: M=0:r_2{>=8} M=4:r_2{>=12} | in: 95,363
+365. e322835 F7 nodes=10_124,11a_240 par={} -> 11a_240.F: M=12:r_2{>=16} M=16:r_2{>=20} | in: 239,335
+366. e322837 F7 nodes=11a_245,11a_240 par={} -> 11a_245.F: M=8:r_2{>=12} M=12:r_2{>=16} | in: 249,365
+367. e322849 F7 nodes=11a_259,11a_245 par={} -> 11a_259.F: M=4:r_2{>=8} M=8:r_2{>=12} M=12:r_2{>=16} | in: 258,366
+368. e322905 F7 nodes=7_5,11a_259 par={} -> 11a_259.F: M=8:r_2{>=12} M=12:r_2{>=16} | in: 360,367
+369. e322906 F7 nodes=9_36*,11a_259 par={} -> 9_36*.F: M=4:r_2{>=8} M=8:r_2{>=12} | in: 104,368
+370. e323005 F7 nodes=9_12,11a_275 par={} -> 11a_275.F: M=0:r_2{>=12} M=4:r_2{>=8} M=8:r_2{>=12} | in: 268,364
+371. e323006 F7 nodes=9_36*,11a_275 par={} -> 11a_275.F: M=4:r_2{>=8} M=8:r_2{>=12} | in: 369,370
+372. e323036 F7 nodes=5_1*,11a_282 par={} -> 11a_282.F: M=-4:r_2{>=12} | in: 336,344
+373. e323037 F7 nodes=7_6*,11a_282 par={} -> 7_6*.F: M=-4:r_2{>=12} | in: 346,372
+374. e328746 F7 nodes=9_39,7_6* par={} -> 9_39.F: M=-4:r_2{>=12} | in: 345,373
+375. e328851 F7 nodes=12n_381*,9_39 par={} -> 12n_381*.F: M=-4:r_2{>=12} | in: 341,374
+376. e336801 F9 nodes=11a_275,12n_381 par={"a":1,"b":1,"h":1} -> 12n_381.F: M=0:r_2{>=8} M=4:r_2{>=12} | in: 316,371
+377. e336802 U6 nodes=11a_275,12n_381 par={"a":1,"b":1,"h":1} -> 12n_381.U: upsilon in [-1,-1] | in: 270,317
+378. e349392 F3 nodes=12n_381,12n_381* par={} -> 12n_381.F: M=4:r_2{>=12} | in: 375,376
+== M = 4 : pinned at 378 ; chain 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255,256,257,258,259,260,261,262,263,264,265,266,267,268,271,272,273,274,275,276,277,278,279,280,281,282,283,284,285,286,287,288,289,290,291,292,293,294,295,296,297,298,299,300,301,302,303,304,305,306,307,308,309,310,311,312,313,314,315,316,318,319,320,321,322,323,324,325,326,327,328,329,330,331,332,333,334,335,336,337,338,339,340,341,342,343,344,345,346,347,348,349,350,351,352,353,354,355,356,357,358,359,360,361,362,363,364,365,366,367,368,369,370,371,372,373,374,375,376,378
+== nu = 1 : pinned at 314 ; chain 311,312,313,314
+== tau = 1 : pinned at 314 ; chain 311,312,313,314
+== upsilon = -1 : pinned at 377 ; chain 269,270,317,377

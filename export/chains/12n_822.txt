@@ -1,7 +1,12 @@
 # chains for 12n_822
-1. e59766 C1 nodes=12n_822 par={} -> 12n_822.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-2. e59767 C4 nodes=12n_822 par={} -> 12n_822.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 1
-3. e59768 C5 nodes=12n_822 par={"g4":1,"src":"KnotInfo g4"} -> 12n_822.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 2
-4. e59769 C8 nodes=12n_822 par={"tau":1,"why":"quasipositive"} -> 12n_822.C: (tau=1,nu=1):r_0{>=0} | in: 3
-== nu = 1 : pinned at 4 ; chain 1,2,3,4
-== tau = 1 : pinned at 4 ; chain 1,2,3,4
+1. e3035 U4a nodes=10_64 par={"g4":1} -> 10_64.U: upsilon in [-1,1] | in: -
+2. e3036 U2a nodes=10_64 par={"tau":1} -> 10_64.U: upsilon in [-1,-1] | in: 1
+3. e59817 C1 nodes=12n_822 par={} -> 12n_822.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+4. e59818 C4 nodes=12n_822 par={} -> 12n_822.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 3
+5. e59819 C5 nodes=12n_822 par={"g4":1,"src":"KnotInfo g4"} -> 12n_822.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 4
+6. e59820 C8 nodes=12n_822 par={"tau":1,"why":"quasipositive"} -> 12n_822.C: (tau=1,nu=1):r_0{>=0} | in: 5
+7. e59823 U4a nodes=12n_822 par={"g4":1} -> 12n_822.U: upsilon in [-1,1] | in: -
+8. e331016 U6 nodes=10_64,12n_822 par={"a":2,"b":0,"h":1} -> 12n_822.U: upsilon in [-1,-1] | in: 2,7
+== nu = 1 : pinned at 6 ; chain 3,4,5,6
+== tau = 1 : pinned at 6 ; chain 3,4,5,6
+== upsilon = -1 : pinned at 8 ; chain 1,2,7,8

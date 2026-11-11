@@ -62,11 +62,22 @@ def main():
             if lo <= passes.shard_tier(s) <= hi and s not in done and passes.have_diagrams(s)]
     if 'only_nodes' in opt:
         todo = [t for t in todo if any(n in opt['only_nodes'] for n in shards[t[1]])]
+    if kv.get('nocomposite') == '1':
+        todo = [t for t in todo if t[1][0] != 's']
     print('%s: %d shards to do' % (pname, len(todo)), flush=True)
     n = 0
     nrec = 0
-    with mp.Pool(procs, maxtasksperchild=20) as pool:
-        for pn, shard, recs, new_census, errors in pool.imap_unordered(passes.shard_task, todo):
+    with mp.Pool(procs, maxtasksperchild=6) as pool:
+        it = pool.imap_unordered(passes.shard_task, todo)
+        while True:
+            try:
+                pn, shard, recs, new_census, errors = it.next(timeout=float(kv.get('shard_timeout', 5400)))
+            except StopIteration:
+                break
+            except mp.TimeoutError:
+                print('timeout waiting for a shard (a worker died?); stopping, rerun to resume', flush=True)
+                pool.terminate()
+                break
             passes.write_shard(pn, shard, recs, errors)
             if new_census:
                 with open(I.REF_CENSUS, 'a') as f:

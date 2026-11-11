@@ -1,7 +1,14 @@
 # chains for 13n_4702
-1. e257387 C1 nodes=13n_4702 par={} -> 13n_4702.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-2. e257388 C4 nodes=13n_4702 par={} -> 13n_4702.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 1
-3. e257389 C5 nodes=13n_4702 par={"g4":1,"src":"KnotInfo g4"} -> 13n_4702.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 2
-4. e257390 C9 nodes=13n_4702 par={"n":6,"w":7} -> 13n_4702.C: (tau=1,nu=1):r_0{>=0} | in: 3
-== nu = 1 : pinned at 4 ; chain 1,2,3,4
-== tau = 1 : pinned at 4 ; chain 1,2,3,4
+1. e479 U4a nodes=8_11 par={"g4":1} -> 8_11.U: upsilon in [-1,1] | in: -
+2. e480 U2a nodes=8_11 par={"tau":1} -> 8_11.U: upsilon in [-1,-1] | in: 1
+3. e16171 U4a nodes=11n_162 par={"g4":1} -> 11n_162.U: upsilon in [-1,1] | in: -
+4. e257611 C1 nodes=13n_4702 par={} -> 13n_4702.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+5. e257612 C4 nodes=13n_4702 par={} -> 13n_4702.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 4
+6. e257613 C5 nodes=13n_4702 par={"g4":1,"src":"KnotInfo g4"} -> 13n_4702.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 5
+7. e257614 C9 nodes=13n_4702 par={"n":6,"w":7} -> 13n_4702.C: (tau=1,nu=1):r_0{>=0} | in: 6
+8. e257617 U4a nodes=13n_4702 par={"g4":1} -> 13n_4702.U: upsilon in [-1,1] | in: -
+9. e324359 U5 nodes=11n_162,8_11 par={} -> 11n_162.U: upsilon in [-1,-1] | in: 2,3
+10. e341990 U6 nodes=11n_162,13n_4702 par={"a":1,"b":1,"h":-1} -> 13n_4702.U: upsilon in [-1,-1] | in: 8,9
+== nu = 1 : pinned at 7 ; chain 4,5,6,7
+== tau = 1 : pinned at 7 ; chain 4,5,6,7
+== upsilon = -1 : pinned at 10 ; chain 1,2,3,8,9,10

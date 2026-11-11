@@ -23,17 +23,24 @@ from mrcalc.config import DATA  # noqa: E402
 SIG_CACHE = os.path.join(DATA, 'filling_signatures.jsonl')
 
 
-def sig_task(args):
-    node, slopes = args
+_ext = {}
+
+
+def sig_task(keys):
+    """Verified isometry signatures of a list of (node, p, q) fillings."""
     out = []
-    try:
-        E = S.exterior(nodeset.diagram(node))
-    except Exception as e:
-        return [{'node': node, 'p': p, 'q': q, 'sig': None, 'error': repr(e)} for p, q in slopes]
-    for p, q in slopes:
-        r = S.hyperbolic_signature(E, (p, q), verified=True, tries=10)
-        out.append({'node': node, 'p': p, 'q': q, 'sig': r['sig'] if r else None,
-                    'verified': bool(r)})
+    for node, p, q in keys:
+        try:
+            if node not in _ext:
+                if len(_ext) > 40:
+                    _ext.clear()
+                _ext[node] = S.exterior(nodeset.diagram(node))
+            r = S.hyperbolic_signature(_ext[node], (p, q), verified=True, tries=10)
+        except BaseException as e:           # cysignals' SignalError is a BaseException
+            if isinstance(e, (KeyboardInterrupt, SystemExit)):
+                raise
+            r = None
+        out.append({'node': node, 'p': p, 'q': q, 'sig': r['sig'] if r else None, 'verified': bool(r)})
     return out
 
 
@@ -41,11 +48,26 @@ def main():
     recs = list(F.iter_fillings())
     print('fillings:', len(recs), flush=True)
     # ---- (a) hyperbolic candidates
+    # For an amphichiral node the fillings p/q and -p/q are the same manifold up to orientation; the
+    # resulting S1 equations E(K; p/q) = E(K; -p/q) are implied by M = 0 (F5) and nu = 0 (C5), so only the
+    # positive slopes of amphichiral table knots are kept as candidates (budget choice, nothing is lost).
+    from mrcalc import knotinfo
+    amph = {n for n, r in knotinfo.by_name().items() if r['amphichiral']}
     by_p = defaultdict(list)
     for r in recs:
-        if r['kind'] == 'geo':
+        if r['kind'] == 'geo' and not (r['node'] in amph and r['p'] < 0):
             by_p[abs(r['p'])].append(r)
-    cand = set()
+    kv = dict(x.split('=', 1) for x in sys.argv[1:] if '=' in x)
+    budget = float(kv.get('budget', 1500))     # default time budget for the signature step (seconds)
+    # priority: clusters containing a node whose r_2 or r_0 is pinned in the last export
+    prio = set()
+    kpath = os.path.join(os.path.dirname(DATA), 'export', 'knots.jsonl')
+    if os.path.exists(kpath):
+        for line in open(kpath):
+            k = json.loads(line)
+            if 'r_2' in k['pins'] or 'r_0' in k['pins']:
+                prio.add(k['node'])
+    clusters = []
     for p, lst in by_p.items():
         lst.sort(key=lambda r: r['vol'])
         i = 0
@@ -54,28 +76,59 @@ def main():
             while j + 1 < len(lst) and lst[j + 1]['vol'] - lst[j]['vol'] < 2e-7:
                 j += 1
             if j > i:
-                for r in lst[i:j + 1]:
-                    cand.add((r['node'], r['p'], r['q']))
+                keys = sorted({(r['node'], r['p'], r['q']) for r in lst[i:j + 1]})
+                if len(keys) > 1:
+                    clusters.append((0 if any(k[0] in prio for k in keys) else 1, p, keys))
             i = j + 1
-    print('volume-coincidence candidates:', len(cand), flush=True)
+    clusters.sort(key=lambda x: (x[0], x[1], x[2]))
+    cand = set(k for _, _, keys in clusters for k in keys)
+    print('volume-coincidence candidates: %d fillings in %d clusters (%d clusters with a pinned r_2/r_0 node)' % (
+        len(cand), len(clusters), sum(1 for x in clusters if x[0] == 0)), flush=True)
     sigs = {}
     if os.path.exists(SIG_CACHE):
         with open(SIG_CACHE) as f:
             for line in f:
                 r = json.loads(line)
                 sigs[(r['node'], r['p'], r['q'])] = r
-    todo = defaultdict(list)
-    for key in cand:
-        if key not in sigs:
-            todo[key[0]].append((key[1], key[2]))
+    tasks, cur = [], []
+    queued = set()
+    for _, _, keys in clusters:
+        for k in keys:
+            if k not in sigs and k not in queued:
+                queued.add(k)
+                cur.append(k)
+        if len(cur) >= 24:
+            tasks.append(cur)
+            cur = []
+    if cur:
+        tasks.append(cur)
     t0 = time.time()
-    if todo:
-        with mp.Pool(4) as pool, open(SIG_CACHE, 'a') as f:
-            for out in pool.imap_unordered(sig_task, sorted(todo.items()), chunksize=4):
+    ndone = 0
+    if tasks:
+        with mp.Pool(4, maxtasksperchild=25) as pool, open(SIG_CACHE, 'a') as f:
+            it = pool.imap(sig_task, tasks)
+            while True:
+                try:
+                    out = it.next(timeout=900)
+                except StopIteration:
+                    break
+                except mp.TimeoutError:
+                    print('timeout waiting for a worker (a worker died?); continuing with the signatures '
+                          'computed so far (rerun to resume)', flush=True)
+                    pool.terminate()
+                    break
                 for r in out:
                     sigs[(r['node'], r['p'], r['q'])] = r
                     f.write(json.dumps(r, separators=(',', ':')) + '\n')
-    print('signatures computed for %d nodes in %.0fs' % (len(todo), time.time() - t0), flush=True)
+                f.flush()
+                ndone += len(out)
+                if time.time() - t0 > budget:
+                    print('budget reached after %d of %d candidate signatures (priority order); the rest is '
+                          'left for a later run' % (ndone, len(queued)), flush=True)
+                    pool.terminate()
+                    break
+    print('signatures: %d computed in %.0fs, %d candidates without signature' % (
+        ndone, time.time() - t0, sum(1 for k in cand if k not in sigs)), flush=True)
     groups = defaultdict(list)
     for key in cand:
         r = sigs.get(key)

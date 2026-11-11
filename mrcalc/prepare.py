@@ -147,8 +147,9 @@ class Problem:
         for r in _jsonl(os.path.join(DATA, 'cables.jsonl')):
             if r.get('ident') and r['ident'] != r['node']:
                 self.alias[r['node']] = r['ident']
+        for r in _jsonl(os.path.join(DATA, 'cables_hfk.jsonl')):
             if 'hfk' in r and 'tau' in r['hfk']:
-                self.hfk_nodes.setdefault(r['node'], dict(r['hfk'], node=r['node']))
+                self.hfk_nodes.setdefault(r['node'], dict(r['hfk'], node=r['node'], crossings=r.get('crossings')))
 
     def _calc_info(self, name, kind, tier=None):
         """Node info for a non-table node from calculator data (possibly of its mirror)."""

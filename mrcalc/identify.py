@@ -165,7 +165,12 @@ class Identifier:
         key = H.pd_key(pd)
         if key in self.cache:
             return self.cache[key]
-        res = self._identify(pd)
+        try:
+            res = self._identify(pd)
+        except BaseException as e:      # cysignals' SignalError is a BaseException
+            if isinstance(e, (KeyboardInterrupt, SystemExit)):
+                raise
+            res = {'name': None, 'kind': 'unknown', 'cert': {'type': 'none', 'why': 'error: %r' % (e,)}}
         if len(self.cache) > 200000:
             self.cache.clear()
         self.cache[key] = res

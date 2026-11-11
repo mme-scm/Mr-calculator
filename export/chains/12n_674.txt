@@ -1,7 +1,17 @@
 # chains for 12n_674
-1. e56967 C1 nodes=12n_674 par={} -> 12n_674.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-2. e56968 C4 nodes=12n_674 par={} -> 12n_674.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 1
-3. e56969 C5 nodes=12n_674 par={"g4":3,"src":"KnotInfo g4"} -> 12n_674.C: (tau=-3,nu=-5):r_0{>=0} (tau=-2,nu=-5):r_0{>=0} (tau=-2,nu=-4):r_0{>=0} (tau=-2,nu=-3):r_0{>=0} (tau... [digest 525edc963b57] | in: 2
-4. e56970 C8 nodes=12n_674 par={"tau":3,"why":"quasipositive"} -> 12n_674.C: (tau=3,nu=5):r_0{>=0} | in: 3
-== nu = 5 : pinned at 4 ; chain 1,2,3,4
-== tau = 3 : pinned at 4 ; chain 1,2,3,4
+1. e2638 U4a nodes=10_46 par={"g4":3} -> 10_46.U: upsilon in [-3,3] | in: -
+2. e2639 U2a nodes=10_46 par={"tau":3} -> 10_46.U: upsilon in [-3,-3] | in: 1
+3. e4733 U4a nodes=10_149 par={"g4":2} -> 10_149.U: upsilon in [-2,2] | in: -
+4. e7807 U4a nodes=11a_127 par={"g4":2} -> 11a_127.U: upsilon in [-2,2] | in: -
+5. e7808 U2a nodes=11a_127 par={"tau":2} -> 11a_127.U: upsilon in [-2,-2] | in: 4
+6. e57008 C1 nodes=12n_674 par={} -> 12n_674.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+7. e57009 C4 nodes=12n_674 par={} -> 12n_674.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 6
+8. e57010 C5 nodes=12n_674 par={"g4":3,"src":"KnotInfo g4"} -> 12n_674.C: (tau=-3,nu=-5):r_0{>=0} (tau=-2,nu=-5):r_0{>=0} (tau=-2,nu=-4):r_0{>=0} (tau=-2,nu=-3):r_0{>=0} (tau... [digest 525edc963b57] | in: 7
+9. e57011 C8 nodes=12n_674 par={"tau":3,"why":"quasipositive"} -> 12n_674.C: (tau=3,nu=5):r_0{>=0} | in: 8
+10. e57014 U4a nodes=12n_674 par={"g4":3} -> 12n_674.U: upsilon in [-3,3] | in: -
+11. e321498 U5 nodes=10_149,11a_127 par={} -> 10_149.U: upsilon in [-2,-2] | in: 3,5
+12. e326081 U5 nodes=12n_674,10_149 par={} -> 12n_674.U: upsilon in [-3,-2] | in: 10,11
+13. e330792 U6 nodes=10_46,12n_674 par={"a":2,"b":0,"h":1} -> 12n_674.U: upsilon in [-3,-3] | in: 2,12
+== nu = 5 : pinned at 9 ; chain 6,7,8,9
+== tau = 3 : pinned at 9 ; chain 6,7,8,9
+== upsilon = -3 : pinned at 13 ; chain 1,2,3,4,5,10,11,12,13

@@ -1,10 +1,20 @@
 {
  "state": {
-  "milestone 1": "done (conventions, identification service, tests, cost estimate)",
-  "milestone 2 (tier <= 11)": "crossing changes done on KnotInfo PD, braid closure and 3 re-diagrams of every prime knot with at most 11 crossings and of composites with crossing sum <= 9; composite shards s10, s11 pending (queued)",
-  "remaining-time estimate": "tier <= 11 fillings ~25 min, coincidences ~10 min, k=2 twists ~35 min, mutations ~5 min; tiers 12-13 ~3 h; cables, upsilon, ablation ~1 h"
+  "milestone 1": "done",
+  "tier <= 11, milestones 2-6": "done at the shrunk scope: crossing changes (PD, braid closure, 3 re-diagrams), twists k = 2 on KnotInfo PD diagrams, fillings (160 slopes, 1.5 s recognition limit), coincidences (signature step budgeted), mutations (PD and braid closure), coupling, validation, ablation",
+  "tiers 12-13": "in progress: crossing changes on KnotInfo PD diagrams; then mutations, fillings (reduced slope set), coincidences, cables, upsilon",
+  "remaining-time estimate": "about 3 hours of computation for tiers 12-13, cables, upsilon, final ablation and export"
  },
  "scope": {},
  "failed_or_skipped": [],
- "sections": {}
+ "sections": {
+  "Cost estimate at the specification values (after milestone 1)": [
+   "Measured on this machine (4 cores): identification of a crossing-change result 27 ms on KnotInfo diagrams and about 120 ms on re-diagrams (14-18 crossings, kinks, more non-hyperbolic results); identification of a twist result about 120 ms for k <= 4 on a 10-crossing diagram and more for k = 5, 6 (20 to 30 extra crossings); a filling costs about 0.3 ms when SnapPy finds a geometric solution, and the recognition time limit for each of the 2 to 6 slopes per knot where it does not.",
+   "Dual-graph paths with |a-b| <= 2 on a 10-crossing diagram: about 60 (k=2), 140 (k=3), 360 (k=4), 550 (k=5), 960 (k=6), each twisted in both senses.",
+   "Crossing changes at the specification values: about 2 CPU-hours for nodes of at most 11 crossings, about 29 CPU-hours for 12-13 crossings (5 diagrams per knot).",
+   "Twists at the specification values (k_max 6/5/4, five diagrams per knot): about 210 CPU-hours for at most 10 crossings, 250 for 11 crossings, 2400 for 12-13 crossings: about a month on this machine. Shrunk (values below).",
+   "Fillings at the specification values (160 slopes, 60 s recognition limit): up to 650 CPU-hours; with a 1.5 s limit about 18 CPU-hours for all table knots.",
+   "Cables: 2268 cable diagrams of 13 to 110 crossings; crossing changes on all of them are estimated at 150 CPU-hours or more. Not run (see skipped passes)."
+  ]
+ }
 }

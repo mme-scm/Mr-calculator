@@ -1,7 +1,18 @@
 # chains for 13n_4106
-1. e246128 C1 nodes=13n_4106 par={} -> 13n_4106.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-2. e246129 C4 nodes=13n_4106 par={} -> 13n_4106.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 1
-3. e246130 C5 nodes=13n_4106 par={"g4":1,"src":"KnotInfo g4"} -> 13n_4106.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 2
-4. e246131 C9 nodes=13n_4106 par={"n":4,"w":-5} -> 13n_4106.C: (tau=-1,nu=-1):r_0{>=0} | in: 3
-== nu = -1 : pinned at 4 ; chain 1,2,3,4
-== tau = -1 : pinned at 4 ; chain 1,2,3,4
+1. e2 U4a nodes=0_1 par={"why":"unknot"} -> 0_1.U: upsilon in [0,0] | in: -
+2. e5462 U4a nodes=11a_19 par={"g4":1} -> 11a_19.U: upsilon in [-1,1] | in: -
+3. e5463 U2a nodes=11a_19 par={"tau":1} -> 11a_19.U: upsilon in [-1,-1] | in: 2
+4. e15961 U4a nodes=11n_151 par={"g4":1} -> 11n_151.U: upsilon in [-1,1] | in: -
+5. e246318 C1 nodes=13n_4106 par={} -> 13n_4106.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+6. e246319 C4 nodes=13n_4106 par={} -> 13n_4106.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 5
+7. e246320 C5 nodes=13n_4106 par={"g4":1,"src":"KnotInfo g4"} -> 13n_4106.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 6
+8. e246321 C9 nodes=13n_4106 par={"n":4,"w":-5} -> 13n_4106.C: (tau=-1,nu=-1):r_0{>=0} | in: 7
+9. e246324 U4a nodes=13n_4106 par={"g4":1} -> 13n_4106.U: upsilon in [-1,1] | in: -
+10. e246333 U4a nodes=13n_4106* par={"g4":1} -> 13n_4106*.U: upsilon in [-1,1] | in: -
+11. e324267 U5 nodes=11n_151,0_1 par={} -> 11n_151.U: upsilon in [-1,0] | in: 1,4
+12. e324269 U5 nodes=11n_151,11a_19 par={} -> 11n_151.U: upsilon in [-1,-1] | in: 3,11
+13. e341672 U6 nodes=11n_151,13n_4106* par={"a":1,"b":1,"h":-1} -> 13n_4106*.U: upsilon in [-1,-1] | in: 10,12
+14. e363990 U4b nodes=13n_4106,13n_4106* par={"kind":"mirror"} -> 13n_4106.U: upsilon in [1,1] | in: 9,13
+== nu = -1 : pinned at 8 ; chain 5,6,7,8
+== tau = -1 : pinned at 8 ; chain 5,6,7,8
+== upsilon = 1 : pinned at 14 ; chain 1,2,3,4,9,10,11,12,13,14

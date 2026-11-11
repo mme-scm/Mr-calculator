@@ -1,7 +1,14 @@
 # chains for 12n_441
-1. e52572 C1 nodes=12n_441 par={} -> 12n_441.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-2. e52573 C4 nodes=12n_441 par={} -> 12n_441.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 1
-3. e52574 C5 nodes=12n_441 par={"g4":2,"src":"KnotInfo g4"} -> 12n_441.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 2
-4. e52575 C8 nodes=12n_441 par={"tau":2,"why":"quasipositive"} -> 12n_441.C: (tau=2,nu=3):r_0{>=0} | in: 3
-== nu = 3 : pinned at 4 ; chain 1,2,3,4
-== tau = 2 : pinned at 4 ; chain 1,2,3,4
+1. e4733 U4a nodes=10_149 par={"g4":2} -> 10_149.U: upsilon in [-2,2] | in: -
+2. e7807 U4a nodes=11a_127 par={"g4":2} -> 11a_127.U: upsilon in [-2,2] | in: -
+3. e7808 U2a nodes=11a_127 par={"tau":2} -> 11a_127.U: upsilon in [-2,-2] | in: 2
+4. e52598 C1 nodes=12n_441 par={} -> 12n_441.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+5. e52599 C4 nodes=12n_441 par={} -> 12n_441.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 4
+6. e52600 C5 nodes=12n_441 par={"g4":2,"src":"KnotInfo g4"} -> 12n_441.C: (tau=-2,nu=-3):r_0{>=0} (tau=-1,nu=-3):r_0{>=0} (tau=-1,nu=-2):r_0{>=0} (tau=-1,nu=-1):r_0{>=0} (tau... [digest cd145c47efe8] | in: 5
+7. e52601 C8 nodes=12n_441 par={"tau":2,"why":"quasipositive"} -> 12n_441.C: (tau=2,nu=3):r_0{>=0} | in: 6
+8. e52604 U4a nodes=12n_441 par={"g4":2} -> 12n_441.U: upsilon in [-2,2] | in: -
+9. e321498 U5 nodes=10_149,11a_127 par={} -> 10_149.U: upsilon in [-2,-2] | in: 1,3
+10. e329991 U6 nodes=10_149,12n_441 par={"a":1,"b":1,"h":-1} -> 12n_441.U: upsilon in [-2,-2] | in: 8,9
+== nu = 3 : pinned at 7 ; chain 4,5,6,7
+== tau = 2 : pinned at 7 ; chain 4,5,6,7
+== upsilon = -2 : pinned at 10 ; chain 1,2,3,8,9,10

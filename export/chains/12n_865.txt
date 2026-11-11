@@ -1,7 +1,14 @@
 # chains for 12n_865
-1. e60583 C1 nodes=12n_865 par={} -> 12n_865.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-2. e60584 C4 nodes=12n_865 par={} -> 12n_865.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 1
-3. e60585 C5 nodes=12n_865 par={"g4":1,"src":"KnotInfo g4"} -> 12n_865.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 2
-4. e60586 C8 nodes=12n_865 par={"tau":-1,"why":"homogeneous diagram"} -> 12n_865.C: (tau=-1,nu=-1):r_0{>=0} | in: 3
-== nu = -1 : pinned at 4 ; chain 1,2,3,4
-== tau = -1 : pinned at 4 ; chain 1,2,3,4
+1. e1881 U4a nodes=10_8 par={"g4":2} -> 10_8.U: upsilon in [-2,2] | in: -
+2. e1882 U2a nodes=10_8 par={"tau":2} -> 10_8.U: upsilon in [-2,-2] | in: 1
+3. e60635 C1 nodes=12n_865 par={} -> 12n_865.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+4. e60636 C4 nodes=12n_865 par={} -> 12n_865.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 3
+5. e60637 C5 nodes=12n_865 par={"g4":1,"src":"KnotInfo g4"} -> 12n_865.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 4
+6. e60638 C8 nodes=12n_865 par={"tau":-1,"why":"homogeneous diagram"} -> 12n_865.C: (tau=-1,nu=-1):r_0{>=0} | in: 5
+7. e60641 U4a nodes=12n_865 par={"g4":1} -> 12n_865.U: upsilon in [-1,1] | in: -
+8. e60651 U4a nodes=12n_865* par={"g4":1} -> 12n_865*.U: upsilon in [-1,1] | in: -
+9. e331218 U6 nodes=10_8,12n_865* par={"a":1,"b":1,"h":1} -> 12n_865*.U: upsilon in [-1,-1] | in: 2,8
+10. e361622 U4b nodes=12n_865,12n_865* par={"kind":"mirror"} -> 12n_865.U: upsilon in [1,1] | in: 7,9
+== nu = -1 : pinned at 6 ; chain 3,4,5,6
+== tau = -1 : pinned at 6 ; chain 3,4,5,6
+== upsilon = 1 : pinned at 10 ; chain 1,2,7,8,9,10

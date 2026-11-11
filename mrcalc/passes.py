@@ -245,7 +245,9 @@ def shard_task(args):
                                           params['max_imbalance']))
             elif opt['move'] == 'mu':
                 recs.extend(mutation_records(d))
-        except Exception as e:
+        except BaseException as e:      # cysignals' SignalError is a BaseException
+            if isinstance(e, (KeyboardInterrupt, SystemExit)):
+                raise
             errors.append({'diagram': d['id'], 'error': repr(e)})
     idr = identifier()
     new_census = getattr(idr, 'new_census', [])

@@ -1,7 +1,17 @@
 # chains for 13n_3585
-1. e236310 C1 nodes=13n_3585 par={} -> 13n_3585.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-2. e236311 C4 nodes=13n_3585 par={} -> 13n_3585.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 1
-3. e236312 C5 nodes=13n_3585 par={"g4":3,"src":"KnotInfo g4"} -> 13n_3585.C: (tau=-3,nu=-5):r_0{>=0} (tau=-2,nu=-5):r_0{>=0} (tau=-2,nu=-4):r_0{>=0} (tau=-2,nu=-3):r_0{>=0} (tau... [digest 525edc963b57] | in: 2
-4. e236313 C9 nodes=13n_3585 par={"n":4,"w":9} -> 13n_3585.C: (tau=3,nu=5):r_0{>=0} | in: 3
-== nu = 5 : pinned at 4 ; chain 1,2,3,4
-== tau = 3 : pinned at 4 ; chain 1,2,3,4
+1. e44 U4a nodes=5_1 par={"g4":2} -> 5_1.U: upsilon in [-2,2] | in: -
+2. e45 U2a nodes=5_1 par={"tau":2} -> 5_1.U: upsilon in [-2,-2] | in: 1
+3. e9464 U4a nodes=11a_203 par={"g4":3} -> 11a_203.U: upsilon in [-3,3] | in: -
+4. e9465 U2a nodes=11a_203 par={"tau":3} -> 11a_203.U: upsilon in [-3,-3] | in: 3
+5. e15825 U4a nodes=11n_144 par={"g4":2} -> 11n_144.U: upsilon in [-2,2] | in: -
+6. e236471 C1 nodes=13n_3585 par={} -> 13n_3585.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+7. e236472 C4 nodes=13n_3585 par={} -> 13n_3585.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 6
+8. e236473 C5 nodes=13n_3585 par={"g4":3,"src":"KnotInfo g4"} -> 13n_3585.C: (tau=-3,nu=-5):r_0{>=0} (tau=-2,nu=-5):r_0{>=0} (tau=-2,nu=-4):r_0{>=0} (tau=-2,nu=-3):r_0{>=0} (tau... [digest 525edc963b57] | in: 7
+9. e236474 C9 nodes=13n_3585 par={"n":4,"w":9} -> 13n_3585.C: (tau=3,nu=5):r_0{>=0} | in: 8
+10. e236477 U4a nodes=13n_3585 par={"g4":3} -> 13n_3585.U: upsilon in [-3,3] | in: -
+11. e324222 U5 nodes=11n_144,5_1 par={} -> 11n_144.U: upsilon in [-2,-2] | in: 2,5
+12. e327992 U5 nodes=13n_3585,11n_144 par={} -> 13n_3585.U: upsilon in [-3,-2] | in: 10,11
+13. e335101 U6 nodes=11a_203,13n_3585 par={"a":2,"b":0,"h":1} -> 13n_3585.U: upsilon in [-3,-3] | in: 4,12
+== nu = 5 : pinned at 9 ; chain 6,7,8,9
+== tau = 3 : pinned at 9 ; chain 6,7,8,9
+== upsilon = -3 : pinned at 13 ; chain 1,2,3,4,5,10,11,12,13

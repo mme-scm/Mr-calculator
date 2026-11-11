@@ -17,33 +17,95 @@ from .config import DATA
 FILL_DIR = os.path.join(DATA, 'fillings')
 
 
-def node_fillings(node, pd, slopes, time_limit=2.0, regina_nonhyp=True):
+def _fatal(e):
+    return isinstance(e, (KeyboardInterrupt, SystemExit))
+
+
+def node_fillings(node, pd, slopes, time_limit=2.0, regina_nonhyp=True, torus=None):
+    """torus = (r, s) for the positive torus knot T(r,s): S2 (Moser) decides lens / reducible /
+    Seifert fibred; only the Seifert fibred fillings are sent to Regina (for their names)."""
     E = S.exterior(pd)
     out = []
     for p, q in slopes:
         rec = {'node': node, 'p': p, 'q': q}
-        N = E.copy()
-        N.dehn_fill((p, q))
-        geo = False
-        for t in range(4):
-            if N.solution_type() == S.GEOMETRIC:
-                geo = True
-                break
-            N.randomize()
-        if geo:
-            rec['kind'] = 'geo'
-            rec['vol'] = round(float(N.volume()), 9)
-        elif regina_nonhyp:
-            try:
+        try:
+            if torus is not None:
+                kind, nm = S.moser(torus[0], torus[1], p, q)
+                if kind == 'lens':
+                    rec.update(kind='lens', name=nm, how='S2')
+                    out.append(rec)
+                    continue
+                if kind == 'reducible':
+                    rec.update(kind='reducible', how='S2')
+                    out.append(rec)
+                    continue
                 r = S.regina_recognise(S.filled_string(E, (p, q)), time_limit=time_limit)
-            except Exception as e:
-                r = {'kind': 'unknown', 'name': None, 'how': 'error: %r' % (e,)}
-            rec.update({k: r[k] for k in ('kind', 'name', 'how', 'regina_name', 'timeout') if k in r})
-        else:
+                rec.update({k: r[k] for k in ('kind', 'name', 'how', 'regina_name', 'timeout') if k in r})
+                rec['moser_orders'] = list(nm)
+                out.append(rec)
+                continue
+            N = E.copy()
+            N.dehn_fill((p, q))
+            geo = False
+            for t in range(4):
+                if N.solution_type() == S.GEOMETRIC:
+                    geo = True
+                    break
+                N.randomize()
+            if geo:
+                rec['kind'] = 'geo'
+                rec['vol'] = round(float(N.volume()), 9)
+            elif regina_nonhyp:
+                r = S.regina_recognise(S.filled_string(E, (p, q)), time_limit=time_limit)
+                rec.update({k: r[k] for k in ('kind', 'name', 'how', 'regina_name', 'timeout') if k in r})
+            else:
+                rec['kind'] = 'unknown'
+                rec['how'] = 'skipped'
+        except BaseException as e:          # cysignals' SignalError is a BaseException
+            if _fatal(e):
+                raise
             rec['kind'] = 'unknown'
-            rec['how'] = 'skipped'
+            rec['how'] = 'error: %r' % (e,)
         out.append(rec)
     return out
+
+
+def node_task(args):
+    """Fillings of one node (run in a short-lived worker)."""
+    shard, n, opt = args
+    try:
+        pd = nodeset.diagram(n)
+        tor = opt.get('torus_like', {}).get(n)
+        if tor:
+            return shard, n, node_fillings(n, pd, opt['slopes_T'], opt.get('time_limit_torus', 0.5),
+                                           torus=tuple(tor)), None
+        return shard, n, node_fillings(n, pd, opt['slopes_G'], opt.get('time_limit', 2.0)), None
+    except BaseException as e:
+        if _fatal(e):
+            raise
+        return shard, n, [], repr(e)
+
+
+def worker_loop(task_q, res_q):
+    """Worker of the crash-tolerant scheduler in scripts/run_fillings.py."""
+    import os as _os
+    pid = _os.getpid()
+    while True:
+        t = task_q.get()
+        if t is None:
+            return
+        res_q.put(('start', pid, t[0], t[1]))
+        shard, node, rs, err = node_task(t)
+        res_q.put(('done', pid, shard, node, rs, err))
+
+
+def write_shard(shard, recs):
+    os.makedirs(FILL_DIR, exist_ok=True)
+    with gzip.open(os.path.join(FILL_DIR, '%s.jsonl.gz' % shard), 'wt') as f:
+        for r in recs:
+            f.write(json.dumps(r, separators=(',', ':')) + '\n')
+    with open(os.path.join(FILL_DIR, 'done.txt'), 'a') as f:
+        f.write(shard + '\n')
 
 
 def shard_task(args):

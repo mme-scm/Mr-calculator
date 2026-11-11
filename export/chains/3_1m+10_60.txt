@@ -31,33 +31,33 @@
 30. e2953 C8 nodes=10_60* par={"tau":0,"why":"alternating"} -> 10_60*.C: (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} | in: 29
 31. e2954 C10 nodes=10_60* par={"a":true,"b":true,"ge3":true} -> 10_60*.C: (tau=0,nu=-1):r_0{>=3} (tau=0,nu=0):r_0{>=3} (tau=0,nu=1):r_0{>=4} | in: 30
 32. e2955 X nodes=10_60* par={"slopes":"G","x1":true,"x2":true,"x3_g":3,"x4":true} -> 10_60*.F: M=-4:r_2{>=8} M=0:r_2{>=8} M=4:r_2{>=12} | in: 26,31
-33. e16659 F1 nodes=12a_3 par={} -> 12a_3.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
-34. e16660 F5 nodes=12a_3 par={"why":"slice"} -> 12a_3.F: M=0:r_2{>=0} | in: 33
-35. e16661 C1 nodes=12a_3 par={} -> 12a_3.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-36. e16662 C4 nodes=12a_3 par={} -> 12a_3.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 35
-37. e16663 C5 nodes=12a_3 par={"g4":0,"src":"KnotInfo g4"} -> 12a_3.C: (tau=0,nu=0):r_0{>=0} | in: 36
-38. e16664 C10 nodes=12a_3 par={"a":true,"b":true,"ge3":true} -> 12a_3.C: (tau=0,nu=0):r_0{>=3} | in: 37
-39. e16665 X nodes=12a_3 par={"slopes":"G","x1":true,"x2":true,"x3_g":3,"x4":true,"x5":true,"x5m":true} -> 12a_3.F: M=0:r_2{>=8} | in: 34,38
-40. e270547 C1 nodes=3_1#10_60* par={} -> 3_1#10_60*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-41. e270548 C4 nodes=3_1#10_60* par={} -> 3_1#10_60*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 40
-42. e270549 C5 nodes=3_1#10_60* par={"g4":4,"src":"calculator g"} -> 3_1#10_60*.C: (tau=-4,nu=-7):r_0{>=0} (tau=-3,nu=-7):r_0{>=0} (tau=-3,nu=-6):r_0{>=0} (tau=-3,nu=-5):r_0{>=0} (tau... [digest ac35ae83a15c] | in: 41
-43. e270550 C8 nodes=3_1#10_60* par={"tau":1,"why":"homogeneous diagram"} -> 3_1#10_60*.C: (tau=1,nu=1):r_0{>=0} (tau=1,nu=2):r_0{>=0} (tau=1,nu=3):r_0{>=0} | in: 42
-44. e270551 C10 nodes=3_1#10_60* par={"a":true,"b":true,"ge3":true} -> 3_1#10_60*.C: (tau=1,nu=1):r_0{>=4} (tau=1,nu=2):r_0{>=3} (tau=1,nu=3):r_0{>=4} | in: 43
-45. e272758 F1 nodes=3_1*#10_60 par={} -> 3_1*#10_60.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
-46. e272759 C1 nodes=3_1*#10_60 par={} -> 3_1*#10_60.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-47. e272760 C4 nodes=3_1*#10_60 par={} -> 3_1*#10_60.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 46
-48. e272761 C5 nodes=3_1*#10_60 par={"g4":4,"src":"calculator g"} -> 3_1*#10_60.C: (tau=-4,nu=-7):r_0{>=0} (tau=-3,nu=-7):r_0{>=0} (tau=-3,nu=-6):r_0{>=0} (tau=-3,nu=-5):r_0{>=0} (tau... [digest ac35ae83a15c] | in: 47
-49. e272762 C10 nodes=3_1*#10_60 par={"a":true,"b":true,"ge3":true} -> 3_1*#10_60.C: (tau=-4,nu=-7):r_0{>=3} (tau=-3,nu=-7):r_0{>=3} (tau=-3,nu=-6):r_0{>=3} (tau=-3,nu=-5):r_0{>=3} (tau... [digest 9a6e5d31d1fa] | in: 48
-50. e272763 U4a nodes=3_1*#10_60 par={"g4":4} -> 3_1*#10_60.U: upsilon in [-4,4] | in: -
-51. e276924 F13 nodes=3_1* par={"m":1,"tau":-1} -> 3_1*.F: M=-4:r_2{4} | in: 10
-52. e277265 F3 nodes=10_60,10_60* par={} -> 10_60.F: M=-4:r_2{>=12} M=0:r_2{>=8} M=4:r_2{>=12} | in: 21,32
-53. e309853 C3 nodes=3_1#10_60*,3_1*#10_60 par={} -> 3_1*#10_60.C: (tau=-1,nu=-3):r_0{>=4} (tau=-1,nu=-2):r_0{>=3} (tau=-1,nu=-1):r_0{>=4} | in: 44,49
-54. e312991 F4 nodes=3_1*#10_60,3_1*,10_60 par={"mult":[1,1]} -> 3_1*#10_60.F: M=-8:r_2{>=8} M=-4:r_2{>=4} M=0:r_2{>=0} | in: 45,51,52
-55. e312992 U4b nodes=3_1*#10_60,3_1*,10_60 par={"kind":"sum","mult":[1,1]} -> 3_1*#10_60.U: upsilon in [1,1] | in: 12,23,50
-56. e315016 F7 nodes=0_1,10_60 par={} -> 10_60.F: M=0:r_2{>=8} M=4:r_2{>=12} | in: 1,52
-57. e318378 F7 nodes=10_60,12a_3 par={} -> 10_60.F: M=0:r_2{>=8} | in: 39,56
-58. e326377 X nodes=3_1*#10_60 par={"slopes":"G","x1":true,"x2":true,"x3_g":4,"x4":true} -> 3_1*#10_60.F: M=-8:r_2{>=12} M=-4:r_2{>=8} M=0:r_2{>=8} | in: 53,54
-59. e328285 F4 nodes=3_1*#10_60,3_1*,10_60 par={"mult":[1,1]} -> 3_1*#10_60.F: M=-4:r_2{>=8} | in: 51,57,58
+33. e16671 F1 nodes=12a_3 par={} -> 12a_3.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+34. e16672 F5 nodes=12a_3 par={"why":"slice"} -> 12a_3.F: M=0:r_2{>=0} | in: 33
+35. e16673 C1 nodes=12a_3 par={} -> 12a_3.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+36. e16674 C4 nodes=12a_3 par={} -> 12a_3.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 35
+37. e16675 C5 nodes=12a_3 par={"g4":0,"src":"KnotInfo g4"} -> 12a_3.C: (tau=0,nu=0):r_0{>=0} | in: 36
+38. e16676 C10 nodes=12a_3 par={"a":true,"b":true,"ge3":true} -> 12a_3.C: (tau=0,nu=0):r_0{>=3} | in: 37
+39. e16677 X nodes=12a_3 par={"slopes":"G","x1":true,"x2":true,"x3_g":3,"x4":true,"x5":true,"x5m":true} -> 12a_3.F: M=0:r_2{>=8} | in: 34,38
+40. e270810 C1 nodes=3_1#10_60* par={} -> 3_1#10_60*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+41. e270811 C4 nodes=3_1#10_60* par={} -> 3_1#10_60*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 40
+42. e270812 C5 nodes=3_1#10_60* par={"g4":4,"src":"calculator g"} -> 3_1#10_60*.C: (tau=-4,nu=-7):r_0{>=0} (tau=-3,nu=-7):r_0{>=0} (tau=-3,nu=-6):r_0{>=0} (tau=-3,nu=-5):r_0{>=0} (tau... [digest ac35ae83a15c] | in: 41
+43. e270813 C8 nodes=3_1#10_60* par={"tau":1,"why":"homogeneous diagram"} -> 3_1#10_60*.C: (tau=1,nu=1):r_0{>=0} (tau=1,nu=2):r_0{>=0} (tau=1,nu=3):r_0{>=0} | in: 42
+44. e270814 C10 nodes=3_1#10_60* par={"a":true,"b":true,"ge3":true} -> 3_1#10_60*.C: (tau=1,nu=1):r_0{>=4} (tau=1,nu=2):r_0{>=3} (tau=1,nu=3):r_0{>=4} | in: 43
+45. e273021 F1 nodes=3_1*#10_60 par={} -> 3_1*#10_60.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+46. e273022 C1 nodes=3_1*#10_60 par={} -> 3_1*#10_60.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+47. e273023 C4 nodes=3_1*#10_60 par={} -> 3_1*#10_60.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 46
+48. e273024 C5 nodes=3_1*#10_60 par={"g4":4,"src":"calculator g"} -> 3_1*#10_60.C: (tau=-4,nu=-7):r_0{>=0} (tau=-3,nu=-7):r_0{>=0} (tau=-3,nu=-6):r_0{>=0} (tau=-3,nu=-5):r_0{>=0} (tau... [digest ac35ae83a15c] | in: 47
+49. e273025 C10 nodes=3_1*#10_60 par={"a":true,"b":true,"ge3":true} -> 3_1*#10_60.C: (tau=-4,nu=-7):r_0{>=3} (tau=-3,nu=-7):r_0{>=3} (tau=-3,nu=-6):r_0{>=3} (tau=-3,nu=-5):r_0{>=3} (tau... [digest 9a6e5d31d1fa] | in: 48
+50. e273026 U4a nodes=3_1*#10_60 par={"g4":4} -> 3_1*#10_60.U: upsilon in [-4,4] | in: -
+51. e284105 F13 nodes=3_1* par={"m":1,"tau":-1} -> 3_1*.F: M=-4:r_2{4} | in: 10
+52. e284446 F3 nodes=10_60,10_60* par={} -> 10_60.F: M=-4:r_2{>=12} M=0:r_2{>=8} M=4:r_2{>=12} | in: 21,32
+53. e316686 C3 nodes=3_1#10_60*,3_1*#10_60 par={} -> 3_1*#10_60.C: (tau=-1,nu=-3):r_0{>=4} (tau=-1,nu=-2):r_0{>=3} (tau=-1,nu=-1):r_0{>=4} | in: 44,49
+54. e319838 F4 nodes=3_1*#10_60,3_1*,10_60 par={"mult":[1,1]} -> 3_1*#10_60.F: M=-8:r_2{>=8} M=-4:r_2{>=4} M=0:r_2{>=0} | in: 45,51,52
+55. e319839 U4b nodes=3_1*#10_60,3_1*,10_60 par={"kind":"sum","mult":[1,1]} -> 3_1*#10_60.U: upsilon in [1,1] | in: 12,23,50
+56. e321879 F7 nodes=0_1,10_60 par={} -> 10_60.F: M=0:r_2{>=8} M=4:r_2{>=12} | in: 1,52
+57. e325443 F7 nodes=10_60,12a_3 par={} -> 10_60.F: M=0:r_2{>=8} | in: 39,56
+58. e356666 X nodes=3_1*#10_60 par={"slopes":"G","x1":true,"x2":true,"x3_g":4,"x4":true} -> 3_1*#10_60.F: M=-8:r_2{>=12} M=-4:r_2{>=8} M=0:r_2{>=8} | in: 53,54
+59. e358615 F4 nodes=3_1*#10_60,3_1*,10_60 par={"mult":[1,1]} -> 3_1*#10_60.F: M=-4:r_2{>=8} | in: 51,57,58
 == M = -4 : pinned at 59 ; chain 1,2,3,4,5,6,7,8,9,10,13,14,15,16,17,18,19,20,21,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,51,52,53,54,56,57,58,59
 == tau = -1 : pinned at 53 ; chain 40,41,42,43,44,46,47,48,49,53
 == upsilon = 1 : pinned at 55 ; chain 11,12,22,23,50,55
