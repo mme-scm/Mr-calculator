@@ -58,8 +58,11 @@ def check_set(knots):
 
 def main():
     final = 'final' in sys.argv
+    # state=<dir>: write only STATE.md, from the pin counts of a scratch re-solve (REPORT.md stays tied
+    # to the last exported checkpoint in export/)
+    state_dir = next((a.split('=', 1)[1] for a in sys.argv[1:] if a.startswith('state=')), None)
     summary = load(os.path.join(EXPORT, 'summary.json'), {})
-    tiers = load(os.path.join(EXPORT, 'pins_by_tier.json'), {})
+    tiers = load(os.path.join(state_dir or EXPORT, 'pins_by_tier.json'), {})
     abl = load(os.path.join(EXPORT, 'ablation.json'))
     par = load(os.path.join(EXPORT, 'parameters.json'), {})
     notes = load(os.path.join(DATA, 'run_notes.json'), {})
@@ -84,8 +87,15 @@ def main():
     lines += ['', '## Notes', '']
     for k, v in (notes.get('state') or {}).items():
         lines.append('- %s: %s' % (k, v))
+    if state_dir:
+        lines.insert(3, 'Pin counts below are from a re-solve on all pass data synced so far (not exported; the last '
+                        'exported and checked checkpoint is described in REPORT.md).')
+        lines.insert(4, '')
     with open(os.path.join(ROOT, 'STATE.md'), 'w') as f:
         f.write('\n'.join(lines) + '\n')
+    if state_dir:
+        print('STATE.md written')
+        return
     # ---------------- REPORT
     knots = {}
     kinds = collections.Counter()
