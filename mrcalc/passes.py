@@ -11,6 +11,7 @@ with F3/C3/U4b, so mirrored moves are not recomputed.
 """
 from __future__ import annotations
 
+import gzip
 import hashlib
 import json
 import os
@@ -184,8 +185,24 @@ def shard_tier(shard):
     return 99
 
 
+def _open(path, mode='rt'):
+    return gzip.open(path, mode) if path.endswith('.gz') else open(path, mode)
+
+
+def _existing(path):
+    """Path of a shard file, gzipped or not (gzip preferred); None if absent."""
+    for p in (path + '.gz', path):
+        if os.path.exists(p):
+            return p
+    return None
+
+
 def diag_path(shard):
     return os.path.join(DIAG_DIR, '%s.jsonl' % shard)
+
+
+def have_diagrams(shard):
+    return _existing(diag_path(shard)) is not None
 
 
 def build_diagram_shard(args):
@@ -197,14 +214,14 @@ def build_diagram_shard(args):
             out.extend(diagrams_for(name, rediagrams=rediagrams, braid_ok=braid_ok))
         except Exception as e:
             errors.append({'node': name, 'error': repr(e)})
-    with open(diag_path(shard), 'w') as f:
+    with gzip.open(diag_path(shard) + '.gz', 'wt') as f:
         for d in out:
             f.write(json.dumps(d, separators=(',', ':')) + '\n')
     return shard, len(out), errors
 
 
 def load_diagrams(shard):
-    with open(diag_path(shard)) as f:
+    with _open(_existing(diag_path(shard))) as f:
         return [json.loads(l) for l in f]
 
 
@@ -250,7 +267,7 @@ def done_shards(pname):
 
 def write_shard(pname, shard, recs, errors):
     os.makedirs(os.path.join(PASS_DIR, pname), exist_ok=True)
-    with open(shard_path(pname, shard), 'w') as f:
+    with gzip.open(shard_path(pname, shard) + '.gz', 'wt') as f:
         for r in recs:
             f.write(json.dumps(r, separators=(',', ':')) + '\n')
     if errors:
@@ -271,10 +288,35 @@ def iter_pass_records(pname=None):
             continue
         d = os.path.join(PASS_DIR, pn)
         for fn in sorted(os.listdir(d)):
-            if fn.endswith('.jsonl') and fn != 'errors.jsonl':
-                with open(os.path.join(d, fn)) as f:
+            if (fn.endswith('.jsonl') or fn.endswith('.jsonl.gz')) and not fn.startswith('errors'):
+                with _open(os.path.join(d, fn)) as f:
                     for line in f:
                         r = json.loads(line)
                         r['pass'] = pn
-                        r['shard'] = fn[:-6]
+                        r['shard'] = fn.split('.jsonl')[0]
                         yield r
+
+
+def iter_diagrams():
+    """All diagram records of all shards."""
+    if not os.path.isdir(DIAG_DIR):
+        return
+    for fn in sorted(os.listdir(DIAG_DIR)):
+        if fn.endswith('.jsonl') or fn.endswith('.jsonl.gz'):
+            with _open(os.path.join(DIAG_DIR, fn)) as f:
+                for line in f:
+                    yield json.loads(line)
+
+
+def read_shard(pname, shard):
+    with _open(_existing(shard_path(pname, shard))) as f:
+        return [json.loads(l) for l in f]
+
+
+def rewrite_shard(pname, shard, recs):
+    old = _existing(shard_path(pname, shard))
+    with gzip.open(shard_path(pname, shard) + '.gz', 'wt') as f:
+        for r in recs:
+            f.write(json.dumps(r, separators=(',', ':')) + '\n')
+    if old and not old.endswith('.gz'):
+        os.remove(old)

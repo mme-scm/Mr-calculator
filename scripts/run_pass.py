@@ -31,6 +31,10 @@ def main():
     args = sys.argv[1:]
     kv = dict(a.split('=', 1) for a in args if '=' in a)
     pos = [a for a in args if '=' not in a]
+    from mrcalc import conventions
+    if kv.get('skip_conventions') != '1':
+        conventions.assert_all(verbose=False)
+        print('convention tests passed', flush=True)
     params = config.load_params()
     shards = passes.shard_nodes()
     procs = int(kv.get('procs', 4))
@@ -40,7 +44,7 @@ def main():
         lo, hi = int(pos[1]), int(pos[2])
         bok = braid_ok_map()
         todo = [(s, ns, int(kv.get('rediagrams', params['rediagrams'])), bok) for s, ns in shards.items()
-                if lo <= passes.shard_tier(s) <= hi and not os.path.exists(passes.diag_path(s))]
+                if lo <= passes.shard_tier(s) <= hi and not passes.have_diagrams(s)]
         with mp.Pool(procs) as pool:
             for shard, n, errors in pool.imap_unordered(passes.build_diagram_shard, todo):
                 if errors:
@@ -55,7 +59,7 @@ def main():
             opt['only_nodes'] = set(l.strip() for l in f if l.strip())
     done = passes.done_shards(pname)
     todo = [(pname, s, opt) for s in shards
-            if lo <= passes.shard_tier(s) <= hi and s not in done and os.path.exists(passes.diag_path(s))]
+            if lo <= passes.shard_tier(s) <= hi and s not in done and passes.have_diagrams(s)]
     if 'only_nodes' in opt:
         todo = [t for t in todo if any(n in opt['only_nodes'] for n in shards[t[1]])]
     print('%s: %d shards to do' % (pname, len(todo)), flush=True)

@@ -10,8 +10,20 @@ def pd_key(pd):
     return hashlib.sha1(json.dumps([list(c) for c in pd], separators=(',', ':')).encode()).hexdigest()[:20]
 
 
+UNKNOT = {'tau': 0, 'nu': 0, 'epsilon': 0, 'genus': 0, 'fibered': True, 'lspace': True, 'total_rank': 1,
+          'ranks': [[0, 0, 1]], 'note': 'diagram reduces to the round circle by Reidemeister 1 moves'}
+
+
 def _run(pd, want_complex):
     import knot_floer_homology as kfh
+    from .pd import remove_kinks
+    pd = remove_kinks(pd)        # the calculator rejects diagrams with Reidemeister-1 kinks
+    if not pd:
+        out = dict(UNKNOT)
+        if want_complex:
+            out['generators'] = [[0, 0, 0]]
+            out['differentials'] = []
+        return out
     r = kfh.pd_to_hfk([tuple(c) for c in pd], complex=want_complex)
     out = {
         'tau': int(r['tau']), 'nu': int(r['nu']), 'epsilon': int(r['epsilon']),

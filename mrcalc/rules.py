@@ -285,10 +285,18 @@ def op_ec_values(d, p, q, values):
 # ----------------------------------------------------------------------
 # coupling X1-X5 (one node, both domains)
 # ----------------------------------------------------------------------
-def x_delta(M, nu, x):
+_delta_memo = {}
+
+
+def x_delta(M, nu, x, slopes):
     """Smallest admissible r_2 - r_0 for given (M, nu) under the X rules listed in x.
-    x: dict with keys slopes (list of [p,q]) , x1 (bool), x2, x3_g (genus or None), x4,
-    x5 (K certified not L), x5m (K* certified not L)."""
+    x: dict with keys x1, x2, x4, x5, x5m (bools) and x3_g (genus or absent);
+    slopes = (key, list of (p, q)) is the slope set of the node.  None: no rule applies."""
+    skey, slist = slopes
+    key = (M, nu, skey, bool(x.get('x1')), bool(x.get('x2')), x.get('x3_g'), bool(x.get('x4')),
+           bool(x.get('x5')), bool(x.get('x5m')))
+    if key in _delta_memo:
+        return _delta_memo[key]
     d = None
 
     def up(v):
@@ -298,14 +306,14 @@ def x_delta(M, nu, x):
     if x.get('x1'):
         up(abs(M - nu))
         up(0)
-        for p, q in x['slopes']:
+        for p, q in slist:
             up(_cdiv(phic(nu, p, q) - phi2(M, p, q), q))
     if x.get('x2'):
         up(1)
     g = x.get('x3_g')
     if g is not None:
         lim = 2 * g - 1
-        for p, q in x['slopes']:
+        for p, q in slist:
             if abs(p) <= lim * q:
                 up(_cdiv(phic(nu, p, q) + 2 - phi2(M, p, q), q))
     if x.get('x4'):
@@ -315,15 +323,16 @@ def x_delta(M, nu, x):
         up(M - nu + 2)
     if x.get('x5m'):
         up(nu - M + 2)
+    _delta_memo[key] = d
     return d
 
 
-def op_x(d2, dc, x):
+def op_x(d2, dc, x, slopes=('none', ())):
     """Joint narrowing of both domains of one node by the conjunction of the X rules."""
     if d2.items is None or dc.items is None or not d2.items or not dc.items:
         return d2, dc
     nus = sorted({n for t, n in dc.items})
-    delta = {(m, n): x_delta(m, n, x) for m in d2.items for n in nus}
+    delta = {(m, n): x_delta(m, n, x, slopes) for m in d2.items for n in nus}
     if all(v is None for v in delta.values()):
         return d2, dc
     cmin = {}

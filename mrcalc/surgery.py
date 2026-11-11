@@ -141,15 +141,17 @@ def norm_manifold(m):
     return None, None
 
 
-def regina_recognise(tri_string, effort=2):
+def regina_recognise(tri_string, time_limit=3.0, height=2, visit_cap=5000):
     """Recognise a closed 3-manifold given as a SnapPea-format triangulation string.
-    Returns {'kind': 'lens'|'sfs'|'unknown', 'name': ..., 'how': ...}."""
+    Returns {'kind': 'lens'|'sfs'|'unknown', 'name': ..., 'how': ...}.  The search over
+    retriangulations stops at the time limit (seconds) or after visit_cap triangulations."""
+    import time
     import regina
     T = regina.Triangulation3(tri_string)
     T.intelligentSimplify()
-    seen = set()
+    t0 = time.time()
 
-    def attempt(T):
+    def attempt(T, sig=None):
         st = regina.StandardTriangulation.recognise(T)
         if st is not None:
             try:
@@ -158,36 +160,38 @@ def regina_recognise(tri_string, effort=2):
                 m = None
             kind, nm = norm_manifold(m)
             if kind:
-                return {'kind': kind, 'name': nm, 'how': 'recognise', 'regina_name': m.name(),
-                        'isosig': T.isoSig()}
-        for h in regina.Census.lookup(T.isoSig()):
+                return {'kind': kind, 'name': nm, 'how': 'regina-recognise', 'regina_name': m.name()}
+        for h in regina.Census.lookup(sig or T.isoSig()):
             kind, nm = norm_name_string(h.name())
             if kind:
-                return {'kind': kind, 'name': nm, 'how': 'census', 'regina_name': h.name(),
-                        'isosig': T.isoSig()}
+                return {'kind': kind, 'name': nm, 'how': 'regina-census', 'regina_name': h.name()}
         return None
 
     r = attempt(T)
     if r:
         return r
-    for round_ in range(effort * 8):
-        U = regina.Triangulation3(T)
-        for _ in range(4 + round_):
-            # random 2-3 moves then simplify
-            import random
-            tris = [t for t in U.triangles() if U.pachner(t, True, False)]
-            if not tris:
-                break
-            U.pachner(random.choice(tris), False, True)
-        U.intelligentSimplify()
-        s = U.isoSig()
-        if s in seen:
-            continue
-        seen.add(s)
-        r = attempt(U)
-        if r:
-            return r
-    return {'kind': 'unknown', 'name': None, 'how': 'none', 'isosig': T.isoSig()}
+    res = {}
+    cnt = [0]
+
+    def act(sig, tri):
+        cnt[0] += 1
+        x = attempt(tri, sig)
+        if x:
+            res['r'] = x
+            return True
+        return cnt[0] >= visit_cap or (time.time() - t0) > time_limit
+
+    if time_limit > 0:
+        try:
+            T.retriangulate(height, 1, act)
+        except Exception:
+            pass
+    if 'r' in res:
+        return res['r']
+    out = {'kind': 'unknown', 'name': None, 'how': 'none', 'visited': cnt[0]}
+    if cnt[0] < visit_cap and (time.time() - t0) > time_limit:
+        out['timeout'] = True
+    return out
 
 
 def filled_string(E, slope):

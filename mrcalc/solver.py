@@ -25,10 +25,34 @@ FAMILIES = {
 RULE_FAMILY = {r: f for f, rs in FAMILIES.items() for r in rs}
 
 
+PIN_COORDS = {'F': (('M', 'M'), ('r_2', 'r')), 'C': (('nu', 'nu'), ('r_0', 'r'), ('tau', 'tau')),
+              'U': (('upsilon', 'upsilon'),)}
+INVARIANTS = ['M', 'r_2', 'nu', 'r_0', 'tau', 'upsilon']
+INV_DOM = {'M': 'F', 'r_2': 'F', 'nu': 'C', 'r_0': 'C', 'tau': 'C', 'upsilon': 'U'}
+
+
 class Contradiction(Exception):
     def __init__(self, node, dom, cons, events):
         super().__init__('empty domain %s/%s by constraint %s' % (node, dom, cons.get('id')))
         self.node, self.dom, self.cons, self.events = node, dom, cons, events
+
+
+SLOPES = {}          # slope set id -> list of (p, q); filled by the problem / parameters
+_slope_cache = {}
+
+
+def resolve_slopes(spec):
+    """(key, list) of a slope-set specification: an id, or {'base': id, 'extra': [[p,q],...]}."""
+    if spec is None:
+        return ('none', ())
+    if isinstance(spec, str):
+        return (spec, SLOPES[spec])
+    key = (spec['base'], tuple(tuple(x) for x in spec['extra']))
+    if key not in _slope_cache:
+        base = list(SLOPES[spec['base']])
+        have = set(map(tuple, base))
+        _slope_cache[key] = (key, base + [tuple(x) for x in spec['extra'] if tuple(x) not in have])
+    return _slope_cache[key]
 
 
 def top(dom):
@@ -49,7 +73,7 @@ def reads(c):
 
 def _diff_bounds(c):
     """Bounds lo <= x(B) - x(A) <= hi for the difference rules; nodes = [A, B]."""
-    r, p = c['rule'], c['par']
+    r, p = c['rule'], c.get('par') or {}
     if r in ('F7',):          # nodes [K-, K+]
         return 0, 4
     if r == 'C7':
@@ -71,7 +95,7 @@ def apply(c, get):
     r, p, dom, ns = c['rule'], c.get('par') or {}, c['dom'], c['nodes']
     n0 = ns[0]
     if r == 'X':
-        d2, dc = R.op_x(get(n0, 'F'), get(n0, 'C'), p)
+        d2, dc = R.op_x(get(n0, 'F'), get(n0, 'C'), p, resolve_slopes(p.get('slopes')))
         return [(n0, 'F', d2), (n0, 'C', dc)]
     d = get(n0, dom)
     if r == 'F1':
@@ -204,6 +228,8 @@ class Solver:
         self.queued = set()
         self.withheld = set(withheld)
         self.napplied = 0
+        self.pin_event = {}     # (node, coordinate) -> id of the event that pinned it
+        self.ev_dom = []        # domain after each event (kept for the export)
 
     def get(self, node, dom):
         d = self.state.get((node, dom))
@@ -247,9 +273,13 @@ class Solver:
                 ev = {'id': len(events), 'c': c['id'], 'rule': c['rule'], 'node': node, 'dom': dom,
                       'in': ins, 'dg': new.digest()}
                 events.append(ev)
+                self.ev_dom.append(new)
                 state[(node, dom)] = new
                 if new.is_empty():
                     raise Contradiction(node, dom, c, events)
+                for coord, co in PIN_COORDS[dom]:
+                    if (node, coord) not in self.pin_event and new.pin(co) is not None:
+                        self.pin_event[(node, coord)] = ev['id']
             for node, dom, new in changed:
                 last[(node, dom)] = [e['id'] for e in events[-len(changed):]
                                      if e['node'] == node and e['dom'] == dom][-1]

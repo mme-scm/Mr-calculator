@@ -895,3 +895,39 @@ def replay_rediagram(pd, moves):
         else:
             cur = r1(cur, m['edge'], m['under_first'], m['loop_ccw'])
     return cur
+
+
+def remove_kinks(pd):
+    """Remove Reidemeister-1 kinks (monogon faces) repeatedly.  Returns a PD code, or [] if
+    the diagram reduces to the round circle."""
+    pd = [list(c) for c in pd]
+    while True:
+        if not pd:
+            return []
+        D = Diagram.from_pd(pd)
+        kink = None
+        for c in range(D.n):
+            for i in range(4):
+                if D.adj[(c, i)] == (c, (i + 1) % 4):
+                    kink = (c, i)
+                    break
+            if kink:
+                break
+        if kink is None:
+            return D.pd()
+        c, i = kink
+        a, b = D.adj[(c, (i + 2) % 4)], D.adj[(c, (i + 3) % 4)]
+        if a[0] == c or b[0] == c:
+            return []                      # a one-crossing diagram of the unknot
+        adj = {}
+        ren = lambda d: (d[0] - (1 if d[0] > c else 0), d[1])
+        for d, e in D.adj.items():
+            if d[0] == c or e[0] == c:
+                continue
+            adj[ren(d)] = ren(e)
+        adj[ren(a)] = ren(b)
+        adj[ren(b)] = ren(a)
+        if D.n == 1:
+            return []
+        start = next((ren(d) for d in D.order if d[0] != c), None)
+        pd = Diagram(D.n - 1, adj, start=start).pd()
