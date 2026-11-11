@@ -12,7 +12,7 @@ import tarfile
 
 from . import names, passes, pd as P
 from .config import DATA, EXPORT
-from .solver import INVARIANTS, INV_DOM, PIN_COORDS, RULE_FAMILY
+from .solver import INVARIANTS, INV_DOM, PIN_COORDS, RULE_FAMILY, con_dict
 
 MAX_TEXT = 100
 PART_LIMIT = 40 * 2 ** 20          # size limit of one file of the export (bytes on disk)
@@ -42,6 +42,22 @@ def chain_events(events, pin_ids):
         seen.add(i)
         stack.extend(events[i]['in'])
     return sorted(seen)
+
+
+class _ConIndex:
+    """cons_by_id for constraints whose id is their position ('c<i>' at index i)."""
+
+    def __init__(self, cons):
+        self.cons = cons
+
+    def __getitem__(self, cid):
+        return self.cons[int(cid[1:])]
+
+
+def con_index(cons):
+    if all(c['id'] == 'c%d' % i for i, c in enumerate(cons)):
+        return _ConIndex(cons)
+    return {c['id']: c for c in cons}
 
 
 def chain_text(node, pins, pin_event, events, ev_text, cons_by_id):
@@ -151,69 +167,68 @@ class ChainPack:
             self.tar = None
 
 
-def expand_edge(e, diag_cache):
-    """Full edge record with both PD codes (section 5)."""
-    mv = e['move']
-    shard = mv['shard']
+def expand_edge(e, r, diag_cache):
+    """Full edge record with both PD codes (section 5).  e: prepare.Edge; r: its representative pass record."""
+    shard = r['shard']
     if shard not in diag_cache:
         if len(diag_cache) > 50:
             diag_cache.clear()
         diag_cache[shard] = {d['id']: d for d in passes.load_diagrams(shard)}
-    d = diag_cache[shard][mv['d']]
-    rec = e['rec']
-    out = {'id': e['id'], 'type': {'cc': 'crossing change', 'tw': 'twist', 'mu': 'mutation'}[e['t']],
-           'key': e['key'], 'count': e['count'], 'pass': mv['pass'],
+    d = diag_cache[shard][r['d']]
+    out = {'id': e.id, 'type': {'cc': 'crossing change', 'tw': 'twist', 'mu': 'mutation'}[e.t],
+           'key': list(e.key), 'count': e.count, 'pass': r['pass'],
            'source_node': d['node'], 'source_diagram': d['id'], 'pd': d['pd'],
-           'source_certificate': d['cert'], 'writhe_before': rec.get('w0'), 'writhe_after': rec.get('w1'),
-           'result_certificate': rec.get('cert')}
+           'source_certificate': d['cert'], 'writhe_before': r.get('w0'), 'writhe_after': r.get('w1'),
+           'result_certificate': r.get('cert')}
     for k in ('seed', 'moves', 'word', 'strands'):
         if k in d:
             out['diagram_' + k] = d[k]
-    r = {'t': e['t']}
-    r.update({k: mv[k] for k in ('i', 'e', 'h', 'axis') if k in mv})
-    new = passes.result_pd(d['pd'], r)
+    mv = {'t': e.t}
+    mv.update({k: r[k] for k in ('i', 'e', 'h', 'axis') if k in r})
+    new = passes.result_pd(d['pd'], mv)
     out['result_pd'] = new
-    out['result_node'] = e['dst'] if e['t'] != 'cc' else None
-    if e['t'] == 'cc':
-        out['crossing'] = mv['i']
-        out['sign'] = rec['s']
-        out['K_plus'], out['K_minus'] = e['key'][0], e['key'][1]
-        out['result_node'] = e['key'][1] if rec['s'] == 1 else e['key'][0]
-    elif e['t'] == 'tw':
-        out['circle_edges'] = mv['e']
-        out['edge_directions'] = rec.get('dirs')
-        out['a'], out['b'] = rec['a'], rec['b']
-        out['handedness'] = mv['h']
+    out['result_node'] = e.dst if e.t != 'cc' else None
+    if e.t == 'cc':
+        out['crossing'] = r['i']
+        out['sign'] = r['s']
+        out['K_plus'], out['K_minus'] = e.key[0], e.key[1]
+        out['result_node'] = e.key[1] if r['s'] == 1 else e.key[0]
+    elif e.t == 'tw':
+        out['circle_edges'] = r['e']
+        out['edge_directions'] = r.get('dirs')
+        out['a'], out['b'] = r['a'], r['b']
+        out['handedness'] = r['h']
         out['insertion'] = 'full-twist braid on the crossed edges, in path order, replacing their arcs'
     else:
-        out['circle_edges'] = mv['e']
-        out['rotation'] = mv['axis']
+        out['circle_edges'] = r['e']
+        out['rotation'] = r['axis']
     return out
 
 
 def export_all(problem, solver, out_dir=EXPORT, ablation=None, extra=None, write_chains=True, pack=True):
     """pack: gzip parts for the JSONL files and tar archives for the chain files (FORMAT.md, section 1)."""
     os.makedirs(out_dir, exist_ok=True)
-    cons_by_id = {c['id']: c for c in solver.cons}
+    cons_by_id = con_index(solver.cons)
     events = solver.events
-    ev_text = [dom_text(d) for d in solver.ev_dom]
+    if write_chains:      # statement text per event: kept by the solver (keep = dom_text), or from the domains
+        ev_text = solver.ev_text if len(solver.ev_text) == len(events) else [dom_text(d) for d in solver.ev_dom]
     # --- events
     w = Writer(os.path.join(out_dir, 'events.jsonl'), compress=pack)
     for e in events:
-        w.write(e)
+        w.write(e.to_dict())
     w.close()
     # --- constraints
     w = Writer(os.path.join(out_dir, 'constraints.jsonl'), compress=pack)
     for c in solver.cons:
-        c2 = dict(c)
+        c2 = con_dict(c)
         c2['fam'] = RULE_FAMILY.get(c['rule'], '?')
         w.write(c2)
     w.close()
     # --- edges
     w = Writer(os.path.join(out_dir, 'edges.jsonl'), compress=pack)
     cache = {}
-    for e in problem.edges:
-        w.write(expand_edge(e, cache))
+    for e, r in problem.edge_records(problem.edges):      # in reading order of the pass records, not by id
+        w.write(expand_edge(e, r, cache))
     w.close()
     # --- certificates
     cdir = os.path.join(out_dir, 'certificates')

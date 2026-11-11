@@ -61,7 +61,7 @@ def main(out):
             f.write(dumps(c) + '\n')
     with open(os.path.join(out, 'events.jsonl'), 'w') as f:
         for e in events:
-            f.write(dumps(e) + '\n')
+            f.write(dumps(e.to_dict()) + '\n')
     refs = {c['ref'] for c in cons if isinstance(c.get('ref'), str)}
     with open(os.path.join(out, 'edges.jsonl'), 'w') as f, open(os.path.join(src, 'edges.jsonl')) as g:
         for line in g:

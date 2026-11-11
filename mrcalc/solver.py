@@ -31,6 +31,55 @@ INVARIANTS = ['M', 'r_2', 'nu', 'r_0', 'tau', 'upsilon']
 INV_DOM = {'M': 'F', 'r_2': 'F', 'nu': 'C', 'r_0': 'C', 'tau': 'C', 'upsilon': 'U'}
 
 
+class Con:
+    """One rule instance.  Read like the dict it replaces (c['rule'], c.get('par'), 'ref' in c)."""
+    __slots__ = ('id', 'rule', 'dom', 'nodes', 'par', 'ref')
+
+    def __init__(self, id, rule, dom, nodes, par=None, ref=None):
+        self.id, self.rule, self.dom, self.nodes, self.par, self.ref = id, rule, dom, tuple(nodes), par, ref
+
+    def __getitem__(self, k):
+        v = getattr(self, k)
+        if v is None:
+            raise KeyError(k)
+        return v
+
+    def get(self, k, default=None):
+        v = getattr(self, k, None)
+        return default if v is None else v
+
+    def __contains__(self, k):
+        return getattr(self, k, None) is not None
+
+    def to_dict(self):
+        d = {'id': self.id, 'rule': self.rule, 'dom': self.dom, 'nodes': list(self.nodes)}
+        if self.par is not None:
+            d['par'] = self.par
+        if self.ref is not None:
+            d['ref'] = self.ref
+        return d
+
+
+def con_dict(c):
+    """A constraint (Con or dict) as a dict."""
+    return c.to_dict() if isinstance(c, Con) else dict(c)
+
+
+class Ev:
+    """One narrowing event.  Read like the dict it replaces."""
+    __slots__ = ('id', 'c', 'rule', 'node', 'dom', 'ins', 'dg')
+
+    def __init__(self, id, c, rule, node, dom, ins, dg):
+        self.id, self.c, self.rule, self.node, self.dom, self.ins, self.dg = id, c, rule, node, dom, ins, dg
+
+    def __getitem__(self, k):
+        return self.ins if k == 'in' else getattr(self, k)
+
+    def to_dict(self):
+        return {'id': self.id, 'c': self.c, 'rule': self.rule, 'node': self.node, 'dom': self.dom,
+                'in': list(self.ins), 'dg': self.dg}
+
+
 class Contradiction(Exception):
     def __init__(self, node, dom, cons, events):
         super().__init__('empty domain %s/%s by constraint %s' % (node, dom, cons.get('id')))
@@ -229,7 +278,12 @@ class Solver:
         self.withheld = set(withheld)
         self.napplied = 0
         self.pin_event = {}     # (node, coordinate) -> id of the event that pinned it
-        self.ev_dom = []        # domain after each event (kept for the export)
+        # what is kept per event for the export: 'dom' the domain after the event (ev_dom), a function
+        # domain -> text (ev_text; much smaller), or None
+        self.keep = 'dom'
+        self.ev_dom = []
+        self.ev_text = []
+        self.record = True      # False: no events (final domains and pins only; used by the ablation runs)
 
     def get(self, node, dom):
         d = self.state.get((node, dom))
@@ -268,21 +322,35 @@ class Solver:
                 changed.append((node, dom, new))
             if not changed:
                 continue
-            ins = sorted({last[k] for k in keys if k in last})
+            if not self.record:
+                for node, dom, new in changed:
+                    state[(node, dom)] = new
+                    if new.is_empty():
+                        raise Contradiction(node, dom, c, events)
+                for node, dom, new in changed:
+                    for j in self.watch.get((node, dom), ()):
+                        if j not in self.queued:
+                            self.queue.append(j)
+                            self.queued.add(j)
+                continue
+            ins = tuple(sorted({last[k] for k in keys if k in last}))
+            keep = self.keep
             for node, dom, new in changed:
-                ev = {'id': len(events), 'c': c['id'], 'rule': c['rule'], 'node': node, 'dom': dom,
-                      'in': ins, 'dg': new.digest()}
+                ev = Ev(len(events), c['id'], c['rule'], node, dom, ins, new.digest())
                 events.append(ev)
-                self.ev_dom.append(new)
+                if keep == 'dom':
+                    self.ev_dom.append(new)
+                elif keep is not None:
+                    self.ev_text.append(keep(new))
                 state[(node, dom)] = new
                 if new.is_empty():
                     raise Contradiction(node, dom, c, events)
                 for coord, co in PIN_COORDS[dom]:
                     if (node, coord) not in self.pin_event and new.pin(co) is not None:
-                        self.pin_event[(node, coord)] = ev['id']
+                        self.pin_event[(node, coord)] = ev.id
             for node, dom, new in changed:
-                last[(node, dom)] = [e['id'] for e in events[-len(changed):]
-                                     if e['node'] == node and e['dom'] == dom][-1]
+                last[(node, dom)] = [e.id for e in events[-len(changed):]
+                                     if e.node == node and e.dom == dom][-1]
             for node, dom, new in changed:
                 for j in self.watch.get((node, dom), ()):
                     if j not in self.queued:      # includes the constraint itself (idempotence check)

@@ -44,6 +44,7 @@ def main():
     solver.SLOPES.clear()
     solver.SLOPES.update(P.slopes)
     S = solver.Solver()
+    S.keep, S.record = None, False          # only the final domains are needed here
     S.add(P.cons)
     S.run()
     done = set()

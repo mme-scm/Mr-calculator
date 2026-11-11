@@ -284,22 +284,37 @@ def write_shard(pname, shard, recs, errors):
         f.write(shard + '\n')
 
 
-def iter_pass_records(pname=None):
-    """All records of one pass (or of all passes)."""
+def pass_files(pname=None):
+    """[(pass name, shard, path)] of the pass shards, in reading order."""
+    out = []
     if not os.path.isdir(PASS_DIR):
-        return
+        return out
     for pn in sorted(os.listdir(PASS_DIR)):
         if pname is not None and pn != pname:
             continue
         d = os.path.join(PASS_DIR, pn)
+        if not os.path.isdir(d):
+            continue
         for fn in sorted(os.listdir(d)):
             if (fn.endswith('.jsonl') or fn.endswith('.jsonl.gz')) and not fn.startswith('errors'):
-                with _open(os.path.join(d, fn)) as f:
-                    for line in f:
-                        r = json.loads(line)
-                        r['pass'] = pn
-                        r['shard'] = fn.split('.jsonl')[0]
-                        yield r
+                out.append((pn, fn.split('.jsonl')[0], os.path.join(d, fn)))
+    return out
+
+
+def iter_file_records(pn, shard, path):
+    """Records of one pass shard, with the fields pass and shard added."""
+    with _open(path) as f:
+        for line in f:
+            r = json.loads(line)
+            r['pass'] = pn
+            r['shard'] = shard
+            yield r
+
+
+def iter_pass_records(pname=None):
+    """All records of one pass (or of all passes)."""
+    for pn, shard, path in pass_files(pname):
+        yield from iter_file_records(pn, shard, path)
 
 
 def iter_diagrams():

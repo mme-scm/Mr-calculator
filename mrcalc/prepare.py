@@ -11,7 +11,11 @@ import os
 from collections import defaultdict
 from math import gcd
 
+import hashlib
+import sys
+
 from . import knotinfo, names, nodeset, passes
+from .solver import Con
 from .config import DATA, iter_census_refs, iter_hfk_peripheral, load_params
 
 E_LIST = {'9_42', '10_125', '10_130', '10_132', '10_136', '10_141'}
@@ -29,6 +33,20 @@ def mirror_ranks(ranks):
     return sorted([-a, -m, v] for a, m, v in ranks)
 
 
+def _h64(name):
+    """64-bit key of a node name (bookkeeping of results that may never become nodes)."""
+    return int.from_bytes(hashlib.blake2b(name.encode('utf-8'), digest_size=8).digest(), 'little')
+
+
+class Edge:
+    """Deduplicated move edge.  loc = (index of the pass shard in Problem.pass_files, line) of the
+    representative record, which the export reads again for the PD codes and certificates."""
+    __slots__ = ('id', 't', 'key', 'src', 'dst', 'count', 'loc')
+
+    def __init__(self, t, key, src, dst, loc):
+        self.id, self.t, self.key, self.src, self.dst, self.count, self.loc = None, t, key, src, dst, 1, loc
+
+
 class Problem:
     def __init__(self, max_tier=99, include_upsilon=False, verbose=False):
         self.params = load_params()
@@ -41,6 +59,7 @@ class Problem:
         self.stats = defaultdict(int)
         self.log = []
         self._cid = 0
+        self._par_memo = {}
         self._load_table()
         self._load_constructions()
         self._core_nodes()
@@ -57,11 +76,11 @@ class Problem:
 
     # ------------------------------------------------------------------
     def con(self, rule, dom, nodes, par=None, ref=None):
-        c = {'id': 'c%d' % self._cid, 'rule': rule, 'dom': dom, 'nodes': list(nodes)}
-        if par:
-            c['par'] = par
-        if ref is not None:
-            c['ref'] = ref
+        if not par:
+            par = None
+        elif rule != 'X':          # equal parameter dicts are shared (X gets its slope set later)
+            par = self._par_memo.setdefault(json.dumps(par, sort_keys=True), par)
+        c = Con('c%d' % self._cid, sys.intern(rule), dom, nodes, par, ref)
         self._cid += 1
         self.cons.append(c)
         return c
@@ -237,14 +256,41 @@ class Problem:
                 self.nodes[n]['aliases'].append(cname)
 
     # ------------------------------------------------------------------
+    def _records(self):
+        """(loc, record) of all pass records, in reading order; loc = (shard index << 24) | line."""
+        for fi, (pn, shard, path) in enumerate(self.pass_files):
+            if pn in self._skip:
+                continue
+            base = fi << 24
+            for li, r in enumerate(passes.iter_file_records(pn, shard, path)):
+                yield base | li, r
+
+    def edge_records(self, edges):
+        """(edge, representative pass record) for the given edges, in reading order of the records."""
+        by_file = defaultdict(dict)
+        for e in edges:
+            by_file[e.loc >> 24][e.loc & 0xffffff] = e
+        for fi in sorted(by_file):
+            pn, shard, path = self.pass_files[fi]
+            want = by_file[fi]
+            last = max(want)
+            for li, r in enumerate(passes.iter_file_records(pn, shard, path)):
+                if li in want:
+                    yield want[li], r
+                if li >= last:
+                    break
+
     def _load_passes(self):
-        """Deduplicate pass records into edges; collect homogeneous-diagram and braid evidence."""
+        """Deduplicate pass records into edges; collect homogeneous-diagram and braid evidence.
+
+        Two readings of the pass shards.  The first one only decides which results that are not core
+        nodes become peripheral nodes (reached from two distinct nodes, or with a homogeneous diagram);
+        it keeps one 64-bit key per candidate.  The second one builds the edges between nodes."""
         self.homog = {}        # node -> reference (diagram id or move)
         self.braids = defaultdict(dict)   # node -> {(n, w): ref}
-        cc, tw, mu = {}, {}, {}
-        per = defaultdict(set)
         self.per_move = {}
-        nrec = 0
+        self.pass_files = passes.pass_files()
+        self._skip = set(filter(None, os.environ.get('MRCALC_SKIP_PASSES', '').split(',')))
         for d in passes.iter_diagrams():
             node = self.canon(d['node'])
             if d.get('homogeneous') and node not in self.homog:
@@ -252,25 +298,64 @@ class Problem:
             if 'word' in d:
                 w = sum(1 if g > 0 else -1 for g in d['word'])
                 self.braids[node].setdefault((d['strands'], w), {'diagram': d['id']})
-        skip = set(filter(None, os.environ.get('MRCALC_SKIP_PASSES', '').split(',')))
-        for r in passes.iter_pass_records():
-            if r['pass'] in skip:
-                continue
+        nodes = self.nodes
+        intern = {}
+        # ---- first reading: peripheral candidates
+        first, multi, hom = {}, set(), set()
+        nrec = 0
+        for loc, r in self._records():
             nrec += 1
             if r.get('dst') is None:
                 self.stats['unidentified results'] += 1
                 continue
             if r['cert'].get('amphichiral'):
                 names.register_amphichiral(r['dst'])
+            dst = self.canon(r['dst'])
+            if dst in nodes:
+                continue
+            src = self.canon(r['src'])
+            h = _h64(min(dst, self._mirror_free(dst)))
+            if r.get('hg'):
+                hom.add(h)
+            if src == dst:
+                continue
+            f = first.get(h)
+            if f is None:
+                first[h] = intern.setdefault(src, src)
+            elif f != src:
+                multi.add(h)
+        self.stats['pass records'] = nrec
+        self.stats['peripheral candidates'] = len(first)
+        included = {h for h in first if h in multi or h in hom}
+        del first, multi, hom
+        # ---- second reading: edges between nodes, evidence for nodes
+        cc, tw, mu = {}, {}, {}
+        inc_names = set()
+        for loc, r in self._records():
+            if r.get('dst') is None:
+                continue
             src, dst = self.canon(r['src']), self.canon(r['dst'])
-            move = {k: r[k] for k in ('pass', 'shard', 't', 'd', 'i', 'e', 'h', 'axis') if k in r}
-            if dst not in self.nodes and dst not in self.per_move:
-                self.per_move[dst] = move
+            core = dst in nodes
+            if not core:
+                base = min(dst, self._mirror_free(dst))
+                if _h64(base) not in included:
+                    if src != dst:
+                        self.stats['pass records to excluded peripheral results'] += 1
+                    continue
+                if dst not in inc_names:
+                    inc_names.add(base)
+                    inc_names.add(self._mirror_free(base))
+            src = intern.setdefault(src, src)
+            dst = intern.setdefault(dst, dst)
+            if not core and dst not in self.per_move:
+                self.per_move[dst] = {k: r[k] for k in ('pass', 'shard', 't', 'd', 'i', 'e', 'h', 'axis') if k in r}
             if r.get('hg') and dst not in self.homog:
-                self.homog[dst] = {'move': move}
+                self.homog[dst] = {'move': {k: r[k] for k in ('pass', 'shard', 't', 'd', 'i', 'e', 'h', 'axis')
+                                            if k in r}}
             if 'word' in r:
                 w = sum(1 if g > 0 else -1 for g in r['word'])
-                self.braids[dst].setdefault((r['strands'], w), {'move': move})
+                self.braids[dst].setdefault((r['strands'], w), {'move': {
+                    k: r[k] for k in ('pass', 'shard', 't', 'd', 'i', 'e', 'h', 'axis') if k in r}})
             if r['t'] == 'cc':
                 kp, km = (src, dst) if r['s'] == 1 else (dst, src)
                 if kp == km:
@@ -290,31 +375,14 @@ class Problem:
                     continue
                 key = tuple(sorted((src, dst)))
                 tgt = mu
-            if key in tgt:
-                tgt[key]['count'] += 1
+            e = tgt.get(key)
+            if e is not None:
+                e.count += 1
             else:
-                tgt[key] = {'t': r['t'], 'key': key, 'src': src, 'dst': dst, 'move': move, 'count': 1,
-                            'rec': {k: r[k] for k in ('s', 'a', 'b', 'h', 'w0', 'w1', 'cert', 'kind', 'dirs', 'i', 'e', 'axis')
-                                    if k in r}}
-            per[dst].add(src)
-        self.stats['pass records'] = nrec
+                tgt[key] = Edge(r['t'], key, src, dst, loc)
         self._raw_edges = {'cc': cc, 'tw': tw, 'mu': mu}
-        # peripheral nodes: results that are not core nodes
-        self.peripheral_adj = defaultdict(set)
-        for dst, srcs in per.items():
-            if dst not in self.nodes:
-                base = min(dst, self._mirror_free(dst))
-                self.peripheral_adj[base] |= srcs
         self.per_hfk = {r['node']: r for r in iter_hfk_peripheral(staged=False) if 'tau' in r}
-        included = set()
-        for base, srcs in self.peripheral_adj.items():
-            m = self._mirror_free(base)
-            keep = len(srcs) >= 2 or base in self.homog or m in self.homog
-            if keep:
-                included.add(base)
-                included.add(m)
-        self.stats['peripheral candidates'] = len(self.peripheral_adj)
-        for n in sorted(included):
+        for n in sorted(inc_names):
             if n in self.nodes:
                 continue
             h = self.per_hfk.get(n)
@@ -571,11 +639,9 @@ class Problem:
 
     # ------------------------------------------------------------------
     def _edge(self, e):
-        e = dict(e)
-        e['id'] = 'e%d' % len(self.edges)
-        e['key'] = list(e['key'])
+        e.id = 'e%d' % len(self.edges)
         self.edges.append(e)
-        return e['id']
+        return e.id
 
     def _diff(self, rule, dom, A, B, par, ref):
         """x(B) - x(A) in the bounds of the rule; handle an end being the mirror of the other."""
@@ -618,6 +684,7 @@ class Problem:
                 continue
             eid = self._edge(e)
             self.con('F6', 'F', [a, b], None, eid)
+        del self._raw_edges
 
     # ------------------------------------------------------------------
     def _surgery_constraints(self):
