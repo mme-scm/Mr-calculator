@@ -1,0 +1,19 @@
+# chains for 11n_84*
+1. e9359 U4a nodes=11a_198 par={"g4":1} -> 11a_198.U: upsilon in [-1,1] | in: -
+2. e9360 U2a nodes=11a_198 par={"tau":1} -> 11a_198.U: upsilon in [-1,-1] | in: 1
+3. e14684 C1 nodes=11n_84 par={} -> 11n_84.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+4. e14685 C4 nodes=11n_84 par={} -> 11n_84.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 3
+5. e14686 C5 nodes=11n_84 par={"g4":1,"src":"KnotInfo g4"} -> 11n_84.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 4
+6. e14687 C8 nodes=11n_84 par={"tau":-1,"why":"quasipositive"} -> 11n_84.C: (tau=-1,nu=-1):r_0{>=0} | in: 5
+7. e14688 C10 nodes=11n_84 par={"a":true,"b":true,"ge3":true} -> 11n_84.C: (tau=-1,nu=-1):r_0{>=3} | in: 6
+8. e14694 C1 nodes=11n_84* par={} -> 11n_84*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+9. e14695 C4 nodes=11n_84* par={} -> 11n_84*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 8
+10. e14696 C5 nodes=11n_84* par={"g4":1,"src":"KnotInfo g4"} -> 11n_84*.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 9
+11. e14697 C9 nodes=11n_84* par={"n":5,"w":4} -> 11n_84*.C: (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu=1):r_0{>=0} | in: 10
+12. e14698 C10 nodes=11n_84* par={"a":true,"b":true,"ge3":true} -> 11n_84*.C: (tau=0,nu=-1):r_0{>=3} (tau=0,nu=0):r_0{>=3} (tau=0,nu=1):r_0{>=4} (tau=1,nu=1):r_0{>=4} | in: 11
+13. e14700 U4a nodes=11n_84* par={"g4":1} -> 11n_84*.U: upsilon in [-1,1] | in: -
+14. e277427 C3 nodes=11n_84,11n_84* par={} -> 11n_84*.C: (tau=1,nu=1):r_0{>=4} | in: 7,12
+15. e316828 U5 nodes=11n_84*,11a_198 par={} -> 11n_84*.U: upsilon in [-1,-1] | in: 2,13
+== nu = 1 : pinned at 14 ; chain 3,4,5,6,7,8,9,10,11,12,14
+== tau = 1 : pinned at 14 ; chain 3,4,5,6,7,8,9,10,11,12,14
+== upsilon = -1 : pinned at 15 ; chain 1,2,13,15

@@ -1,0 +1,20 @@
+# chains for 3_1*#8_4*
+1. e23 U4a nodes=3_1* par={"g4":1} -> 3_1*.U: upsilon in [-1,1] | in: -
+2. e24 U2a nodes=3_1* par={"tau":-1} -> 3_1*.U: upsilon in [1,1] | in: 1
+3. e356 U4a nodes=8_4* par={"g4":1} -> 8_4*.U: upsilon in [-1,1] | in: -
+4. e357 U2a nodes=8_4* par={"tau":1} -> 8_4*.U: upsilon in [-1,-1] | in: 3
+5. e265696 C1 nodes=3_1#8_4 par={} -> 3_1#8_4.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+6. e265697 C4 nodes=3_1#8_4 par={} -> 3_1#8_4.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 5
+7. e265698 C5 nodes=3_1#8_4 par={"g4":3,"src":"calculator g"} -> 3_1#8_4.C: (tau=-3,nu=-5):r_0{>=0} (tau=-2,nu=-5):r_0{>=0} (tau=-2,nu=-4):r_0{>=0} (tau=-2,nu=-3):r_0{>=0} (tau... [digest 525edc963b57] | in: 6
+8. e265699 C8 nodes=3_1#8_4 par={"tau":0,"why":"homogeneous diagram"} -> 3_1#8_4.C: (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} | in: 7
+9. e265700 C10 nodes=3_1#8_4 par={"a":true,"b":true,"ge3":true} -> 3_1#8_4.C: (tau=0,nu=-1):r_0{>=3} (tau=0,nu=0):r_0{>=3} (tau=0,nu=1):r_0{>=4} | in: 8
+10. e265983 C1 nodes=3_1*#8_4* par={} -> 3_1*#8_4*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+11. e265984 C4 nodes=3_1*#8_4* par={} -> 3_1*#8_4*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 10
+12. e265985 C5 nodes=3_1*#8_4* par={"g4":3,"src":"calculator g"} -> 3_1*#8_4*.C: (tau=-3,nu=-5):r_0{>=0} (tau=-2,nu=-5):r_0{>=0} (tau=-2,nu=-4):r_0{>=0} (tau=-2,nu=-3):r_0{>=0} (tau... [digest 525edc963b57] | in: 11
+13. e265986 C10 nodes=3_1*#8_4* par={"a":true,"b":true,"ge3":true} -> 3_1*#8_4*.C: (tau=-3,nu=-5):r_0{>=3} (tau=-2,nu=-5):r_0{>=3} (tau=-2,nu=-4):r_0{>=3} (tau=-2,nu=-3):r_0{>=4} (tau... [digest 97d1088e1165] | in: 12
+14. e265987 C15 nodes=3_1*#8_4* par={} -> 3_1*#8_4*.C: (tau=-3,nu=-5):r_0{>=3} (tau=-2,nu=-5):r_0{>=3} (tau=-2,nu=-4):r_0{>=3} (tau=-2,nu=-3):r_0{>=4} (tau... [digest 80470a11c999] | in: 13
+15. e265988 U4a nodes=3_1*#8_4* par={"g4":3} -> 3_1*#8_4*.U: upsilon in [-3,3] | in: -
+16. e308929 C3 nodes=3_1#8_4,3_1*#8_4* par={} -> 3_1*#8_4*.C: (tau=0,nu=-1):r_0{>=4} (tau=0,nu=0):r_0{>=3} (tau=0,nu=1):r_0{>=4} | in: 9,14
+17. e310766 U4b nodes=3_1*#8_4*,3_1*,8_4* par={"kind":"sum","mult":[1,1]} -> 3_1*#8_4*.U: upsilon in [0,0] | in: 2,4,15
+== tau = 0 : pinned at 16 ; chain 5,6,7,8,9,10,11,12,13,14,16
+== upsilon = 0 : pinned at 17 ; chain 1,2,3,4,15,17

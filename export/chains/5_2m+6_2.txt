@@ -1,0 +1,20 @@
+# chains for 5_2*#6_2
+1. e77 U4a nodes=5_2* par={"g4":1} -> 5_2*.U: upsilon in [-1,1] | in: -
+2. e78 U2a nodes=5_2* par={"tau":-1} -> 5_2*.U: upsilon in [1,1] | in: 1
+3. e104 U4a nodes=6_2 par={"g4":1} -> 6_2.U: upsilon in [-1,1] | in: -
+4. e105 U2a nodes=6_2 par={"tau":1} -> 6_2.U: upsilon in [-1,-1] | in: 3
+5. e266240 C1 nodes=5_2#6_2* par={} -> 5_2#6_2*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+6. e266241 C4 nodes=5_2#6_2* par={} -> 5_2#6_2*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 5
+7. e266242 C5 nodes=5_2#6_2* par={"g4":3,"src":"calculator g"} -> 5_2#6_2*.C: (tau=-3,nu=-5):r_0{>=0} (tau=-2,nu=-5):r_0{>=0} (tau=-2,nu=-4):r_0{>=0} (tau=-2,nu=-3):r_0{>=0} (tau... [digest 525edc963b57] | in: 6
+8. e266243 C8 nodes=5_2#6_2* par={"tau":0,"why":"homogeneous diagram"} -> 5_2#6_2*.C: (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} | in: 7
+9. e266244 C10 nodes=5_2#6_2* par={"a":true,"b":true,"ge3":true} -> 5_2#6_2*.C: (tau=0,nu=-1):r_0{>=3} (tau=0,nu=0):r_0{>=3} (tau=0,nu=1):r_0{>=4} | in: 8
+10. e266269 C1 nodes=5_2*#6_2 par={} -> 5_2*#6_2.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+11. e266270 C4 nodes=5_2*#6_2 par={} -> 5_2*#6_2.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 10
+12. e266271 C5 nodes=5_2*#6_2 par={"g4":3,"src":"calculator g"} -> 5_2*#6_2.C: (tau=-3,nu=-5):r_0{>=0} (tau=-2,nu=-5):r_0{>=0} (tau=-2,nu=-4):r_0{>=0} (tau=-2,nu=-3):r_0{>=0} (tau... [digest 525edc963b57] | in: 11
+13. e266272 C10 nodes=5_2*#6_2 par={"a":true,"b":true,"ge3":true} -> 5_2*#6_2.C: (tau=-3,nu=-5):r_0{>=3} (tau=-2,nu=-5):r_0{>=3} (tau=-2,nu=-4):r_0{>=3} (tau=-2,nu=-3):r_0{>=4} (tau... [digest 97d1088e1165] | in: 12
+14. e266273 C15 nodes=5_2*#6_2 par={} -> 5_2*#6_2.C: (tau=-3,nu=-5):r_0{>=3} (tau=-2,nu=-5):r_0{>=3} (tau=-2,nu=-4):r_0{>=3} (tau=-2,nu=-3):r_0{>=4} (tau... [digest 80470a11c999] | in: 13
+15. e266274 U4a nodes=5_2*#6_2 par={"g4":3} -> 5_2*#6_2.U: upsilon in [-3,3] | in: -
+16. e308960 C3 nodes=5_2#6_2*,5_2*#6_2 par={} -> 5_2*#6_2.C: (tau=0,nu=-1):r_0{>=4} (tau=0,nu=0):r_0{>=3} (tau=0,nu=1):r_0{>=4} | in: 9,14
+17. e310880 U4b nodes=5_2*#6_2,5_2*,6_2 par={"kind":"sum","mult":[1,1]} -> 5_2*#6_2.U: upsilon in [0,0] | in: 2,4,15
+== tau = 0 : pinned at 16 ; chain 5,6,7,8,9,10,11,12,13,14,16
+== upsilon = 0 : pinned at 17 ; chain 1,2,3,4,15,17

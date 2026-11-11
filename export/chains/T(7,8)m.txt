@@ -1,0 +1,18 @@
+# chains for T(7,8)*
+1. e275414 C1 nodes=T(7,8) par={} -> T(7,8).C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+2. e275415 C4 nodes=T(7,8) par={} -> T(7,8).C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 1
+3. e275416 C5 nodes=T(7,8) par={"g4":21,"src":"calculator g"} -> T(7,8).C: (tau=-21,nu=-41):r_0{>=0} (tau=-20,nu=-41):r_0{>=0} (tau=-20,nu=-40):r_0{>=0} (tau=-20,nu=-39):r_0{>... [digest 20681d2572d7] | in: 2
+4. e275417 C10 nodes=T(7,8) par={"a":true,"b":true,"ge3":true} -> T(7,8).C: (tau=-21,nu=-41):r_0{>=3} (tau=-20,nu=-41):r_0{>=3} (tau=-20,nu=-40):r_0{>=3} (tau=-20,nu=-39):r_0{>... [digest 05466a904301] | in: 3
+5. e275418 C11 nodes=T(7,8) par={"g":21} -> T(7,8).C: (tau=20,nu=41):r_0{41} (tau=21,nu=41):r_0{41} | in: 4
+6. e275419 U4a nodes=T(7,8) par={"g4":21} -> T(7,8).U: upsilon in [-21,21] | in: -
+7. e275421 C1 nodes=T(7,8)* par={} -> T(7,8)*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+8. e275422 C4 nodes=T(7,8)* par={} -> T(7,8)*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 7
+9. e275423 C5 nodes=T(7,8)* par={"g4":21,"src":"calculator g"} -> T(7,8)*.C: (tau=-21,nu=-41):r_0{>=0} (tau=-20,nu=-41):r_0{>=0} (tau=-20,nu=-40):r_0{>=0} (tau=-20,nu=-39):r_0{>... [digest 20681d2572d7] | in: 8
+10. e275424 C10 nodes=T(7,8)* par={"a":true,"b":true,"ge3":true} -> T(7,8)*.C: (tau=-21,nu=-41):r_0{>=3} (tau=-20,nu=-41):r_0{>=3} (tau=-20,nu=-40):r_0{>=3} (tau=-20,nu=-39):r_0{>... [digest 05466a904301] | in: 9
+11. e275425 U4a nodes=T(7,8)* par={"g4":21} -> T(7,8)*.U: upsilon in [-21,21] | in: -
+12. e275953 U7 nodes=T(7,8) par={"p":7,"q":8} -> T(7,8).U: upsilon in [-12,-12] | in: 6
+13. e310362 C3 nodes=T(7,8),T(7,8)* par={} -> T(7,8)*.C: (tau=-21,nu=-41):r_0{41} (tau=-20,nu=-41):r_0{41} | in: 5,10
+14. e310363 U4b nodes=T(7,8),T(7,8)* par={"kind":"mirror"} -> T(7,8)*.U: upsilon in [12,12] | in: 11,12
+== nu = -41 : pinned at 13 ; chain 1,2,3,4,5,7,8,9,10,13
+== r_0 = 41 : pinned at 13 ; chain 1,2,3,4,5,7,8,9,10,13
+== upsilon = 12 : pinned at 14 ; chain 6,11,12,14

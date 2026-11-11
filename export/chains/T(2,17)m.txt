@@ -1,0 +1,25 @@
+# chains for T(2,17)*
+1. e275023 F1 nodes=T(2,17) par={} -> T(2,17).F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+2. e275024 C1 nodes=T(2,17) par={} -> T(2,17).C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+3. e275025 C4 nodes=T(2,17) par={} -> T(2,17).C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 2
+4. e275026 C5 nodes=T(2,17) par={"g4":8,"src":"calculator g"} -> T(2,17).C: (tau=-8,nu=-15):r_0{>=0} (tau=-7,nu=-15):r_0{>=0} (tau=-7,nu=-14):r_0{>=0} (tau=-7,nu=-13):r_0{>=0} ... [digest edaaf4074b09] | in: 3
+5. e275027 C10 nodes=T(2,17) par={"a":true,"b":true,"ge3":true} -> T(2,17).C: (tau=-8,nu=-15):r_0{>=3} (tau=-7,nu=-15):r_0{>=3} (tau=-7,nu=-14):r_0{>=3} (tau=-7,nu=-13):r_0{>=3} ... [digest 44bf535fc2d1] | in: 4
+6. e275028 C11 nodes=T(2,17) par={"g":8} -> T(2,17).C: (tau=7,nu=15):r_0{15} (tau=8,nu=15):r_0{15} | in: 5
+7. e275029 U4a nodes=T(2,17) par={"g4":8} -> T(2,17).U: upsilon in [-8,8] | in: -
+8. e275030 F1 nodes=T(2,17)* par={} -> T(2,17)*.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+9. e275031 C1 nodes=T(2,17)* par={} -> T(2,17)*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+10. e275032 C4 nodes=T(2,17)* par={} -> T(2,17)*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 9
+11. e275033 C5 nodes=T(2,17)* par={"g4":8,"src":"calculator g"} -> T(2,17)*.C: (tau=-8,nu=-15):r_0{>=0} (tau=-7,nu=-15):r_0{>=0} (tau=-7,nu=-14):r_0{>=0} (tau=-7,nu=-13):r_0{>=0} ... [digest edaaf4074b09] | in: 10
+12. e275034 C10 nodes=T(2,17)* par={"a":true,"b":true,"ge3":true} -> T(2,17)*.C: (tau=-8,nu=-15):r_0{>=3} (tau=-7,nu=-15):r_0{>=3} (tau=-7,nu=-14):r_0{>=3} (tau=-7,nu=-13):r_0{>=3} ... [digest 44bf535fc2d1] | in: 11
+13. e275035 U4a nodes=T(2,17)* par={"g4":8} -> T(2,17)*.U: upsilon in [-8,8] | in: -
+14. e275881 F11 nodes=T(2,17) par={"p":2,"q":17} -> T(2,17).F: M=16:r_2{16} M=20:r_2{20} M=24:r_2{24} M=28:r_2{28} M=32:r_2{32} | in: 1
+15. e275882 F12 nodes=T(2,17) par={"n":8} -> T(2,17).F: M=32:r_2{32} | in: 14
+16. e275883 U7 nodes=T(2,17) par={"p":2,"q":17} -> T(2,17).U: upsilon in [-8,-8] | in: 7
+17. e310271 F3 nodes=T(2,17),T(2,17)* par={} -> T(2,17)*.F: M=-32:r_2{32} | in: 8,15
+18. e310272 C3 nodes=T(2,17),T(2,17)* par={} -> T(2,17)*.C: (tau=-8,nu=-15):r_0{15} (tau=-7,nu=-15):r_0{15} | in: 6,12
+19. e310273 U4b nodes=T(2,17),T(2,17)* par={"kind":"mirror"} -> T(2,17)*.U: upsilon in [8,8] | in: 13,16
+== M = -32 : pinned at 17 ; chain 1,8,14,15,17
+== r_2 = 32 : pinned at 17 ; chain 1,8,14,15,17
+== nu = -15 : pinned at 18 ; chain 2,3,4,5,6,9,10,11,12,18
+== r_0 = 15 : pinned at 18 ; chain 2,3,4,5,6,9,10,11,12,18
+== upsilon = 8 : pinned at 19 ; chain 7,13,16,19

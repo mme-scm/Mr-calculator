@@ -7,6 +7,7 @@ Per node and slope one record
 step for the fillings whose (|p|, volume) agrees with a filling of another node, which is a
 budget choice: fillings with no volume partner cannot enter an S1(a) certificate.
 """
+import gzip
 import json
 import os
 
@@ -62,10 +63,26 @@ def shard_task(args):
         except Exception as e:
             errors.append({'node': n, 'error': repr(e)})
     os.makedirs(FILL_DIR, exist_ok=True)
-    with open(os.path.join(FILL_DIR, '%s.jsonl' % shard), 'w') as f:
+    with gzip.open(os.path.join(FILL_DIR, '%s.jsonl.gz' % shard), 'wt') as f:
         for r in recs:
             f.write(json.dumps(r, separators=(',', ':')) + '\n')
     return shard, len(recs), errors
+
+
+def iter_fillings():
+    """All filling records."""
+    if not os.path.isdir(FILL_DIR):
+        return
+    for fn in sorted(os.listdir(FILL_DIR)):
+        if fn.endswith('.jsonl.gz'):
+            f = gzip.open(os.path.join(FILL_DIR, fn), 'rt')
+        elif fn.endswith('.jsonl'):
+            f = open(os.path.join(FILL_DIR, fn))
+        else:
+            continue
+        with f:
+            for line in f:
+                yield json.loads(line)
 
 
 def done_shards():

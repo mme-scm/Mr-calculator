@@ -342,14 +342,12 @@ class Problem:
                 kind, nm = moser(p, q, m, n)
                 if kind == 'lens':
                     self.lens.append((node, m, n, {'S2': [p, q, m, n], 'name': nm, 'cert': 'S2'}))
-        fdir = os.path.join(DATA, 'fillings')
-        if os.path.isdir(fdir):
-            for fn in sorted(os.listdir(fdir)):
-                for r in _jsonl(os.path.join(fdir, fn)):
-                    if r.get('kind') == 'lens' and r.get('name') not in (None, 'S3', 'S2xS1'):
-                        self.lens.append((self.canon(r['node']), r['p'], r['q'],
-                                          {'filling': [r['node'], r['p'], r['q']], 'name': r['name'],
-                                           'cert': r.get('how', 'regina')}))
+        from . import fillings as FL
+        for r in FL.iter_fillings():
+            if r.get('kind') == 'lens' and r.get('name') not in (None, 'S3', 'S2xS1'):
+                self.lens.append((self.canon(r['node']), r['p'], r['q'],
+                                  {'filling': [r['node'], r['p'], r['q']], 'name': r['name'],
+                                   'cert': r.get('how', 'regina')}))
 
     # ------------------------------------------------------------------
     def differs_from(self, name, others):

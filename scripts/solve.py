@@ -54,6 +54,53 @@ def dump_contradiction(problem, e, out_dir):
     return d
 
 
+def validate(problem, S):
+    """Section 10: mirror consistency and composite consistency of the final domains."""
+    from mrcalc import rules as R
+    bad_mirror = []
+    for n, info in problem.nodes.items():
+        m = info['mirror']
+        if m not in problem.nodes:
+            continue
+        if S.get(m, 'F') != R.mirror2(S.get(n, 'F')) or S.get(m, 'C') != R.mirrorC(S.get(n, 'C')):
+            bad_mirror.append(n)
+            continue
+        u, v = S.get(n, 'U'), S.get(m, 'U')
+        if (v.lo, v.hi) != (None if u.hi is None else -u.hi, None if u.lo is None else -u.lo):
+            bad_mirror.append(n)
+
+    def proj(d, co):
+        """finite projection as a set, or None if not enumerable"""
+        if d.items is None:
+            return None
+        if co == 'M':
+            return set(d.items)
+        return {k[0 if co == 'tau' else 1] for k in d.items}
+    bad_comp = []
+    ncomp = 0
+    for c in problem.cons:
+        if c['rule'] not in ('F4', 'C6'):
+            continue
+        N, parts, mult = c['nodes'][0], c['nodes'][1:], c['par']['mult']
+        dom = c['dom']
+        for co, slack in ((('M', 0),) if dom == 'F' else (('tau', 0), ('nu', 1))):
+            pn = proj(S.get(N, dom), co)
+            ps = [proj(S.get(p, dom), co) for p in parts]
+            if pn is None or any(p is None for p in ps):
+                continue
+            ncomp += 1
+            if len(parts) == 1:
+                sums = {mult[0] * x for x in ps[0]}
+            else:
+                sums = {x + y for x in ps[0] for y in ps[1]}
+            allowed = {x + d for x in sums for d in range(-slack, slack + 1)}
+            if not pn <= allowed:
+                bad_comp.append((N, co))
+    return {'mirror_checked': len(problem.nodes), 'mirror_violations': bad_mirror[:20],
+            'n_mirror_violations': len(bad_mirror), 'composite_checked': ncomp,
+            'composite_violations': bad_comp[:20], 'n_composite_violations': len(bad_comp)}
+
+
 def ablation(problem, full):
     """Section 10: withhold one family at a time, and the listed family rules one at a time."""
     base = pin_counts(problem, full)
@@ -122,10 +169,15 @@ def main():
             json.dump(abl, f, indent=1)
     elif os.path.exists(os.path.join(out_dir, 'ablation.json')):
         abl = json.load(open(os.path.join(out_dir, 'ablation.json')))
+    val = validate(problem, S)
+    print('validation: mirror violations %d / %d, composite violations %d / %d' % (
+        val['n_mirror_violations'], val['mirror_checked'], val['n_composite_violations'], val['composite_checked']),
+        flush=True)
     export.export_all(problem, S, out_dir, ablation=abl, write_chains='nochains' not in args)
     with open(os.path.join(out_dir, 'summary.json'), 'w') as f:
         json.dump({'nodes': len(problem.nodes), 'constraints': len(problem.cons), 'edges': len(problem.edges),
-                   'events': len(S.events), 'pins': counts, 'stats': dict(problem.stats)}, f, indent=1)
+                   'events': len(S.events), 'pins': counts, 'stats': dict(problem.stats), 'validation': val},
+                  f, indent=1)
     print('exported to %s (%.0fs)' % (out_dir, time.time() - t0), flush=True)
 
 

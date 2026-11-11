@@ -1,0 +1,12 @@
+# chains for 10_45
+1. e2620 F1 nodes=10_45 par={} -> 10_45.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+2. e2621 F5 nodes=10_45 par={"why":"amphichiral"} -> 10_45.F: M=0:r_2{>=0} | in: 1
+3. e2622 C1 nodes=10_45 par={} -> 10_45.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+4. e2623 C4 nodes=10_45 par={} -> 10_45.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 3
+5. e2624 C5 nodes=10_45 par={"g4":1,"src":"KnotInfo g4"} -> 10_45.C: (tau=-1,nu=-1):r_0{>=0} (tau=0,nu=-1):r_0{>=0} (tau=0,nu=0):r_0{>=0} (tau=0,nu=1):r_0{>=0} (tau=1,nu... [digest c79794b1f803] | in: 4
+6. e2625 C5 nodes=10_45 par={"why":"amphichiral"} -> 10_45.C: (tau=0,nu=0):r_0{>=0} | in: 5
+7. e2628 U4a nodes=10_45 par={"why":"amphichiral"} -> 10_45.U: upsilon in [0,0] | in: -
+== M = 0 : pinned at 2 ; chain 1,2
+== nu = 0 : pinned at 6 ; chain 3,4,5,6
+== tau = 0 : pinned at 6 ; chain 3,4,5,6
+== upsilon = 0 : pinned at 7 ; chain 7

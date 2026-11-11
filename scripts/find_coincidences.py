@@ -38,11 +38,7 @@ def sig_task(args):
 
 
 def main():
-    recs = []
-    for fn in sorted(os.listdir(F.FILL_DIR)):
-        if fn.endswith('.jsonl'):
-            with open(os.path.join(F.FILL_DIR, fn)) as f:
-                recs.extend(json.loads(l) for l in f)
+    recs = list(F.iter_fillings())
     print('fillings:', len(recs), flush=True)
     # ---- (a) hyperbolic candidates
     by_p = defaultdict(list)
