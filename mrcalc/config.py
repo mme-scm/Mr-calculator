@@ -6,6 +6,29 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, 'data')
 EXPORT = os.path.join(ROOT, 'export')
 
+# Census reference signatures.  In the repository they are kept in parts below 50 MB
+# (data/ref_census/*.jsonl); a staged pass (MRCALC_STAGE) appends to one growing file.
+REF_CENSUS_DIR = os.path.join(DATA, 'ref_census')
+REF_CENSUS = os.path.join(os.environ['MRCALC_STAGE'], 'ref_census.jsonl') if os.environ.get('MRCALC_STAGE') \
+    else os.path.join(REF_CENSUS_DIR, 'zz-new.jsonl')
+
+
+def census_ref_files(staged=True):
+    """Files holding the census reference records, in reading order."""
+    if staged and os.environ.get('MRCALC_STAGE'):
+        return [REF_CENSUS] if os.path.exists(REF_CENSUS) else []
+    if not os.path.isdir(REF_CENSUS_DIR):
+        return []
+    return [os.path.join(REF_CENSUS_DIR, f) for f in sorted(os.listdir(REF_CENSUS_DIR)) if f.endswith('.jsonl')]
+
+
+def iter_census_refs(staged=True):
+    for path in census_ref_files(staged):
+        with open(path) as f:
+            for line in f:
+                if line.endswith('\n') and line.strip():
+                    yield json.loads(line)
+
 # Scope parameters of section 4 (spec values) -------------------------------------------
 SPEC = {
     'P_cab': 15,

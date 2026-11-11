@@ -19,13 +19,11 @@ import os
 import random
 
 from . import alg, hfk as H, names, pd as P
-from .config import DATA
+from .config import DATA, REF_CENSUS, iter_census_refs
 from .surgery import GEOMETRIC
 
 REF_HYP = os.path.join(DATA, 'ref_hyp.jsonl')
 REF_NONHYP = os.path.join(DATA, 'ref_nonhyp.jsonl')
-REF_CENSUS = os.path.join(os.environ['MRCALC_STAGE'], 'ref_census.jsonl') if os.environ.get('MRCALC_STAGE') \
-    else os.path.join(DATA, 'ref_census.jsonl')
 
 
 def exterior(pd):
@@ -138,11 +136,8 @@ class Identifier:
                         self.hyp[r['sig']] = (r['name'], False)
                         if r['sig_mirror'] != r['sig']:
                             self.hyp[r['sig_mirror']] = (r['name'], True)
-        if os.path.exists(REF_CENSUS):
-            with open(REF_CENSUS) as f:
-                for line in f:
-                    r = json.loads(line)
-                    self._add_census(r)
+        for r in iter_census_refs():
+            self._add_census(r)
         if os.path.exists(REF_NONHYP):
             with open(REF_NONHYP) as f:
                 for line in f:

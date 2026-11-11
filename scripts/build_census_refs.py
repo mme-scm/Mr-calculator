@@ -29,10 +29,9 @@ def main():
     cr = int(sys.argv[1])
     procs = int(sys.argv[2]) if len(sys.argv) > 2 else 2
     have = set()
-    if os.path.exists(I.REF_CENSUS):
-        with open(I.REF_CENSUS) as f:
-            for line in f:
-                have.add(json.loads(line)['name'])
+    for r in I.iter_census_refs():
+        have.add(r['name'])
+    os.makedirs(os.path.dirname(I.REF_CENSUS), exist_ok=True)
     names = [M.name() for M in snappy.HTLinkExteriors(crossings=cr, knots_vs_links='knots')]
     names = [n for n in names if n not in have]
     print('census knots with %d crossings to do: %d' % (cr, len(names)), flush=True)

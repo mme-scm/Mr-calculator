@@ -12,7 +12,7 @@ from collections import defaultdict
 from math import gcd
 
 from . import knotinfo, names, nodeset, passes
-from .config import DATA, load_params
+from .config import DATA, iter_census_refs, load_params
 
 E_LIST = {'9_42', '10_125', '10_130', '10_132', '10_136', '10_141'}
 REFERENCE_KNOTS = ['3_1', '4_1', '5_1', '5_2', '8_19']
@@ -133,7 +133,7 @@ class Problem:
     def _load_constructions(self):
         self.constructions = [r for r in _jsonl(os.path.join(DATA, 'constructions.jsonl')) if 'error' not in r]
         self.hfk_nodes = {r['node']: r for r in _jsonl(os.path.join(DATA, 'hfk_nodes.jsonl'))}
-        for r in _jsonl(os.path.join(DATA, 'ref_census.jsonl')):
+        for r in iter_census_refs(staged=False):
             if r.get('sig') and r['sig'] == r.get('sig_mirror'):
                 names.register_amphichiral(r['name'])
         for r in self.constructions:
