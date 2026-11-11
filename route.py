@@ -57,15 +57,15 @@ def lines_of(directory, name):
 
 
 def read_chain(directory, chain):
-    """Text of a chain file: the file itself, or the member of that name of an archive chains/*.tar.gz."""
+    """Text of a chain file: the file itself, or the member of that name of an archive chains/*.tar.xz (or .tar.gz)."""
     path = os.path.join(directory, chain)
     if os.path.exists(path):
         with open(path, encoding='utf-8') as f:
             return f.read()
     cdir, member = os.path.dirname(path), os.path.basename(path)
     for fn in sorted(os.listdir(cdir)) if os.path.isdir(cdir) else []:
-        if fn.endswith('.tar.gz'):
-            with tarfile.open(os.path.join(cdir, fn), 'r:gz') as tar:
+        if fn.endswith(('.tar.xz', '.tar.gz')):
+            with tarfile.open(os.path.join(cdir, fn), 'r:*') as tar:
                 for m in tar:
                     if m.name == member:
                         return tar.extractfile(m).read().decode('utf-8')

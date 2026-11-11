@@ -231,7 +231,7 @@ def test_packed_export(tiny, tmp_path):
     code, out = run(PACK, 'pack', tiny, packed)
     assert code == 0, out
     assert not os.path.exists(os.path.join(packed, 'events.jsonl'))
-    assert os.listdir(os.path.join(packed, 'chains')) == ['chains-000.tar.gz']
+    assert os.listdir(os.path.join(packed, 'chains')) == ['chains-000.tar.xz']
     code, out = run(CHECK, packed)
     assert code == 0, out
     assert_only(out)

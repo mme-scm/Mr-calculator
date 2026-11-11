@@ -14,7 +14,7 @@ What is checked
      the current domains, its target changes, the digest of the new target equals `dg`, and `in`
      equals the latest earlier events of the domains read;
   c. final domains, pins, pin events (and last events, chain file names) of knots.jsonl;
-  d. every chains/<node>.txt (a file, or a member of an archive chains/*.tar.gz) is rebuilt from the
+  d. every chains/<node>.txt (a file, or a member of an archive chains/*.tar.xz) is rebuilt from the
      replay and compared byte for byte;
   e. knots.csv agrees with knots.jsonl (node, <inv>_pin, <inv>_lo, <inv>_hi);
   f. every edge id used as `ref` by the constraint of an event exists in edges.jsonl;
@@ -1694,13 +1694,14 @@ def read_jsonl(directory, name):
 
 
 def chain_sources(cdir):
-    """(file name, bytes) of every chain file: the files of chains/ and the members of chains/*.tar.gz."""
+    """(file name, bytes) of every chain file: the files of chains/ and the members of the archives
+    chains/*.tar.xz (or .tar.gz)."""
     if not os.path.isdir(cdir):
         return
     for fn in sorted(os.listdir(cdir)):
         path = os.path.join(cdir, fn)
-        if fn.endswith('.tar.gz'):
-            with tarfile.open(path, 'r:gz') as tar:
+        if fn.endswith(('.tar.xz', '.tar.gz')):
+            with tarfile.open(path, 'r:*') as tar:
                 for m in tar:
                     if m.isfile():
                         yield m.name, tar.extractfile(m).read()

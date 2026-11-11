@@ -8,6 +8,7 @@ Only the JSONL files and the chain files change; all other files are copied.  St
 """
 import gzip
 import io
+import lzma
 import os
 import shutil
 import sys
@@ -41,8 +42,8 @@ def lines(directory, stem):
 def chains(cdir):
     for fn in sorted(os.listdir(cdir)) if os.path.isdir(cdir) else []:
         path = os.path.join(cdir, fn)
-        if fn.endswith('.tar.gz'):
-            with tarfile.open(path, 'r:gz') as tar:
+        if fn.endswith(('.tar.xz', '.tar.gz')):
+            with tarfile.open(path, 'r:*') as tar:
                 for m in tar:
                     if m.isfile():
                         yield m.name, tar.extractfile(m).read()
@@ -92,8 +93,8 @@ def main(argv):
                 f.write(data)
             continue
         if tar is None:
-            raw = open(os.path.join(dst, 'chains', 'chains-%03d.tar.gz' % k), 'wb')
-            g = gz(raw)
+            raw = open(os.path.join(dst, 'chains', 'chains-%03d.tar.xz' % k), 'wb')
+            g = lzma.LZMAFile(raw, 'wb', preset=3)
             tar = tarfile.open(fileobj=g, mode='w', format=tarfile.GNU_FORMAT)
         ti = tarfile.TarInfo(name)
         ti.size, ti.mtime, ti.mode = len(data), 0, 0o644

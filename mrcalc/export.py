@@ -5,6 +5,7 @@ import csv
 import gzip
 import io
 import json
+import lzma
 import os
 import shutil
 import tarfile
@@ -123,15 +124,16 @@ class Writer:
 
 
 class ChainPack:
-    """Chain files as members <file>.txt of the archives chains/chains-NNN.tar.gz (each below the size limit)."""
+    """Chain files as members <file>.txt of the archives chains/chains-NNN.tar.xz (each below the size limit).
+    xz because chains share most of their lines: about a third of the size of gzip archives."""
 
     def __init__(self, directory, limit=PART_LIMIT):
         self.dir, self.limit, self.part, self.tar = directory, limit, 0, None
 
     def add(self, name, text):
         if self.tar is None:
-            self.raw = open(os.path.join(self.dir, 'chains-%03d.tar.gz' % self.part), 'wb')
-            self.gz = _gz(self.raw)
+            self.raw = open(os.path.join(self.dir, 'chains-%03d.tar.xz' % self.part), 'wb')
+            self.gz = lzma.LZMAFile(self.raw, 'wb', preset=3)
             self.tar = tarfile.open(fileobj=self.gz, mode='w', format=tarfile.GNU_FORMAT)
         data = text.encode('utf-8')
         ti = tarfile.TarInfo(name)
