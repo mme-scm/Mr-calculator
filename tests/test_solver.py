@@ -31,14 +31,14 @@ def test_incremental_equals_full(problem):
     full.add(problem.cons)
     full.run()
     inc = light_solver()
-    base = [c for c in problem.cons if c['rule'] not in EDGE_RULES]
-    edges = [c for c in problem.cons if c['rule'] in EDGE_RULES]
-    inc.add(base)
+    cons = problem.cons                 # a table: constraints are handed over one at a time, never as a list
+    inc.add(c for c in cons if c['rule'] not in EDGE_RULES)
     inc.run()
     n0 = inc.napplied
-    step = max(1, len(edges) // 7)
-    for i in range(0, len(edges), step):
-        inc.add(edges[i:i + step])      # one "shard" of edges: re-propagates locally
+    nedges = sum(1 for _ in cons.rows_of(EDGE_RULES))
+    step = max(1, nedges // 7)
+    for i in range(0, nedges, step):    # one "shard" of edges: re-propagates locally
+        inc.add(cons[r] for k, r in enumerate(cons.rows_of(EDGE_RULES)) if i <= k < i + step)
         inc.run()
     for n in problem.nodes:
         for d in 'FCU':

@@ -27,15 +27,19 @@ Data model (all values immutable and canonical, so that equality is equality of 
   U domain  ('u', lo, hi)
 """
 import argparse
-import functools
 import csv
+import functools
 import gzip
 import hashlib
 import json
+import mmap
 import os
 import sys
 import tarfile
+import tempfile
 import time
+from array import array
+from collections import deque
 from itertools import product
 
 INVARIANTS = ('M', 'r_2', 'nu', 'r_0', 'tau', 'upsilon')
@@ -1745,6 +1749,10 @@ def short(text, n=400):
 # ======================================================================================
 # the replay
 # ======================================================================================
+NO_ROW = 0xFFFFFFFF
+DOM_NAMES = ['F', 'C', 'U']
+
+
 class Replay(object):
     def __init__(self, cons, limit, rep, keep_text=True):
         self.cons = cons               # ConStore: constraint id -> Con
@@ -1754,22 +1762,30 @@ class Replay(object):
         self.state = {}                # (node, dom) -> domain   (absent: TOP)
         self.last = {}                 # (node, dom) -> id of the latest event
         self.pin_event = {}            # (node, invariant) -> event id
-        self.ev_cid = []               # per event: constraint id (None: unknown constraint)
-        self.ev_node = []              # per event: node
-        self.ev_dom = []               # per event: dom
-        self.ev_in = []                # per event: tuple of input event ids (from the replay)
-        self.ev_text = []              # per event: statement text
+        # per event, as columns (an export has millions of events):
+        self.ev_row = array('I')       # row of the constraint (NO_ROW: unknown constraint)
+        self.ev_node = array('I')      # node, as an index into self.nodes
+        self.ev_dom = bytearray()      # dom, as an index into DOM_NAMES
+        self.ev_off = array('Q', [0])  # input events (from the replay): ev_ins[ev_off[e]:ev_off[e+1]]
+        self.ev_ins = array('I')
+        self.ev_text = []              # statement text (equal texts are one object)
+        self.nodes = []
+        self.node_ix = {}
+        self.texts = {}
+        self.n_events = 0
         self.applications = 0
-        self.used_cons = set()
+        self.used = bytearray(len(cons.has_ref))     # per constraint row: applied by an event
 
     def run(self, events):
-        """events: list of (c, rule, node, dom, in, dg), index = event id"""
+        """events: iterator of (c, rule, node, dom, in, dg), position = event id"""
         rep, cons, state, last = self.rep, self.cons, self.state, self.last
-        n = len(events)
+        events = EventWindow(events)
         i = 0
-        while i < n:
+        while events.has(i):
+            events.release(i)
             cid, rule, node, dom, ins, dg = events[i]
-            con = cons.get(cid)
+            row = cons.row(cid)
+            con = None if row is None else cons.con(row)
             if con is None:
                 rep.err('event', 'event %d: unknown constraint %r' % (i, cid))
                 self._record(i, None, (node, dom), tuple(sorted({last[k] for k in [(node, dom)] if k in last})), None)
@@ -1789,13 +1805,13 @@ class Replay(object):
                 new = cur
                 failed = True
             self.applications += 1
-            self.used_cons.add(cid)
+            self.used[row] = 1
             changed = [j for j in range(len(keys)) if new[j] != cur[j]]
             want_in = sorted({last[k] for k in keys if k in last})
             # the events of this application: same constraint, same `in`, at most one per output
             j = i + 1
-            stop = min(n, i + len(keys))
-            while j < stop and events[j][0] == cid and events[j][4] == ins:
+            stop = i + len(keys)
+            while j < stop and events.has(j) and events[j][0] == cid and events[j][4] == ins:
                 j += 1
             group = range(i, j)
             mine = [keys[k] for k in changed]
@@ -1851,7 +1867,7 @@ class Replay(object):
                     if is_empty(kind, new[k]):
                         rep.err('empty', 'event %d: constraint %s makes %s.%s empty'
                                 % (e, con.describe(), keys[k][0], keys[k][1]))
-                self._record(e, con, (enode, edom), tin, (new[k], got) if k is not None else None)
+                self._record(e, row, (enode, edom), tin, (new[k], got) if k is not None else None)
             for k in changed:
                 state[keys[k]] = new[k]
             for e, k in pairs:
@@ -1864,19 +1880,33 @@ class Replay(object):
                         if (key[0], inv) not in self.pin_event:
                             self.pin_event[(key[0], inv)] = e
             i = j
+        self.n_events = i
         return self
 
-    def _record(self, e, con, key, tin, new):
-        self.ev_cid.append(con.cid if con is not None else None)
-        self.ev_node.append(key[0])
-        self.ev_dom.append(key[1])
-        self.ev_in.append(tin)
+    def _record(self, e, row, key, tin, new):
+        if e != len(self.ev_row):
+            raise RuntimeError('event %d recorded out of order' % e)
+        self.ev_row.append(NO_ROW if row is None else row)
+        k = self.node_ix.get(key[0])
+        if k is None:
+            k = self.node_ix[key[0]] = len(self.nodes)
+            self.nodes.append(key[0])
+        self.ev_node.append(k)
+        if key[1] not in DOM_NAMES:
+            DOM_NAMES.append(key[1])
+        self.ev_dom.append(DOM_NAMES.index(key[1]))
+        self.ev_ins.extend(tin)
+        self.ev_off.append(len(self.ev_ins))
         if self.keep_text:
             if new is None:
                 d = self.state.get(key) or TOP.get(key[1], U_TOP)
-                self.ev_text.append(statement(key[1], d, self.limit) if key[1] in TOP else '?')
+                text = statement(key[1], d, self.limit) if key[1] in TOP else '?'
             else:
-                self.ev_text.append(statement(key[1], new[0], self.limit, new[1]))
+                text = statement(key[1], new[0], self.limit, new[1])
+            self.ev_text.append(self.texts.setdefault(text, text))
+
+    def ev_in(self, e):
+        return self.ev_ins[self.ev_off[e]:self.ev_off[e + 1]]
 
     def _inputs(self, keys, cur):
         return '; '.join('%s.%s = %s' % (k[0], k[1], short(CANON[k[1]](d))) for k, d in zip(keys, cur))
@@ -1899,7 +1929,7 @@ class Replay(object):
         seen = {event}
         stack = [event]
         while stack:
-            for j in ev_in[stack.pop()]:
+            for j in ev_in(stack.pop()):
                 if j not in seen:
                     seen.add(j)
                     stack.append(j)
@@ -1918,18 +1948,18 @@ class Replay(object):
         num = {e: k + 1 for k, e in enumerate(union)}
         lines = ['# chains for %s' % node]
         for e in union:
-            cid = self.ev_cid[e]
-            con = self.cons.get(cid) if cid is not None else None
+            row = self.ev_row[e]
+            con = self.cons.con(row) if row != NO_ROW else None
             if con is None:
                 rule, nodes, par = '?', '?', '{}'
             else:
                 if con.partext is None:
                     con.partext = json.dumps(con.par, sort_keys=True, separators=(',', ':'))
                 rule, nodes, par = con.rule, ','.join(con.nodes), con.partext
-            key = (self.ev_node[e], self.ev_dom[e])
+            key = (self.nodes[self.ev_node[e]], DOM_NAMES[self.ev_dom[e]])
             lines.append('%d. e%d %s nodes=%s par=%s -> %s.%s: %s | in: %s' % (
                 num[e], e, rule, nodes, par, key[0], key[1], self.ev_text[e],
-                ','.join(str(num[j]) for j in self.ev_in[e]) or '-'))
+                ','.join(str(num[j]) for j in self.ev_in(e)) or '-'))
         for inv in INVARIANTS:
             if inv in per:
                 lines.append('== %s = %d : pinned at %d ; chain %s' % (
@@ -1942,25 +1972,63 @@ class Replay(object):
 # ======================================================================================
 class ConStore(object):
     """The constraints of an export.  Every line of constraints.jsonl is read and turned into a Con once (so
-    that a malformed constraint is reported); after that only the line is kept, and a Con is built again
-    when an event or a chain line needs it.  Holding five million Con objects costs several GB."""
+    that a malformed constraint is reported).  After that the lines are in a temporary file, and a Con is
+    built again when an event or a chain line needs it: an export has millions of constraints, and neither
+    the objects nor the lines fit in memory.  A constraint is addressed by its line number ("row"); the id
+    of line k is 'c<k>' in the exports of the pipeline, and any other ids are looked up in a table."""
     CACHE = 1 << 16
 
     def __init__(self):
-        self.line = {}                 # constraint id -> its line of constraints.jsonl (bytes)
-        self.with_ref = set()          # ids of the constraints whose ref is an edge id
-        self.bad_ref = {}              # id -> edge id, for edge ids that are not in edges.jsonl
-        self.get = functools.lru_cache(maxsize=self.CACHE)(self._get)
+        self.tmp = tempfile.TemporaryFile()
+        self.off = array('Q', [0])     # line k of the file: bytes off[k] .. off[k+1]
+        self.rows = None               # constraint id -> row, when the ids are not 'c<row>'
+        self.has_ref = bytearray()     # per row: 1 if `ref` is an edge id
+        self.bad_ref = {}              # row -> edge id that is not in edges.jsonl
+        self.map = None
+        self.con = functools.lru_cache(maxsize=self.CACHE)(self._con)
+
+    def add(self, cid, line, has_ref):
+        """Append a constraint; returns the row of an earlier constraint with the same id, or None."""
+        k = len(self.has_ref)
+        if self.rows is None and cid != 'c%d' % k:
+            self.rows = {'c%d' % j: j for j in range(k)}
+        dup = None
+        if self.rows is not None:
+            dup = self.rows.get(cid)
+            self.rows[cid] = k
+        self.tmp.write(line)
+        self.off.append(self.off[-1] + len(line))
+        self.has_ref.append(1 if has_ref else 0)
+        return dup
+
+    def seal(self):
+        self.tmp.flush()
+        if self.off[-1]:
+            self.map = mmap.mmap(self.tmp.fileno(), 0, access=mmap.ACCESS_READ)
 
     def __len__(self):
-        return len(self.line)
+        return len(self.has_ref) if self.rows is None else len(self.rows)
 
-    def __contains__(self, cid):
-        return cid in self.line
+    def row(self, cid):
+        """Row of a constraint id, or None."""
+        if self.rows is not None:
+            return self.rows.get(cid)
+        if isinstance(cid, str) and cid[:1] == 'c' and cid[1:].isdigit():
+            k = int(cid[1:])
+            if k < len(self.has_ref) and cid == 'c%d' % k:
+                return k
+        return None
 
-    def _get(self, cid):
-        line = self.line.get(cid)
-        return None if line is None else Con(json.loads(line.decode('utf-8')))
+    def _con(self, k):
+        return Con(json.loads(self.map[self.off[k]:self.off[k + 1]].decode('utf-8')))
+
+    def get(self, cid):
+        k = self.row(cid)
+        return None if k is None else self.con(k)
+
+    def current_rows(self):
+        """The rows that an id refers to (all rows, unless an id occurs twice)."""
+        return range(len(self.has_ref)) if self.rows is None else self.rows.values()
 
 
 def load_edge_ids(directory, rep):
@@ -1989,26 +2057,54 @@ def load_constraints(directory, rep, edge_ids):
                 except Exception as ex:
                     rep.err('constraint', 'malformed constraint %s: %s' % (short(json.dumps(rec), 200), ex))
                     continue
-                if con.cid in cons:
+                has_ref = isinstance(con.ref, str)
+                dup = cons.add(con.cid, line.encode('utf-8'), has_ref)
+                if dup is not None:
                     rep.err('constraint', 'duplicate constraint id %s' % con.cid)
-                    cons.with_ref.discard(con.cid)
-                    cons.bad_ref.pop(con.cid, None)
-                cons.line[con.cid] = line.encode('utf-8')
-                if isinstance(con.ref, str):
-                    cons.with_ref.add(con.cid)
-                    if con.ref not in edge_ids:
-                        cons.bad_ref[con.cid] = con.ref
+                if has_ref and con.ref not in edge_ids:
+                    cons.bad_ref[len(cons.has_ref) - 1] = con.ref
+    cons.seal()
     return cons
 
 
-def load_events(directory, rep):
-    events = []
+def iter_events(directory, rep):
+    """The events as (c, rule, node, dom, in, dg), in file order (index = event id)."""
     intern = sys.intern
+    k = 0
     for rec in read_jsonl(directory, 'events.jsonl'):
-        if rec.get('id') != len(events):
-            rep.err('event', 'event ids are not consecutive from 0: line %d has id %r' % (len(events), rec.get('id')))
-        events.append((rec['c'], intern(rec['rule']), intern(rec['node']), intern(rec['dom']), rec['in'], rec['dg']))
-    return events
+        if rec.get('id') != k:
+            rep.err('event', 'event ids are not consecutive from 0: line %d has id %r' % (k, rec.get('id')))
+        k += 1
+        yield (rec['c'], intern(rec['rule']), intern(rec['node']), intern(rec['dom']), rec['in'], rec['dg'])
+
+
+class EventWindow(object):
+    """Index access to the events of an iterator, for the indices that were not released yet: the replay
+    reads events.jsonl once, front to back, and looks a few events ahead."""
+
+    def __init__(self, it):
+        self.it = it
+        self.base = 0
+        self.buf = deque()
+
+    def has(self, k):
+        while self.base + len(self.buf) <= k:
+            try:
+                self.buf.append(next(self.it))
+            except StopIteration:
+                return False
+        return True
+
+    def __getitem__(self, k):
+        if not self.has(k):
+            raise IndexError(k)
+        return self.buf[k - self.base]
+
+    def release(self, k):
+        """The events before k are not needed any more."""
+        while self.base < k:
+            self.buf.popleft()
+            self.base += 1
 
 
 def check_knots(directory, replay, rep):
@@ -2171,11 +2267,17 @@ def check_csv_part(path, knots, seen, rep):
 
 def check_edges(edge_ids, cons, used, rep):
     """f. edge ids used as `ref` (the edge ids were compared when the constraints were read)."""
-    refs = sum(1 for cid in cons.with_ref if cid in used)
+    current = cons.current_rows()
+    refs = sum(1 for k in current if cons.has_ref[k] and used[k])
+    if cons.rows is not None:
+        current = set(current)
     unused_bad = 0
-    for cid, ref in cons.bad_ref.items():
-        if cid in used:
-            rep.err('edge', 'constraint %s (used by an event) refers to edge %r, not in edges.jsonl' % (cid, ref))
+    for k, ref in cons.bad_ref.items():
+        if k not in current:
+            continue                   # a line replaced by a later line with the same id
+        if used[k]:
+            rep.err('edge', 'constraint %s (used by an event) refers to edge %r, not in edges.jsonl'
+                    % (cons.con(k).cid, ref))
         else:
             unused_bad += 1
     return len(edge_ids), refs, unused_bad
@@ -2217,15 +2319,19 @@ def main(argv=None):
             SLOPE_SETS[k] = [(p, q) for p, q in v]
         edge_ids = load_edge_ids(directory, rep)
         cons = load_constraints(directory, rep, edge_ids)
-        events = load_events(directory, rep)
+        if not jsonl_parts(directory, 'events.jsonl'):
+            raise IOError('missing file %s' % os.path.join(directory, 'events.jsonl'))
     except (IOError, OSError, KeyError, ValueError) as ex:
         print('error: cannot load the export: %s: %s' % (type(ex).__name__, ex))
         return 2
-    print('loaded %d constraints, %d events (%.1f s)' % (len(cons), len(events), time.time() - t0))
+    print('loaded %d constraints (%.1f s)' % (len(cons), time.time() - t0))
 
-    replay = Replay(cons, limit, rep, keep_text=not args.no_chains).run(events)
-    n_events = len(events)
-    del events
+    try:
+        replay = Replay(cons, limit, rep, keep_text=not args.no_chains).run(iter_events(directory, rep))
+    except (IOError, OSError, KeyError, ValueError) as ex:
+        print('error: cannot read events.jsonl: %s: %s' % (type(ex).__name__, ex))
+        return 2
+    n_events = replay.n_events
     print('replayed %d events in %d applications (%.1f s)' % (n_events, replay.applications, time.time() - t0))
 
     try:
@@ -2240,13 +2346,13 @@ def main(argv=None):
         same, different, extra = check_chains(directory, replay, order, rep)
         print('compared %d chain files (%.1f s)' % (same + different, time.time() - t0))
     rows = check_csv(directory, knots, rep)
-    n_edges, n_refs, unused_bad = check_edges(edge_ids, cons, replay.used_cons, rep)
+    n_edges, n_refs, unused_bad = check_edges(edge_ids, cons, replay.used, rep)
 
     npins = sum(len(replay.pins(n)) for n in order)
     print()
     print('SUMMARY')
     print('  events checked                : %d (constraints: %d, used by events: %d, applications: %d)'
-          % (n_events, len(cons), len(replay.used_cons), replay.applications))
+          % (n_events, len(cons), sum(replay.used), replay.applications))
     print('  digest mismatches             : %d' % rep.n('digest'))
     print('  `in` mismatches               : %d' % rep.n('in'))
     print('  targets that do not change    : %d' % rep.n('unchanged'))

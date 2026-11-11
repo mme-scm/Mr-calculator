@@ -1,11 +1,17 @@
 """Worklist propagation to a fixpoint (section 8).
 
-A constraint is a dict {id, rule, fam, dom, nodes, par, ref}.  `rule` is the catalogue ID; the
+A constraint is {id, rule, dom, nodes, par, ref} (class Con).  `rule` is the catalogue ID; the
 operator is selected by the rule.  Every narrowing is an event {id, c, rule, node, dom, in, dg}.
 An empty domain raises Contradiction (the run stops, section 0).
+
+Constraints and events are kept as columns (ConTable, EvTable): the problems have millions of both,
+and an object each does not fit in memory.  Con and Ev objects are built when one is read.
 """
 from __future__ import annotations
 
+import json
+import sys
+from array import array
 from collections import deque
 
 from . import rules as R
@@ -65,6 +71,185 @@ def con_dict(c):
     return c.to_dict() if isinstance(c, Con) else dict(c)
 
 
+DOMS = ('F', 'C', 'U', 'X')
+DOM_CODE = {'F': 0, 'C': 1, 'U': 2, 'X': 3}
+_EDGE_REF = 0x80000000
+assert array('I').itemsize == 4 and array('i').itemsize == 4 and array('Q').itemsize == 8
+
+
+class ConTable:
+    """Constraints stored as columns; a Con is built when one is asked for (t[i], iteration).
+
+    A constraint held as an object costs about 250 bytes (object, id, node tuple) and 130 more in the
+    index of the solver; a row here costs 18 bytes.  Equal parameter dicts are stored once; a reference
+    that is an edge id 'e<k>' is stored as the number k, any other reference as its JSON text."""
+
+    def __init__(self):
+        self.rule = array('B')          # index into rules
+        self.dom = array('B')           # DOM_CODE
+        self.n0 = array('I')            # first node (index into names)
+        self.n1 = array('i')            # -1: no further node; >= 0: second node; <= -2: more[-v - 2]
+        self.par = array('I')           # index into pars (0: none)
+        self.ref = array('I')           # 0: none; _EDGE_REF | k: 'e<k>'; else index into refs
+        self.rules, self.rule_ix = [], {}
+        self.names, self.name_ix = [], {}
+        self.pars, self.par_ix = [None], {}
+        self.refs, self.ref_ix = [None], {}
+        self.more = []                  # node indices after the first, for constraints on 3 or more nodes
+        self.orig = None                # array: row -> row of the table this one is a part of (ids follow it)
+        self.ids = None                 # list of ids, when they are not 'c<row>'
+
+    def __len__(self):
+        return len(self.rule)
+
+    # ---- writing
+    def node_index(self, name):
+        i = self.name_ix.get(name)
+        if i is None:
+            i = self.name_ix[name] = len(self.names)
+            self.names.append(name)
+        return i
+
+    def par_index(self, par, share=True):
+        if not par:
+            return 0
+        if share:
+            key = json.dumps(par, sort_keys=True)
+            i = self.par_ix.get(key)
+            if i is not None:
+                return i
+            self.par_ix[key] = len(self.pars)
+        self.pars.append(par)
+        return len(self.pars) - 1
+
+    def ref_index(self, ref):
+        if ref is None:
+            return 0
+        if isinstance(ref, str):
+            k = ref[1:]
+            if ref[:1] == 'e' and k.isdigit() and ref == 'e%d' % int(k) and int(k) < _EDGE_REF:
+                return _EDGE_REF | int(k)
+            key = ref
+        elif isinstance(ref, bytes):         # JSON text prepared by the caller
+            key = ref
+        else:
+            key = json.dumps(ref, separators=(',', ':')).encode('utf-8')
+        i = self.ref_ix.get(key)
+        if i is None:
+            i = self.ref_ix[key] = len(self.refs)
+            self.refs.append(key)
+        return i
+
+    def append(self, rule, dom, nodes, par=None, ref=None, share_par=True, id=None):
+        i = len(self.rule)
+        r = self.rule_ix.get(rule)
+        if r is None:
+            r = self.rule_ix[rule] = len(self.rules)
+            self.rules.append(sys.intern(rule))
+        ix = [self.node_index(n) for n in nodes]
+        self.rule.append(r)
+        self.dom.append(DOM_CODE[dom])
+        self.n0.append(ix[0])
+        if len(ix) == 1:
+            self.n1.append(-1)
+        elif len(ix) == 2:
+            self.n1.append(ix[1])
+        else:
+            self.more.append(tuple(ix[1:]))
+            self.n1.append(-len(self.more) - 1)
+        self.par.append(self.par_index(par, share_par))
+        self.ref.append(self.ref_index(ref))
+        if self.orig is not None:
+            raise RuntimeError('a part of another table cannot be extended')
+        if self.ids is not None:
+            self.ids.append(id if id is not None else 'c%d' % i)
+        elif id is not None and id != 'c%d' % i:
+            self.ids = ['c%d' % k for k in range(i)] + [id]
+        return i
+
+    def share_par(self, i):
+        """Store the parameters of row i with the equal ones.  For a row appended with share_par=False
+        (its dict is its own), after the dict was completed in place."""
+        old = self.par[i]
+        new = self.par_ix.setdefault(json.dumps(self.pars[old], sort_keys=True), old)
+        if new != old:
+            self.par[i] = new
+            self.pars[old] = None
+
+    # ---- reading
+    def id_of(self, i):
+        if self.ids is not None:
+            return self.ids[i]
+        return 'c%d' % (self.orig[i] if self.orig is not None else i)
+
+    def nodes_of(self, i):
+        names, b = self.names, self.n1[i]
+        if b == -1:
+            return (names[self.n0[i]],)
+        if b >= 0:
+            return (names[self.n0[i]], names[b])
+        return (names[self.n0[i]],) + tuple(names[k] for k in self.more[-b - 2])
+
+    def ref_of(self, i):
+        v = self.ref[i]
+        if v & _EDGE_REF:
+            return 'e%d' % (v & 0x7fffffff)
+        v = self.refs[v]
+        return json.loads(v) if isinstance(v, bytes) else v
+
+    def light(self, i):
+        """Row i without id and reference (what an operator reads)."""
+        return Con(None, self.rules[self.rule[i]], DOMS[self.dom[i]], self.nodes_of(i), self.pars[self.par[i]])
+
+    def __getitem__(self, i):
+        if i < 0:
+            i += len(self.rule)
+        return Con(self.id_of(i), self.rules[self.rule[i]], DOMS[self.dom[i]], self.nodes_of(i),
+                   self.pars[self.par[i]], self.ref_of(i))
+
+    def __iter__(self):
+        for i in range(len(self.rule)):
+            yield self[i]
+
+    def rows_of(self, rules):
+        """Rows whose rule is one of `rules`, in order."""
+        codes = {self.rule_ix[r] for r in rules if r in self.rule_ix}
+        if codes:
+            col = self.rule
+            for i in range(len(col)):
+                if col[i] in codes:
+                    yield i
+
+    def of_rules(self, rules):
+        for i in self.rows_of(rules):
+            yield self[i]
+
+    def without(self, rules):
+        """The rows whose rule is not in `rules`: a table that shares names, parameters and references
+        with this one and keeps the ids."""
+        t = ConTable()
+        t.rules, t.rule_ix, t.names, t.name_ix = self.rules, self.rule_ix, self.names, self.name_ix
+        t.pars, t.par_ix, t.refs, t.ref_ix, t.more = self.pars, self.par_ix, self.refs, self.ref_ix, self.more
+        drop = {self.rule_ix[r] for r in rules if r in self.rule_ix}
+        t.orig = array('I')
+        if self.ids is not None:
+            t.ids = []
+        for i in range(len(self.rule)):
+            r = self.rule[i]
+            if r in drop:
+                continue
+            t.rule.append(r)
+            t.dom.append(self.dom[i])
+            t.n0.append(self.n0[i])
+            t.n1.append(self.n1[i])
+            t.par.append(self.par[i])
+            t.ref.append(self.ref[i])
+            t.orig.append(self.orig[i] if self.orig is not None else i)
+            if self.ids is not None:
+                t.ids.append(self.ids[i])
+        return t
+
+
 class Ev:
     """One narrowing event.  Read like the dict it replaces."""
     __slots__ = ('id', 'c', 'rule', 'node', 'dom', 'ins', 'dg')
@@ -78,6 +263,52 @@ class Ev:
     def to_dict(self):
         return {'id': self.id, 'c': self.c, 'rule': self.rule, 'node': self.node, 'dom': self.dom,
                 'in': list(self.ins), 'dg': self.dg}
+
+
+class EvTable:
+    """Events stored as columns; an Ev is built when one is asked for.  The rule of an event is the rule of
+    its constraint; the id is the position."""
+
+    def __init__(self, cons):
+        self.cons = cons                # ConTable of the solver
+        self.c = array('I')             # row of the constraint
+        self.node = array('I')          # index into cons.names
+        self.dom = array('B')
+        self.dg = array('Q')            # digest (12 hex digits) as a number
+        self.off = array('Q', [0])      # ins[off[i]:off[i+1]]: input events of event i
+        self.ins = array('I')
+
+    def __len__(self):
+        return len(self.c)
+
+    def add(self, c, node, dom, ins, dg):
+        if len(dg) != 12:
+            raise ValueError('digest %r' % (dg,))
+        self.c.append(c)
+        self.node.append(node)
+        self.dom.append(dom)
+        self.dg.append(int(dg, 16))
+        self.ins.extend(ins)
+        self.off.append(len(self.ins))
+        return len(self.c) - 1
+
+    def ins_of(self, i):
+        return tuple(self.ins[self.off[i]:self.off[i + 1]])
+
+    def rule_of(self, i):
+        t = self.cons
+        return t.rules[t.rule[self.c[i]]]
+
+    def __getitem__(self, i):
+        if i < 0:
+            i += len(self.c)
+        t, c = self.cons, self.c[i]
+        return Ev(i, t.id_of(c), t.rules[t.rule[c]], t.names[self.node[i]], DOMS[self.dom[i]], self.ins_of(i),
+                  '%012x' % self.dg[i])
+
+    def __iter__(self):
+        for i in range(len(self.c)):
+            yield self[i]
 
 
 class Contradiction(Exception):
@@ -270,11 +501,15 @@ class Solver:
     def __init__(self, withheld=()):
         self.state = {}
         self.last = {}          # (node, dom) -> last event id
-        self.events = []
-        self.cons = []
-        self.watch = {}
+        self.cons = ConTable()
+        self.events = EvTable(self.cons)
+        self._shared = False    # cons is the table of the problem (not to be extended)
+        # work list: the constraints fresh.. (never applied, in order) come first, then the queue
+        self.fresh = 0
         self.queue = deque()
-        self.queued = set()
+        self.queued = bytearray()       # per constraint: 1 while it waits (fresh or in the queue)
+        self._woff = self._wtgt = None  # index (node, dom) -> constraints reading it, as two arrays
+        self._windexed = -1
         self.withheld = set(withheld)
         self.napplied = 0
         self.pin_event = {}     # (node, coordinate) -> id of the event that pinned it
@@ -283,6 +518,7 @@ class Solver:
         self.keep = 'dom'
         self.ev_dom = []
         self.ev_text = []
+        self._text = {}         # equal statement texts are stored once
         self.record = True      # False: no events (final domains and pins only; used by the ablation runs)
 
     def get(self, node, dom):
@@ -293,23 +529,88 @@ class Solver:
         return d
 
     def add(self, constraints):
-        """Add constraints (incremental mode: only the new ones are queued)."""
-        for c in constraints:
-            if c['rule'] in self.withheld:
+        """Add constraints (incremental mode: only the new ones are queued).  The table of a problem is
+        taken as it is (without the withheld rules), not copied row by row."""
+        t = self.cons
+        if isinstance(constraints, ConTable) and len(t) == 0 and not self._shared:
+            t = constraints.without(self.withheld) if self.withheld else constraints
+            self.cons = self.events.cons = t
+            self._shared = True
+        else:
+            if self._shared:
+                raise RuntimeError('constraints cannot be added to the table of a problem')
+            for c in constraints:
+                if c['rule'] in self.withheld:
+                    continue
+                t.append(c['rule'], c['dom'], c['nodes'], c.get('par'), c.get('ref'), id=c.get('id'))
+        self.queued.extend(b'\x01' * (len(t) - len(self.queued)))
+
+    def _index(self):
+        """For every (node, dom) the constraints that read it, in increasing order: the rows
+        wtgt[woff[k]:woff[k+1]] for k = 4 * (index of the node) + DOM_CODE."""
+        t = self.cons
+        n, K = len(t), 4 * len(t.names)
+        rule, dom, n0, n1, more = t.rule, t.dom, t.n0, t.n1, t.more
+        xr = t.rule_ix.get('X', -1)
+        off = array('I', bytes(4 * (K + 1)))
+        for i in range(n):
+            a = n0[i] * 4
+            if rule[i] == xr:
+                off[a + 1] += 1
+                off[a + 2] += 1
                 continue
-            i = len(self.cons)
-            self.cons.append(c)
-            for key in reads(c):
-                self.watch.setdefault(key, []).append(i)
-            self.queue.append(i)
-            self.queued.add(i)
+            d = dom[i] + 1
+            off[a + d] += 1
+            b = n1[i]
+            if b >= 0:
+                off[b * 4 + d] += 1
+            elif b < -1:
+                for m in more[-b - 2]:
+                    off[m * 4 + d] += 1
+        tot = 0
+        for k in range(1, K + 1):
+            tot += off[k]
+            off[k] = tot
+        pos = array('I', off)
+        tgt = array('I', bytes(4 * tot))
+        for i in range(n):
+            a = n0[i] * 4
+            if rule[i] == xr:
+                tgt[pos[a]] = i
+                pos[a] += 1
+                tgt[pos[a + 1]] = i
+                pos[a + 1] += 1
+                continue
+            d = dom[i]
+            tgt[pos[a + d]] = i
+            pos[a + d] += 1
+            b = n1[i]
+            if b >= 0:
+                tgt[pos[b * 4 + d]] = i
+                pos[b * 4 + d] += 1
+            elif b < -1:
+                for m in more[-b - 2]:
+                    tgt[pos[m * 4 + d]] = i
+                    pos[m * 4 + d] += 1
+        self._woff, self._wtgt, self._windexed = off, tgt, n
 
     def run(self):
-        cons, state, last, events = self.cons, self.state, self.last, self.events
-        while self.queue:
-            i = self.queue.popleft()
-            self.queued.discard(i)
-            c = cons[i]
+        t, state, last, events = self.cons, self.state, self.last, self.events
+        if self._windexed != len(t):
+            self._index()
+        woff, wtgt, name_ix = self._woff, self._wtgt, t.name_ix
+        queue, queued, n = self.queue, self.queued, len(t)
+        text = self._text
+        while True:
+            if self.fresh < n:          # the fresh constraints are ahead of everything queued again
+                i = self.fresh
+                self.fresh += 1
+            elif queue:
+                i = queue.popleft()
+            else:
+                break
+            queued[i] = 0
+            c = t.light(i)
             self.napplied += 1
             keys = reads(c)
             before = {k: self.get(*k) for k in keys}
@@ -326,36 +627,33 @@ class Solver:
                 for node, dom, new in changed:
                     state[(node, dom)] = new
                     if new.is_empty():
-                        raise Contradiction(node, dom, c, events)
+                        raise Contradiction(node, dom, t[i], events)
+            else:
+                ins = tuple(sorted({last[k] for k in keys if k in last}))
+                keep = self.keep
+                first = len(events)
                 for node, dom, new in changed:
-                    for j in self.watch.get((node, dom), ()):
-                        if j not in self.queued:
-                            self.queue.append(j)
-                            self.queued.add(j)
-                continue
-            ins = tuple(sorted({last[k] for k in keys if k in last}))
-            keep = self.keep
+                    ev = events.add(i, name_ix[node], DOM_CODE[dom], ins, new.digest())
+                    if keep == 'dom':
+                        self.ev_dom.append(new)
+                    elif keep is not None:
+                        x = keep(new)
+                        self.ev_text.append(text.setdefault(x, x))
+                    state[(node, dom)] = new
+                    if new.is_empty():
+                        raise Contradiction(node, dom, t[i], events)
+                    for coord, co in PIN_COORDS[dom]:
+                        if (node, coord) not in self.pin_event and new.pin(co) is not None:
+                            self.pin_event[(node, coord)] = ev
+                for k, (node, dom, new) in enumerate(changed):     # the last event of this application on it
+                    last[(node, dom)] = first + k
             for node, dom, new in changed:
-                ev = Ev(len(events), c['id'], c['rule'], node, dom, ins, new.digest())
-                events.append(ev)
-                if keep == 'dom':
-                    self.ev_dom.append(new)
-                elif keep is not None:
-                    self.ev_text.append(keep(new))
-                state[(node, dom)] = new
-                if new.is_empty():
-                    raise Contradiction(node, dom, c, events)
-                for coord, co in PIN_COORDS[dom]:
-                    if (node, coord) not in self.pin_event and new.pin(co) is not None:
-                        self.pin_event[(node, coord)] = ev.id
-            for node, dom, new in changed:
-                last[(node, dom)] = [e.id for e in events[-len(changed):]
-                                     if e.node == node and e.dom == dom][-1]
-            for node, dom, new in changed:
-                for j in self.watch.get((node, dom), ()):
-                    if j not in self.queued:      # includes the constraint itself (idempotence check)
-                        self.queue.append(j)
-                        self.queued.add(j)
+                k = name_ix[node] * 4 + DOM_CODE[dom]
+                for p in range(woff[k], woff[k + 1]):
+                    j = wtgt[p]
+                    if not queued[j]:           # includes the constraint itself (idempotence check)
+                        queued[j] = 1
+                        queue.append(j)
         return self
 
     # ------------------------------------------------------------------

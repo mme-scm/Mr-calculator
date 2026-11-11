@@ -44,12 +44,15 @@ def main():
     for n, info in P.nodes.items():
         if not info.get('peripheral') or info['calc'] is not None or n in done:
             continue
-        mv = P.per_move.get(n)
+        mv = P.move_of(n)
         if mv is None:
             continue        # only reached as the mirror image of a result
         items.append((n, mv, timeout))
     items.sort(key=lambda x: (x[1]['shard'], x[0]))        # one diagram shard at a time per worker
     print('peripheral nodes needing calculator input: %d' % len(items), flush=True)
+    del P, done                           # the workers are forked: they should not inherit the problem
+    import gc
+    gc.collect()
     t0 = time.time()
     with mp.Pool(procs) as pool, open(OUT, 'a') as f:
         for i, r in enumerate(pool.imap_unordered(task, items, chunksize=64)):

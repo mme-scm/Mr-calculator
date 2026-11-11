@@ -12,7 +12,7 @@ import tarfile
 
 from . import names, passes, pd as P
 from .config import DATA, EXPORT
-from .solver import INVARIANTS, INV_DOM, PIN_COORDS, RULE_FAMILY, con_dict
+from .solver import INVARIANTS, INV_DOM, PIN_COORDS, RULE_FAMILY, ConTable, con_dict
 
 MAX_TEXT = 100
 PART_LIMIT = 40 * 2 ** 20          # size limit of one file of the export (bytes on disk)
@@ -33,6 +33,7 @@ def _dumps(o):
 
 def chain_events(events, pin_ids):
     """Ancestor closure of the given event ids (sorted)."""
+    ins = events.ins_of if hasattr(events, 'ins_of') else (lambda i: events[i]['in'])
     seen = set()
     stack = list(pin_ids)
     while stack:
@@ -40,7 +41,7 @@ def chain_events(events, pin_ids):
         if i in seen:
             continue
         seen.add(i)
-        stack.extend(events[i]['in'])
+        stack.extend(ins(i))
     return sorted(seen)
 
 
@@ -49,13 +50,17 @@ class _ConIndex:
 
     def __init__(self, cons):
         self.cons = cons
+        self.get = cons.light if isinstance(cons, ConTable) else cons.__getitem__
 
     def __getitem__(self, cid):
-        return self.cons[int(cid[1:])]
+        return self.get(int(cid[1:]))        # rule, nodes and parameters (what a chain line shows)
 
 
 def con_index(cons):
-    if all(c['id'] == 'c%d' % i for i, c in enumerate(cons)):
+    if isinstance(cons, ConTable):
+        if cons.ids is None and cons.orig is None:
+            return _ConIndex(cons)
+    elif all(c['id'] == 'c%d' % i for i, c in enumerate(cons)):
         return _ConIndex(cons)
     return {c['id']: c for c in cons}
 
@@ -227,7 +232,7 @@ def export_all(problem, solver, out_dir=EXPORT, ablation=None, extra=None, write
     # --- edges
     w = Writer(os.path.join(out_dir, 'edges.jsonl'), compress=pack)
     cache = {}
-    for e, r in problem.edge_records(problem.edges):      # in reading order of the pass records, not by id
+    for e, r in problem.edge_records():      # in reading order of the pass records, not by id
         w.write(expand_edge(e, r, cache))
     w.close()
     # --- certificates
@@ -253,7 +258,7 @@ def export_all(problem, solver, out_dir=EXPORT, ablation=None, extra=None, write
             shutil.rmtree(chdir)
         os.makedirs(chdir)
     chpack = ChainPack(chdir) if (write_chains and pack) else None
-    rows = []
+    tables = TableWriter(out_dir, problem)
     f = Writer(os.path.join(out_dir, 'knots.jsonl'), compress=pack)
     if True:
         for n in sorted(problem.nodes, key=lambda x: (problem.nodes[x]['tier'] if problem.nodes[x]['tier'] is not None else 99, x)):
@@ -276,7 +281,7 @@ def export_all(problem, solver, out_dir=EXPORT, ablation=None, extra=None, write
                 'chain': ('chains/%s.txt' % names.file_name(n)) if pins else None,
             }
             f.write(rec)
-            rows.append(table_row(rec, solver, n))
+            tables.add(table_row(rec, solver, n))
             if pins and write_chains:
                 text = chain_text(n, pins, pe, events, ev_text, cons_by_id)
                 if chpack:
@@ -303,8 +308,7 @@ def export_all(problem, solver, out_dir=EXPORT, ablation=None, extra=None, write
         par.update(extra)
     with open(os.path.join(out_dir, 'parameters.json'), 'w') as f:
         json.dump(par, f, indent=1, sort_keys=True)
-    write_tables(rows, out_dir, problem, ablation)
-    return rows
+    tables.close(ablation)
 
 
 # ----------------------------------------------------------------------
@@ -355,46 +359,97 @@ def table_row(rec, solver, n):
     return row
 
 
-def pins_by_tier(problem, rows):
-    out = {}
-    for r in rows:
-        info = problem.nodes[r['node']]
-        t = info['tier'] if info['kind'] in ('table', 'composite', 'unknot') else 'constructions'
-        if info.get('peripheral'):
-            t = 'peripheral'
-        d = out.setdefault(t, {inv: 0 for inv in INVARIANTS})
-        d['nodes'] = d.get('nodes', 0) + 1
-        for inv in INVARIANTS:
-            if r['%s_pin' % inv] != '':
-                d[inv] += 1
-    return out
-
-
 def _row_size(r):
     return sum(len(str(v)) for v in r.values()) + len(r) + 1
 
 
-def write_csv(rows, out_dir, limit=PART_LIMIT):
-    """knots.csv, continued in knots.1.csv, knots.2.csv, ... (each with the header line) below the size limit."""
-    for fn in os.listdir(out_dir):
-        if _is_part(fn, 'knots', ('.csv',)):
-            os.remove(os.path.join(out_dir, fn))
-    part, f, size = 0, None, 0
-    for r in rows:
+class TableWriter:
+    """knots.csv (all nodes; continued in knots.1.csv, ... with the header line, each below the size limit),
+    knots.xlsx (sheets knots, pins, ablation, parameters; the sheet knots has the nodes that are not
+    peripheral), knots_peripheral[.k].xlsx (peripheral nodes, XLSX_ROWS per workbook), pins_by_tier.json.
+    Rows are written as they come: the table of all nodes is not held in memory."""
+
+    def __init__(self, out_dir, problem, limit=PART_LIMIT):
+        from openpyxl import Workbook
+        self.Workbook = Workbook
+        self.dir, self.problem, self.limit = out_dir, problem, limit
+        for fn in os.listdir(out_dir):
+            if _is_part(fn, 'knots', ('.csv',)) or _is_part(fn, 'knots_peripheral', ('.xlsx',)):
+                os.remove(os.path.join(out_dir, fn))
+        self.part, self.f, self.w, self.size = 0, None, None, 0
+        self.wb = Workbook(write_only=True)
+        self.ws = self.wb.create_sheet('knots')
+        self.ws.append(COLUMNS)
+        self.pwb, self.pws, self.pn = None, None, 0       # current workbook of peripheral nodes, rows so far
+        self.tiers = {}
+
+    def add(self, r):
+        # csv
         n = _row_size(r)
-        if f is None or size + n > limit:
-            if f:
-                f.close()
-                part += 1
-            f = open(os.path.join(out_dir, 'knots%s.csv' % ('.%d' % part if part else '')), 'w', newline='',
-                     encoding='utf-8')
-            w = csv.DictWriter(f, fieldnames=COLUMNS)
-            w.writeheader()
-            size = 0
-        w.writerow(r)
-        size += n
-    if f:
-        f.close()
+        if self.f is None or self.size + n > self.limit:
+            if self.f:
+                self.f.close()
+                self.part += 1
+            self.f = open(os.path.join(self.dir, 'knots%s.csv' % ('.%d' % self.part if self.part else '')), 'w',
+                          newline='', encoding='utf-8')
+            self.w = csv.DictWriter(self.f, fieldnames=COLUMNS)
+            self.w.writeheader()
+            self.size = 0
+        self.w.writerow(r)
+        self.size += n
+        # workbooks
+        if r['kind'].endswith('/peripheral'):
+            if self.pn % XLSX_ROWS == 0:
+                self._save_peripheral()
+                self.pwb = self.Workbook(write_only=True)
+                self.pws = self.pwb.create_sheet('knots')
+                self.pws.append(COLUMNS)
+            self.pws.append([r[c] for c in COLUMNS])
+            self.pn += 1
+        else:
+            self.ws.append([r[c] for c in COLUMNS])
+        # pins by tier
+        info = self.problem.nodes[r['node']]
+        t = info['tier'] if info['kind'] in ('table', 'composite', 'unknot') else 'constructions'
+        if info.get('peripheral'):
+            t = 'peripheral'
+        d = self.tiers.setdefault(t, {inv: 0 for inv in INVARIANTS})
+        d['nodes'] = d.get('nodes', 0) + 1
+        for inv in INVARIANTS:
+            if r['%s_pin' % inv] != '':
+                d[inv] += 1
+
+    def _save_peripheral(self):
+        if self.pwb is not None:
+            k = (self.pn - 1) // XLSX_ROWS
+            self.pwb.save(os.path.join(self.dir, 'knots_peripheral%s.xlsx' % ('.%d' % k if k else '')))
+            self.pwb = None
+
+    def close(self, ablation=None):
+        if self.f:
+            self.f.close()
+        self._save_peripheral()
+        wb, pt = self.wb, self.tiers
+        ws = wb.create_sheet('pins')
+        ws.append(['tier', 'nodes'] + INVARIANTS)
+        tot = {inv: 0 for inv in INVARIANTS}
+        totn = 0
+        for t in sorted(pt, key=lambda x: (isinstance(x, str), x)):
+            ws.append([t, pt[t]['nodes']] + [pt[t][inv] for inv in INVARIANTS])
+            totn += pt[t]['nodes']
+            for inv in INVARIANTS:
+                tot[inv] += pt[t][inv]
+        ws.append(['total', totn] + [tot[inv] for inv in INVARIANTS])
+        _ablation_rows(wb.create_sheet('ablation'), ablation)
+        ws = wb.create_sheet('parameters')
+        ws.append(['parameter', 'value'])
+        for k, v in sorted(self.problem.params.items()):
+            ws.append([k, json.dumps(v)])
+        for k, v in sorted(self.problem.stats.items()):
+            ws.append(['stat: ' + k, v])
+        wb.save(os.path.join(self.dir, 'knots.xlsx'))
+        with open(os.path.join(self.dir, 'pins_by_tier.json'), 'w') as f:
+            json.dump({str(k): v for k, v in pt.items()}, f, indent=1, sort_keys=True)
 
 
 def _ablation_rows(ws, ablation):
@@ -414,48 +469,3 @@ def write_ablation_sheet(out_dir, ablation):
     del wb['ablation']
     _ablation_rows(wb.create_sheet('ablation', at), ablation)
     wb.save(path)
-
-
-def write_tables(rows, out_dir, problem, ablation=None):
-    """knots.csv (all nodes); knots.xlsx (sheets knots, pins, ablation, parameters; the sheet knots has the
-    nodes that are not peripheral); knots_peripheral[.k].xlsx (peripheral nodes, XLSX_ROWS per workbook)."""
-    write_csv(rows, out_dir)
-    from openpyxl import Workbook
-    for fn in os.listdir(out_dir):
-        if _is_part(fn, 'knots_peripheral', ('.xlsx',)):
-            os.remove(os.path.join(out_dir, fn))
-    core = [r for r in rows if not r['kind'].endswith('/peripheral')]
-    peri = [r for r in rows if r['kind'].endswith('/peripheral')]
-    for k in range(0, len(peri), XLSX_ROWS):
-        wb = Workbook(write_only=True)
-        ws = wb.create_sheet('knots')
-        ws.append(COLUMNS)
-        for r in peri[k:k + XLSX_ROWS]:
-            ws.append([r[c] for c in COLUMNS])
-        wb.save(os.path.join(out_dir, 'knots_peripheral%s.xlsx' % ('.%d' % (k // XLSX_ROWS) if k else '')))
-    wb = Workbook(write_only=True)
-    ws = wb.create_sheet('knots')
-    ws.append(COLUMNS)
-    for r in core:
-        ws.append([r[c] for c in COLUMNS])
-    ws = wb.create_sheet('pins')
-    ws.append(['tier', 'nodes'] + INVARIANTS)
-    pt = pins_by_tier(problem, rows)
-    tot = {inv: 0 for inv in INVARIANTS}
-    totn = 0
-    for t in sorted(pt, key=lambda x: (isinstance(x, str), x)):
-        ws.append([t, pt[t]['nodes']] + [pt[t][inv] for inv in INVARIANTS])
-        totn += pt[t]['nodes']
-        for inv in INVARIANTS:
-            tot[inv] += pt[t][inv]
-    ws.append(['total', totn] + [tot[inv] for inv in INVARIANTS])
-    _ablation_rows(wb.create_sheet('ablation'), ablation)
-    ws = wb.create_sheet('parameters')
-    ws.append(['parameter', 'value'])
-    for k, v in sorted(problem.params.items()):
-        ws.append([k, json.dumps(v)])
-    for k, v in sorted(problem.stats.items()):
-        ws.append(['stat: ' + k, v])
-    wb.save(os.path.join(out_dir, 'knots.xlsx'))
-    with open(os.path.join(out_dir, 'pins_by_tier.json'), 'w') as f:
-        json.dump({str(k): v for k, v in pt.items()}, f, indent=1, sort_keys=True)

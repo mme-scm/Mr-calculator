@@ -43,19 +43,19 @@ def dump_contradiction(problem, e, out_dir):
     os.makedirs(d, exist_ok=True)
     events = e.events
     ids = export.chain_events(events, [len(events) - 1])
-    cons = {c['id']: c for c in problem.cons}
     with open(os.path.join(d, 'events.jsonl'), 'w') as f:
         for i in ids:
             f.write(json.dumps(events[i].to_dict()) + '\n')
     edge_ids = set()
     with open(os.path.join(d, 'constraints.jsonl'), 'w') as f:
-        for cid in sorted({events[i]['c'] for i in ids}, key=lambda x: int(x[1:])):
-            f.write(json.dumps(solver.con_dict(cons[cid])) + '\n')
-            if isinstance(cons[cid].get('ref'), str):
-                edge_ids.add(cons[cid]['ref'])
+        for row in sorted({int(events[i]['c'][1:]) for i in ids}):      # id 'c<row>' in the table of the problem
+            c = problem.cons[row]
+            f.write(json.dumps(solver.con_dict(c)) + '\n')
+            if isinstance(c.get('ref'), str):
+                edge_ids.add(c['ref'])
     cache = {}
     with open(os.path.join(d, 'edges.jsonl'), 'w') as f:
-        for ed, r in problem.edge_records([x for x in problem.edges if x.id in edge_ids]):
+        for ed, r in problem.edge_records([problem.edges[int(x[1:])] for x in edge_ids]):
             f.write(json.dumps(export.expand_edge(ed, r, cache)) + '\n')
     with open(os.path.join(d, 'README.txt'), 'w') as f:
         f.write('Empty domain at node %s, domain %s, constraint %s\n' % (
@@ -87,9 +87,7 @@ def validate(problem, S):
         return {k[0 if co == 'tau' else 1] for k in d.items}
     bad_comp = []
     ncomp = 0
-    for c in problem.cons:
-        if c['rule'] not in ('F4', 'C6'):
-            continue
+    for c in problem.cons.of_rules(('F4', 'C6')):
         N, parts, mult = c['nodes'][0], c['nodes'][1:], c['par']['mult']
         dom = c['dom']
         for co, slack in ((('M', 0),) if dom == 'F' else (('tau', 0), ('nu', 1))):
@@ -127,11 +125,13 @@ def write_ablation_base(problem, full, out_dir):
         p = full.pins(n)
         if p:
             full_pins[n] = p
+    from array import array
+    events = full.events
     bit = {}
-    mask = []
-    for e in full.events:
-        m = bit.setdefault(e.rule, 1 << len(bit))
-        for i in e.ins:
+    mask = array('Q')
+    for e in range(len(events)):
+        m = bit.setdefault(events.rule_of(e), 1 << len(bit))
+        for i in events.ins_of(e):
             m |= mask[i]
         mask.append(m)
     pin_mask = {n: {inv: mask[full.pin_event[(n, inv)]] for inv in p} for n, p in full_pins.items()}

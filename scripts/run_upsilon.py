@@ -76,11 +76,9 @@ def main():
             src = ('pd', cons[n])
         elif n in P.per_move:
             # peripheral: a complex only where U1 can be exact (Floer-thin or L-space flag, rule U2)
-            ranks = info.get('ranks')
-            thin = bool(ranks) and len({mm - a for a, mm, _ in ranks}) == 1
-            if not (thin or (info['calc'] or {}).get('lspace')):
+            if not (info.get('thin') or (info['calc'] or {}).get('lspace')):
                 continue
-            src = ('move', P.per_move[n])
+            src = ('move', P.move_of(n))
         elif k == 'cable' and (P.hfk_nodes.get(n) or {}).get('crossings', 999) <= maxcr:
             src = ('diagram',)
         else:
@@ -88,6 +86,9 @@ def main():
         seen.add(n)
         items.append((n, src, timeout))
     print('upsilon: %d nodes without a pinned upsilon need a complex' % len(items), flush=True)
+    del P, S, cons, seen, done            # the workers are forked: they should not inherit the problem
+    import gc
+    gc.collect()
     t0 = time.time()
     with mp.Pool(4) as pool, open(OUT, 'a') as f:
         for i, r in enumerate(pool.imap_unordered(task, items, chunksize=8)):

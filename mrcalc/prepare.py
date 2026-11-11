@@ -8,14 +8,14 @@ from __future__ import annotations
 
 import json
 import os
+from array import array
 from collections import defaultdict
 from math import gcd
 
 import hashlib
-import sys
 
 from . import knotinfo, names, nodeset, passes
-from .solver import Con
+from .solver import ConTable
 from .config import DATA, iter_census_refs, iter_hfk_peripheral, load_params
 
 E_LIST = {'9_42', '10_125', '10_130', '10_132', '10_136', '10_141'}
@@ -38,13 +38,87 @@ def _h64(name):
     return int.from_bytes(hashlib.blake2b(name.encode('utf-8'), digest_size=8).digest(), 'little')
 
 
+def _pack(obj):
+    """JSON text of a small record that is kept for many nodes and read for few."""
+    return json.dumps(obj, separators=(',', ':')).encode('utf-8')
+
+
+def _thin(ranks):
+    """Floer-thin by the ranks [[a, m, rank], ...]: one value of m - a."""
+    return bool(ranks) and len({m - a for a, m, _ in ranks}) == 1
+
+
 class Edge:
     """Deduplicated move edge.  loc = (index of the pass shard in Problem.pass_files, line) of the
     representative record, which the export reads again for the PD codes and certificates."""
     __slots__ = ('id', 't', 'key', 'src', 'dst', 'count', 'loc')
 
-    def __init__(self, t, key, src, dst, loc):
-        self.id, self.t, self.key, self.src, self.dst, self.count, self.loc = None, t, key, src, dst, 1, loc
+    def __init__(self, id, t, key, src, dst, count, loc):
+        self.id, self.t, self.key, self.src, self.dst, self.count, self.loc = id, t, key, src, dst, count, loc
+
+
+EDGE_T = ('cc', 'tw', 'mu')
+
+
+class EdgeTable:
+    """Move edges stored as columns; an Edge is built when one is asked for.  The key of an edge is
+    (K+, K-) for a crossing change, (source, result, a, b, h) for a twist, the sorted pair for a mutation;
+    the id is 'e<row>'."""
+
+    def __init__(self, like=None):
+        self.t = array('B')             # index into EDGE_T
+        self.k0 = array('I')            # the two nodes of the key (indices into names)
+        self.k1 = array('I')
+        self.a = array('h')             # twist: strands a >= b and handedness h (0 otherwise)
+        self.b = array('h')
+        self.h = array('h')
+        self.swap = array('B')          # 1: the representative move went from k1 to k0
+        self.count = array('I')
+        self.loc = array('Q')
+        self.names, self.name_ix = (like.names, like.name_ix) if like is not None else ([], {})
+
+    def __len__(self):
+        return len(self.t)
+
+    def node_index(self, name):
+        i = self.name_ix.get(name)
+        if i is None:
+            i = self.name_ix[name] = len(self.names)
+            self.names.append(name)
+        return i
+
+    def add(self, t, k0, k1, a, b, h, swap, loc, count=1):
+        self.t.append(t)
+        self.k0.append(k0)
+        self.k1.append(k1)
+        self.a.append(a)
+        self.b.append(b)
+        self.h.append(h)
+        self.swap.append(swap)
+        self.count.append(count)
+        self.loc.append(loc)
+        return len(self.t) - 1
+
+    def copy_row(self, other, i):
+        return self.add(other.t[i], other.k0[i], other.k1[i], other.a[i], other.b[i], other.h[i], other.swap[i],
+                        other.loc[i], other.count[i])
+
+    def key(self, i):
+        n = self.names
+        if self.t[i] == 1:
+            return (n[self.k0[i]], n[self.k1[i]], self.a[i], self.b[i], self.h[i])
+        return (n[self.k0[i]], n[self.k1[i]])
+
+    def __getitem__(self, i):
+        if i < 0:
+            i += len(self.t)
+        key = self.key(i)
+        src, dst = (key[1], key[0]) if self.swap[i] else (key[0], key[1])
+        return Edge('e%d' % i, EDGE_T[self.t[i]], key, src, dst, self.count[i], self.loc[i])
+
+    def __iter__(self):
+        for i in range(len(self.t)):
+            yield self[i]
 
 
 class Problem:
@@ -54,12 +128,11 @@ class Problem:
         self.include_upsilon = include_upsilon
         self.nodes = {}            # name -> info dict
         self.alias = {}            # construction name -> node name
-        self.cons = []
-        self.edges = []            # deduplicated edge records (representative move)
+        self.cons = ConTable()     # rule instances (columns; iteration gives Con objects)
+        self.edges = EdgeTable()   # deduplicated move edges between nodes, row = id
         self.stats = defaultdict(int)
         self.log = []
-        self._cid = 0
-        self._par_memo = {}
+        self._calc_memo = {}
         self._load_table()
         self._load_constructions()
         self._core_nodes()
@@ -76,14 +149,9 @@ class Problem:
 
     # ------------------------------------------------------------------
     def con(self, rule, dom, nodes, par=None, ref=None):
-        if not par:
-            par = None
-        elif rule != 'X':          # equal parameter dicts are shared (X gets its slope set later)
-            par = self._par_memo.setdefault(json.dumps(par, sort_keys=True), par)
-        c = Con('c%d' % self._cid, sys.intern(rule), dom, nodes, par, ref)
-        self._cid += 1
-        self.cons.append(c)
-        return c
+        """Instantiate a rule; returns the row (id 'c<row>').  Equal parameter dicts are stored once
+        (not those of X, which get their slope set later, in place)."""
+        return self.cons.append(rule, dom, nodes, par, ref, share_par=(rule != 'X'))
 
     def canon(self, name):
         """Canonical node name of a (possibly constructed) name."""
@@ -191,14 +259,17 @@ class Problem:
             info['mirror'] = names.mirror_name(name)
         info['amphichiral'] = info['mirror'] == name
         if h is not None:
-            info['calc'] = {'tau': sgn * h['tau'], 'nu': h['nu'] if sgn == 1 else None,
-                            'epsilon': sgn * h['epsilon'], 'genus': h['genus'], 'fibered': h['fibered'],
-                            'lspace': h['lspace'] if sgn == 1 else None}
+            calc = {'tau': sgn * h['tau'], 'nu': h['nu'] if sgn == 1 else None,
+                    'epsilon': sgn * h['epsilon'], 'genus': h['genus'], 'fibered': h['fibered'],
+                    'lspace': h['lspace'] if sgn == 1 else None}
+            info['calc'] = self._calc_memo.setdefault(json.dumps(calc), calc)     # equal dicts are stored once
             info['g'] = h['genus']
             info['g4hi'] = h['genus']          # g replaces g_4 for non-table nodes
             info['fibered'] = h['fibered']
             info['tau'] = sgn * h['tau']
-            info['ranks'] = h['ranks'] if sgn == 1 else mirror_ranks(h['ranks'])
+            ranks = h.get('ranks')             # not kept for census knots (see _load_passes)
+            info['ranks'] = ranks if (sgn == 1 or ranks is None) else mirror_ranks(ranks)
+            info['thin'] = h['thin'] if 'thin' in h else _thin(ranks)
         return info
 
     def add_node(self, name, kind=None, tier=None):
@@ -265,20 +336,32 @@ class Problem:
             for li, r in enumerate(passes.iter_file_records(pn, shard, path)):
                 yield base | li, r
 
-    def edge_records(self, edges):
-        """(edge, representative pass record) for the given edges, in reading order of the records."""
-        by_file = defaultdict(dict)
-        for e in edges:
-            by_file[e.loc >> 24][e.loc & 0xffffff] = e
-        for fi in sorted(by_file):
-            pn, shard, path = self.pass_files[fi]
-            want = by_file[fi]
-            last = max(want)
-            for li, r in enumerate(passes.iter_file_records(pn, shard, path)):
-                if li in want:
-                    yield want[li], r
-                if li >= last:
+    def edge_records(self, edges=None):
+        """(edge, representative pass record) in reading order of the records, for all edges or for the
+        given Edge objects."""
+        if edges is None:
+            E = self.edges
+            items = ((E.loc[i], i) for i in sorted(range(len(E)), key=E.loc.__getitem__))
+        else:
+            items = ((e.loc, e) for e in sorted(edges, key=lambda e: e.loc))
+        cur, it = None, None
+        for loc, x in items:
+            fi, li = loc >> 24, loc & 0xffffff
+            if fi != cur:
+                pn, shard, path = self.pass_files[fi]
+                it = enumerate(passes.iter_file_records(pn, shard, path))
+                cur = fi
+            for lj, r in it:
+                if lj == li:
                     break
+            else:
+                raise RuntimeError('record %d of %s not found' % (li, self.pass_files[fi][2]))
+            yield (self.edges[x] if edges is None else x), r
+
+    def move_of(self, node):
+        """The move that first reached a peripheral node (pass, shard, diagram, ...), or None."""
+        mv = self.per_move.get(node)
+        return None if mv is None else json.loads(mv)
 
     def _load_passes(self):
         """Deduplicate pass records into edges; collect homogeneous-diagram and braid evidence.
@@ -286,15 +369,15 @@ class Problem:
         Two readings of the pass shards.  The first one only decides which results that are not core
         nodes become peripheral nodes (reached from two distinct nodes, or with a homogeneous diagram);
         it keeps one 64-bit key per candidate.  The second one builds the edges between nodes."""
-        self.homog = {}        # node -> reference (diagram id or move)
+        self.homog = {}        # node -> reference (diagram id or move), as JSON text
         self.braids = defaultdict(dict)   # node -> {(n, w): ref}
-        self.per_move = {}
+        self.per_move = {}     # peripheral node -> the move that first reached it, as JSON text (move_of)
         self.pass_files = passes.pass_files()
         self._skip = set(filter(None, os.environ.get('MRCALC_SKIP_PASSES', '').split(',')))
         for d in passes.iter_diagrams():
             node = self.canon(d['node'])
             if d.get('homogeneous') and node not in self.homog:
-                self.homog[node] = {'diagram': d['id']}
+                self.homog[node] = _pack({'diagram': d['id']})
             if 'word' in d:
                 w = sum(1 if g > 0 else -1 for g in d['word'])
                 self.braids[node].setdefault((d['strands'], w), {'diagram': d['id']})
@@ -327,9 +410,11 @@ class Problem:
         self.stats['pass records'] = nrec
         self.stats['peripheral candidates'] = len(first)
         included = {h for h in first if h in multi or h in hom}
-        del first, multi, hom
+        del first, multi, hom, intern
         # ---- second reading: edges between nodes, evidence for nodes
-        cc, tw, mu = {}, {}, {}
+        R = self._raw_edges = EdgeTable()     # every deduplicated edge, in reading order (ids come later)
+        cc, tw, mu = {}, {}, {}               # key as a number -> row of R
+        rnames, nix = R.names, R.node_index
         inc_names = set()
         for loc, r in self._records():
             if r.get('dst') is None:
@@ -345,51 +430,65 @@ class Problem:
                 if dst not in inc_names:
                     inc_names.add(base)
                     inc_names.add(self._mirror_free(base))
-            src = intern.setdefault(src, src)
-            dst = intern.setdefault(dst, dst)
+            si, di = nix(src), nix(dst)
+            src, dst = rnames[si], rnames[di]
             if not core and dst not in self.per_move:
-                self.per_move[dst] = {k: r[k] for k in ('pass', 'shard', 't', 'd', 'i', 'e', 'h', 'axis') if k in r}
+                self.per_move[dst] = _pack({k: r[k] for k in ('pass', 'shard', 't', 'd', 'i', 'e', 'h', 'axis') if k in r})
             if r.get('hg') and dst not in self.homog:
-                self.homog[dst] = {'move': {k: r[k] for k in ('pass', 'shard', 't', 'd', 'i', 'e', 'h', 'axis')
-                                            if k in r}}
+                self.homog[dst] = _pack({'move': {k: r[k] for k in ('pass', 'shard', 't', 'd', 'i', 'e', 'h', 'axis')
+                                                  if k in r}})
             if 'word' in r:
                 w = sum(1 if g > 0 else -1 for g in r['word'])
                 self.braids[dst].setdefault((r['strands'], w), {'move': {
                     k: r[k] for k in ('pass', 'shard', 't', 'd', 'i', 'e', 'h', 'axis') if k in r}})
-            if r['t'] == 'cc':
-                kp, km = (src, dst) if r['s'] == 1 else (dst, src)
-                if kp == km:
-                    self.stats['trivial edges'] += 1
-                    continue
-                key = (kp, km)
-                tgt = cc
-            elif r['t'] == 'tw':
-                if src == dst:
-                    self.stats['trivial edges'] += 1
-                    continue
-                key = (src, dst, max(r['a'], r['b']), min(r['a'], r['b']), r['h'])
-                tgt = tw
-            else:
-                if src == dst:
-                    self.stats['trivial edges'] += 1
-                    continue
-                key = tuple(sorted((src, dst)))
-                tgt = mu
+            if si == di:
+                self.stats['trivial edges'] += 1
+                continue
+            if r['t'] == 'cc':                # key (K+, K-)
+                swap = 0 if r['s'] == 1 else 1
+                k0, k1 = (di, si) if swap else (si, di)
+                a = b = h = 0
+                key, tgt, t = k0 << 32 | k1, cc, 0
+            elif r['t'] == 'tw':              # key (source, result, a, b, h)
+                k0, k1, swap = si, di, 0
+                a, b, h = max(r['a'], r['b']), min(r['a'], r['b']), r['h']
+                if not (0 <= b <= a < 32768 and -32768 <= h < 32768):
+                    raise ValueError('twist parameters out of range: %r' % (r,))
+                key, tgt, t = ((k0 << 32 | k1) << 48) | (a << 32) | (b << 16) | (h & 0xffff), tw, 1
+            else:                             # key: the sorted pair
+                swap = 1 if src > dst else 0
+                k0, k1 = (di, si) if swap else (si, di)
+                a = b = h = 0
+                key, tgt, t = k0 << 32 | k1, mu, 2
             e = tgt.get(key)
             if e is not None:
-                e.count += 1
+                R.count[e] += 1
             else:
-                tgt[key] = Edge(r['t'], key, src, dst, loc)
-        self._raw_edges = {'cc': cc, 'tw': tw, 'mu': mu}
-        self.per_hfk = {r['node']: r for r in iter_hfk_peripheral(staged=False) if 'tau' in r}
+                tgt[key] = R.add(t, k0, k1, a, b, h, swap, loc)
+        del cc, tw, mu
+        # calculator inputs of the peripheral nodes.  The ranks are kept only where a rule compares them
+        # (not for census knots, whose identity is certified); Floer-thinness is kept for all.
+        per = {}
+        for r in iter_hfk_peripheral(staged=False):
+            if 'tau' not in r:
+                continue
+            h = {k: r[k] for k in ('tau', 'nu', 'epsilon', 'genus', 'fibered', 'lspace')}
+            h['thin'] = _thin(r.get('ranks'))
+            if names.kind(r['node']) != 'census':
+                h['ranks'] = r.get('ranks')
+            per[r['node']] = h
+        own = []
         for n in sorted(inc_names):
             if n in self.nodes:
                 continue
-            h = self.per_hfk.get(n)
-            if h is not None:
-                self.hfk_nodes.setdefault(n, h)
+            h = per.get(n)
+            if h is not None and n not in self.hfk_nodes:
+                self.hfk_nodes[n] = h
+                own.append(n)
             self.add_node(n)
             self.nodes[n]['peripheral'] = True
+        for n in own:                         # read by add_node only
+            del self.hfk_nodes[n]
         self.stats['peripheral included'] = sum(1 for n in self.nodes.values() if n.get('peripheral'))
 
     def _mirror_free(self, name):
@@ -644,11 +743,6 @@ class Problem:
                 self.con('U4b', 'U', ns, {'kind': 'sum', 'mult': mult})
 
     # ------------------------------------------------------------------
-    def _edge(self, e):
-        e.id = 'e%d' % len(self.edges)
-        self.edges.append(e)
-        return e.id
-
     def _diff(self, rule, dom, A, B, par, ref):
         """x(B) - x(A) in the bounds of the rule; handle an end being the mirror of the other."""
         par = dict(par)
@@ -663,33 +757,35 @@ class Problem:
             self.con(rule, dom, [A, B], par, ref)
 
     def _edges_to_constraints(self):
-        for key in sorted(self._raw_edges['cc']):
-            e = self._raw_edges['cc'][key]
-            kp, km = key
-            if kp not in self.nodes or km not in self.nodes:
-                self.stats['edges to excluded peripheral nodes'] += 1
-                continue
-            eid = self._edge(e)
-            self._diff('F7', 'F', km, kp, {}, eid)
-            self._diff('C7', 'C', km, kp, {}, eid)
-            self._diff('U5', 'U', kp, km, {}, eid)
-        for key in sorted(self._raw_edges['tw']):
-            e = self._raw_edges['tw'][key]
-            src, dst, a, b, h = key
-            if src not in self.nodes or dst not in self.nodes:
-                self.stats['edges to excluded peripheral nodes'] += 1
-                continue
-            eid = self._edge(e)
-            par = {'a': a, 'b': b, 'h': h}
-            self._diff('F9', 'F', src, dst, par, eid)
-            self._diff('U6', 'U', src, dst, par, eid)
-        for key in sorted(self._raw_edges['mu']):
-            e = self._raw_edges['mu'][key]
-            a, b = key
-            if a not in self.nodes or b not in self.nodes:
-                continue
-            eid = self._edge(e)
-            self.con('F6', 'F', [a, b], None, eid)
+        """Give ids to the edges between nodes, sorted by key within a type (crossing changes, twists,
+        mutations), and instantiate the edge rules."""
+        R = self._raw_edges
+        E = self.edges = EdgeTable(like=R)
+        rows = ([], [], [])
+        for i in range(len(R)):
+            rows[R.t[i]].append(i)
+        for t in (0, 1, 2):
+            rows[t].sort(key=R.key)
+            for i in rows[t]:
+                key = R.key(i)
+                if key[0] not in self.nodes or key[1] not in self.nodes:
+                    if t != 2:
+                        self.stats['edges to excluded peripheral nodes'] += 1
+                    continue
+                eid = 'e%d' % E.copy_row(R, i)
+                if t == 0:
+                    kp, km = key
+                    self._diff('F7', 'F', km, kp, {}, eid)
+                    self._diff('C7', 'C', km, kp, {}, eid)
+                    self._diff('U5', 'U', kp, km, {}, eid)
+                elif t == 1:
+                    src, dst, a, b, h = key
+                    par = {'a': a, 'b': b, 'h': h}
+                    self._diff('F9', 'F', src, dst, par, eid)
+                    self._diff('U6', 'U', src, dst, par, eid)
+                else:
+                    self.con('F6', 'F', [key[0], key[1]], None, eid)
+            rows[t].clear()
         del self._raw_edges
 
     # ------------------------------------------------------------------
@@ -731,9 +827,10 @@ class Problem:
             sl['extra'] = sorted({tuple(x) for x in sl['extra'] + extra})
             sl['extra'] = [list(x) for x in sl['extra']]
             self.nodes[node]['slopes'] = sl
-        for c in self.cons:
-            if c['rule'] == 'X':
-                c['par']['slopes'] = self.nodes[c['nodes'][0]].get('slopes', 'G')
+        t = self.cons
+        for i in t.rows_of(['X']):            # the slope set is known now; equal parameter dicts are stored once
+            t.pars[t.par[i]]['slopes'] = self.nodes[t.names[t.n0[i]]].get('slopes', 'G')
+            t.share_par(i)
         for co in self.coincidences:
             A, B = self.canon(co['A']), self.canon(co['B'])
             if A not in self.nodes or B not in self.nodes:
