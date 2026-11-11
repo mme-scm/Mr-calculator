@@ -1,6 +1,7 @@
 """Calculator inputs (g, fibered, tau, ...) of the peripheral nodes included in the solver.
 One diagram per node: the result diagram of the first recorded move that produced it.
-Output: data/hfk_peripheral.jsonl (appended; resumable)."""
+Output: data/hfk_peripheral/ (appended; resumable); with MRCALC_STAGE the staged file hfk_peripheral.jsonl.
+usage: node_inputs.py [timeout=60] [procs=4]"""
 import json
 import multiprocessing as mp
 import os
@@ -9,15 +10,18 @@ import time
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from mrcalc import hfk as H, passes, prepare  # noqa: E402
-from mrcalc.config import DATA  # noqa: E402
+from mrcalc.config import HFK_PERIPHERAL as OUT, iter_hfk_peripheral  # noqa: E402
 
-OUT = os.path.join(DATA, 'hfk_peripheral.jsonl')
+_DIAGS = {}
 
 
 def task(args):
     node, move, timeout = args
     try:
-        diags = {d['id']: d for d in passes.load_diagrams(move['shard'])}
+        if move['shard'] not in _DIAGS:
+            _DIAGS.clear()
+            _DIAGS[move['shard']] = {d['id']: d for d in passes.load_diagrams(move['shard'])}
+        diags = _DIAGS[move['shard']]
         pd = passes.result_pd(diags[move['d']]['pd'], move)
         r = H.hfk(pd, timeout=timeout)
         if 'tau' in r:
@@ -31,13 +35,11 @@ def task(args):
 
 
 def main():
-    timeout = float(sys.argv[1]) if len(sys.argv) > 1 else 60
+    kv = dict(a.split('=', 1) for a in sys.argv[1:] if '=' in a)
+    timeout, procs = float(kv.get('timeout', 60)), int(kv.get('procs', 4))
     P = prepare.Problem()
-    done = set()
-    if os.path.exists(OUT):
-        with open(OUT) as f:
-            for line in f:
-                done.add(json.loads(line)['node'])
+    done = {r['node'] for r in iter_hfk_peripheral()}
+    os.makedirs(os.path.dirname(OUT), exist_ok=True)
     items = []
     for n, info in P.nodes.items():
         if not info.get('peripheral') or info['calc'] is not None or n in done:
@@ -46,10 +48,11 @@ def main():
         if mv is None:
             continue        # only reached as the mirror image of a result
         items.append((n, mv, timeout))
+    items.sort(key=lambda x: (x[1]['shard'], x[0]))        # one diagram shard at a time per worker
     print('peripheral nodes needing calculator input: %d' % len(items), flush=True)
     t0 = time.time()
-    with mp.Pool(4) as pool, open(OUT, 'a') as f:
-        for i, r in enumerate(pool.imap_unordered(task, items, chunksize=4)):
+    with mp.Pool(procs) as pool, open(OUT, 'a') as f:
+        for i, r in enumerate(pool.imap_unordered(task, items, chunksize=64)):
             f.write(json.dumps(r, separators=(',', ':')) + '\n')
             if (i + 1) % 500 == 0:
                 f.flush()

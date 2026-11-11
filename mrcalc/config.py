@@ -68,3 +68,24 @@ def k_max_for(crossings, params):
     if crossings <= 20:
         return km['12-20']
     return km['>20']
+
+
+# Calculator inputs of peripheral nodes: same storage scheme as the census references.
+HFK_PERIPHERAL_DIR = os.path.join(DATA, 'hfk_peripheral')
+HFK_PERIPHERAL = os.path.join(os.environ['MRCALC_STAGE'], 'hfk_peripheral.jsonl') if os.environ.get('MRCALC_STAGE') \
+    else os.path.join(HFK_PERIPHERAL_DIR, 'zz-new.jsonl')
+
+
+def iter_hfk_peripheral(staged=True):
+    if staged and os.environ.get('MRCALC_STAGE'):
+        files = [HFK_PERIPHERAL] if os.path.exists(HFK_PERIPHERAL) else []
+    elif os.path.isdir(HFK_PERIPHERAL_DIR):
+        files = [os.path.join(HFK_PERIPHERAL_DIR, f) for f in sorted(os.listdir(HFK_PERIPHERAL_DIR))
+                 if f.endswith('.jsonl')]
+    else:
+        files = []
+    for path in files:
+        with open(path) as f:
+            for line in f:
+                if line.endswith('\n') and line.strip():
+                    yield json.loads(line)

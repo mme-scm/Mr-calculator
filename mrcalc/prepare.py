@@ -12,7 +12,7 @@ from collections import defaultdict
 from math import gcd
 
 from . import knotinfo, names, nodeset, passes
-from .config import DATA, iter_census_refs, load_params
+from .config import DATA, iter_census_refs, iter_hfk_peripheral, load_params
 
 E_LIST = {'9_42', '10_125', '10_130', '10_132', '10_136', '10_141'}
 REFERENCE_KNOTS = ['3_1', '4_1', '5_1', '5_2', '8_19']
@@ -305,7 +305,7 @@ class Problem:
             if dst not in self.nodes:
                 base = min(dst, self._mirror_free(dst))
                 self.peripheral_adj[base] |= srcs
-        self.per_hfk = {r['node']: r for r in _jsonl(os.path.join(DATA, 'hfk_peripheral.jsonl')) if 'tau' in r}
+        self.per_hfk = {r['node']: r for r in iter_hfk_peripheral(staged=False) if 'tau' in r}
         included = set()
         for base, srcs in self.peripheral_adj.items():
             m = self._mirror_free(base)
