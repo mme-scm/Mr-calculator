@@ -508,6 +508,8 @@ class Problem:
                 self.con('C5', 'C', [n], {'g4': info['g4hi'], 'src': 'KnotInfo g4' if ki else 'calculator g'})
             if info['amphichiral']:
                 self.con('C5', 'C', [n], {'why': 'amphichiral'})
+            # alternating by tabulation: census names K14a..., K15a... (the identity of the node is certified)
+            alt_census = info['kind'] == 'census' and n[3:4] == 'a'
             # C8
             why = None
             ref = None
@@ -520,6 +522,8 @@ class Problem:
                     why = 'prime, at most 10 crossings, not in E'
                 elif n in self.homog:
                     why, ref = 'homogeneous diagram', self.homog[n]
+                elif alt_census:
+                    why = 'alternating (census table)'
             if why:
                 self.con('C8', 'C', [n], {'tau': info['tau'], 'why': why}, ref)
             words = dict(self.braids.get(n, {}))
@@ -568,6 +572,8 @@ class Problem:
                 self.con('U4a', 'U', [n], {'g4': info['g4hi']})
             if ki is not None and ki['alternating'] and ki['tau'] is not None:
                 self.con('U2a', 'U', [n], {'tau': ki['tau']})
+            elif alt_census and info['tau'] is not None:
+                self.con('U2a', 'U', [n], {'tau': info['tau']})
 
     # ------------------------------------------------------------------
     def _families(self):
@@ -747,12 +753,14 @@ class Problem:
 
     # ------------------------------------------------------------------
     def _upsilon(self):
+        u3 = set()
         for r in _jsonl(os.path.join(DATA, 'upsilon.jsonl')):
             n = self.canon(r['node'])
             if n not in self.nodes:
                 continue
             if r.get('epsilon') == 0:
                 self.con('U3', 'U', [n], None, {'calculator': r.get('source')})
+                u3.add(n)
             if r.get('exact') and r.get('upsilon') is not None:
                 self.con('U1', 'U', [n], {'value': r['upsilon'], 'why': r.get('why')}, {'calculator': r.get('source')})
             if r.get('upsilon') is not None and not r.get('exact'):
@@ -760,3 +768,7 @@ class Problem:
                 m = self.nodes[n]['mirror']
                 if m in self.nodes and m != n:
                     self.nodes[m]['upsilon_unverified'] = -r['upsilon']   # tagged, never used by a rule
+        # peripheral nodes: epsilon comes with the calculator input of the node (no complex needed for U3)
+        for n, info in self.nodes.items():
+            if info.get('peripheral') and n not in u3 and (info['calc'] or {}).get('epsilon') == 0:
+                self.con('U3', 'U', [n], None, {'calculator': 'node input'})

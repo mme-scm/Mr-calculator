@@ -75,6 +75,11 @@ def main():
         elif n in cons:
             src = ('pd', cons[n])
         elif n in P.per_move:
+            # peripheral: a complex only where U1 can be exact (Floer-thin or L-space flag, rule U2)
+            ranks = info.get('ranks')
+            thin = bool(ranks) and len({mm - a for a, mm, _ in ranks}) == 1
+            if not (thin or (info['calc'] or {}).get('lspace')):
+                continue
             src = ('move', P.per_move[n])
         elif k == 'cable' and (P.hfk_nodes.get(n) or {}).get('crossings', 999) <= maxcr:
             src = ('diagram',)
