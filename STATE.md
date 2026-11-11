@@ -1,6 +1,6 @@
 # STATE
 
-Updated 2026-11-11 18:29 UTC.
+Updated 2026-11-11 18:44 UTC.
 Pin counts below are from a re-solve on all pass data synced so far (not exported; the last exported and checked checkpoint is described in REPORT.md).
 
 
@@ -54,4 +54,4 @@ Taper = a notable decrease in new pins on knots with at most 13 crossings (prime
 
 - status: checkpoint during stage 2 (k = 2 twists on 12-13 crossings: 255 of 305 shards in this export). Plan agreed with the user (2026-11-11): carry through steps 1-6 (k = 2, 3 on 12-13 crossings; k = 4 on 9-11; braid-closure crossing changes and composites; k = 5 up to 11 and k = 6 up to 10 crossings, all on KnotInfo PD diagrams), then step 7 (k = 4 on 12-13 crossings); the yield of step 7 decides whether the later steps (other diagrams, cables, widening round) are run. Full checkpoints (solve, ablation, export, independent check) follow at the end of stage 3, of stages 4 and 5, of stage 6a, of stage 6b and of stage 7 (scripts/orchestrate.sh); light check-ins (pass data, re-solve, this file) every 3 hours
 - taper: definition given by the user (2026-11-11): a notable decrease in new pins on knots with at most 13 crossings; tracked per re-solve in the table above. Not reached so far
-- memory: measured at this checkpoint (363,427 nodes, 5,548,197 constraints, 3,920,313 events): solver 6.6 GB, independent checker 9.6 GB; container limit 16 GB, pass workers use about 3 GB. Linear extrapolation to a saturated 14-15 crossing census (about 630,000 nodes): solver 11-13 GB, checker about 17 GB, i.e. the checker has to be made leaner before the node set grows by more than about a third
+- memory: after the storage rework of 2026-11-11 (constraints, events and edges as columns; checker reads events front to back and keeps constraints on disk): solve and export 2.2 GB, independent checker 2.4 GB for 363,427 nodes, 5,548,197 constraints, 3,920,313 events (before: 6.4 GB and 9.6 GB; same output files, compared byte for byte). Container limit 16 GB; the pass workers use about 2.5 GB
