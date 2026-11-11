@@ -22,26 +22,17 @@
 21. e302 X nodes=8_1* par={"slopes":"G","x1":true,"x2":true,"x3_g":1,"x4":true,"x5":true,"x5m":true} -> 8_1*.F: M=-4:r_2{>=8} M=0:r_2{>=8} M=4:r_2{>=12} | in: 15,20
 22. e303 U4a nodes=8_1* par={"g4":1} -> 8_1*.U: upsilon in [-1,1] | in: -
 23. e304 U2a nodes=8_1* par={"tau":0} -> 8_1*.U: upsilon in [0,0] | in: 22
-24. e273341 F1 nodes=5_1#8_1* par={} -> 5_1#8_1*.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
-25. e273342 C1 nodes=5_1#8_1* par={} -> 5_1#8_1*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-26. e273343 C4 nodes=5_1#8_1* par={} -> 5_1#8_1*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 25
-27. e273344 C5 nodes=5_1#8_1* par={"g4":3,"src":"calculator g"} -> 5_1#8_1*.C: (tau=-3,nu=-5):r_0{>=0} (tau=-2,nu=-5):r_0{>=0} (tau=-2,nu=-4):r_0{>=0} (tau=-2,nu=-3):r_0{>=0} (tau... [digest 525edc963b57] | in: 26
-28. e273345 C10 nodes=5_1#8_1* par={"a":true,"b":true,"ge3":true} -> 5_1#8_1*.C: (tau=-3,nu=-5):r_0{>=3} (tau=-2,nu=-5):r_0{>=3} (tau=-2,nu=-4):r_0{>=3} (tau=-2,nu=-3):r_0{>=4} (tau... [digest 97d1088e1165] | in: 27
-29. e273346 C15 nodes=5_1#8_1* par={} -> 5_1#8_1*.C: (tau=-3,nu=-5):r_0{>=3} (tau=-2,nu=-5):r_0{>=3} (tau=-2,nu=-4):r_0{>=3} (tau=-2,nu=-3):r_0{>=4} (tau... [digest 80470a11c999] | in: 28
-30. e273347 U4a nodes=5_1#8_1* par={"g4":3} -> 5_1#8_1*.U: upsilon in [-3,3] | in: -
-31. e273574 C1 nodes=5_1*#8_1 par={} -> 5_1*#8_1.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
-32. e273575 C4 nodes=5_1*#8_1 par={} -> 5_1*#8_1.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 31
-33. e273576 C5 nodes=5_1*#8_1 par={"g4":3,"src":"calculator g"} -> 5_1*#8_1.C: (tau=-3,nu=-5):r_0{>=0} (tau=-2,nu=-5):r_0{>=0} (tau=-2,nu=-4):r_0{>=0} (tau=-2,nu=-3):r_0{>=0} (tau... [digest 525edc963b57] | in: 32
-34. e273577 C10 nodes=5_1*#8_1 par={"a":true,"b":true,"ge3":true} -> 5_1*#8_1.C: (tau=-3,nu=-5):r_0{>=3} (tau=-2,nu=-5):r_0{>=3} (tau=-2,nu=-4):r_0{>=3} (tau=-2,nu=-3):r_0{>=4} (tau... [digest 97d1088e1165] | in: 33
-35. e273578 C15 nodes=5_1*#8_1 par={} -> 5_1*#8_1.C: (tau=-3,nu=-5):r_0{>=3} (tau=-2,nu=-5):r_0{>=3} (tau=-2,nu=-4):r_0{>=3} (tau=-2,nu=-3):r_0{>=4} (tau... [digest 80470a11c999] | in: 34
-36. e275868 F11 nodes=5_1 par={"p":2,"q":5} -> 5_1.F: M=4:r_2{4} M=8:r_2{8} | in: 10
-37. e275869 F12 nodes=5_1 par={"n":2} -> 5_1.F: M=8:r_2{8} | in: 36
-38. e275968 F13 nodes=8_1* par={"m":6,"tau":0} -> 8_1*.F: M=0:r_2{24} | in: 21
-39. e275969 C12 nodes=8_1* par={"m":6,"tau":0} -> 8_1*.C: (tau=0,nu=0):r_0{6} | in: 20
-40. e310024 C3 nodes=5_1#8_1*,5_1*#8_1 par={} -> 5_1#8_1*.C: (tau=-3,nu=-5):r_0{4,6,>=8} (tau=-2,nu=-5):r_0{4,6,>=8} (tau=-2,nu=-4):r_0{3,5,>=7} (tau=-2,nu=-3):r... [digest 707d9b9d4b09] | in: 29,35
-41. e314074 F4 nodes=5_1#8_1*,5_1,8_1* par={"mult":[1,1]} -> 5_1#8_1*.F: M=8:r_2{>=8} | in: 24,37,38
-42. e314075 C6 nodes=5_1#8_1*,5_1,8_1* par={"mult":[1,1]} -> 5_1#8_1*.C: (tau=2,nu=3):r_0{4,>=6} (tau=2,nu=4):r_0{3,5,>=7} | in: 9,39,40
-43. e314076 U4b nodes=5_1#8_1*,5_1,8_1* par={"kind":"sum","mult":[1,1]} -> 5_1#8_1*.U: upsilon in [-2,-2] | in: 12,23,30
-== M = 8 : pinned at 41 ; chain 1,2,3,4,5,6,7,8,9,10,13,14,15,16,17,18,19,20,21,24,36,37,38,41
-== tau = 2 : pinned at 42 ; chain 4,5,6,7,8,9,16,17,18,19,20,25,26,27,28,29,31,32,33,34,35,39,40,42
-== upsilon = -2 : pinned at 43 ; chain 11,12,22,23,30,43
+24. e274076 F1 nodes=5_1#8_1* par={} -> 5_1#8_1*.F: M in [-inf,inf]; r_2 >= -inf, |M| | in: -
+25. e274077 C1 nodes=5_1#8_1* par={} -> 5_1#8_1*.C: tau in [-inf,inf]; nu in [-inf,inf]; r_0 >= 0 | in: -
+26. e274078 C4 nodes=5_1#8_1* par={} -> 5_1#8_1*.C: tau in [-inf,inf]; nu in [-inf,inf]; |2tau-nu|<=1; r_0 >= 0 | in: 25
+27. e274079 C5 nodes=5_1#8_1* par={"g4":3,"src":"calculator g"} -> 5_1#8_1*.C: (tau=-3,nu=-5):r_0{>=0} (tau=-2,nu=-5):r_0{>=0} (tau=-2,nu=-4):r_0{>=0} (tau=-2,nu=-3):r_0{>=0} (tau... [digest 525edc963b57] | in: 26
+28. e274080 C8 nodes=5_1#8_1* par={"tau":2,"why":"homogeneous diagram"} -> 5_1#8_1*.C: (tau=2,nu=3):r_0{>=0} (tau=2,nu=4):r_0{>=0} (tau=2,nu=5):r_0{>=0} | in: 27
+29. e274083 U4a nodes=5_1#8_1* par={"g4":3} -> 5_1#8_1*.U: upsilon in [-3,3] | in: -
+30. e276838 F11 nodes=5_1 par={"p":2,"q":5} -> 5_1.F: M=4:r_2{4} M=8:r_2{8} | in: 10
+31. e276839 F12 nodes=5_1 par={"n":2} -> 5_1.F: M=8:r_2{8} | in: 30
+32. e276938 F13 nodes=8_1* par={"m":6,"tau":0} -> 8_1*.F: M=0:r_2{24} | in: 21
+33. e313503 F4 nodes=5_1#8_1*,5_1,8_1* par={"mult":[1,1]} -> 5_1#8_1*.F: M=8:r_2{>=8} | in: 24,31,32
+34. e313505 U4b nodes=5_1#8_1*,5_1,8_1* par={"kind":"sum","mult":[1,1]} -> 5_1#8_1*.U: upsilon in [-2,-2] | in: 12,23,29
+== M = 8 : pinned at 33 ; chain 1,2,3,4,5,6,7,8,9,10,13,14,15,16,17,18,19,20,21,24,30,31,32,33
+== tau = 2 : pinned at 28 ; chain 25,26,27,28
+== upsilon = -2 : pinned at 34 ; chain 11,12,22,23,29,34
