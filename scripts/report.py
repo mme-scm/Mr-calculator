@@ -84,6 +84,34 @@ def main():
     lines += ['', '## Pass progress (shards done out of %d; by tier)' % nshards, '']
     for pn, n, tr in prog:
         lines.append('- `%s`: %d shards %s' % (pn, n, tr))
+    # ---- taper tracking: pins on knots with at most 13 crossings after each re-solve
+    hpath = os.path.join(DATA, 'pin_history.jsonl')
+    hist = []
+    if os.path.exists(hpath):
+        with open(hpath) as f:
+            hist = [json.loads(l) for l in f if l.strip()]
+    core = {i: sum(d[i] for t, d in tiers.items() if t.lstrip('-').isdigit() and int(t) <= 13) for i in INV}
+    shards = {pn: n for pn, n, _ in prog}
+    if tiers and (not hist or hist[-1]['core'] != core or hist[-1]['shards'] != shards):
+        hist.append({'time': time.strftime('%Y-%m-%d %H:%M', time.gmtime()), 'shards': shards, 'core': core,
+                     'all': {i: tot[i] for i in INV}, 'nodes': tot['nodes']})
+        with open(hpath, 'a') as f:
+            f.write(json.dumps(hist[-1], sort_keys=True) + '\n')
+    lines += ['', '## Taper tracking: pins on knots with at most 13 crossings', '',
+              'Taper = a notable decrease in new pins on knots with at most 13 crossings (prime knots, mirrors and '
+              'composites of the node set; peripheral knots are not counted). One row per re-solve; the pass column '
+              'lists the shards added since the previous row.', '',
+              '| time (UTC) | passes added | ' + ' | '.join(INV) + ' | new pins |', '|---|---|' + '---|' * (len(INV) + 1)]
+    prev = None
+    for h in hist:
+        if prev is None:
+            added, new = 'start of tracking', ''
+        else:
+            added = ', '.join('%s +%d' % (pn, n - prev['shards'].get(pn, 0)) for pn, n in sorted(h['shards'].items())
+                              if n != prev['shards'].get(pn, 0)) or 'inputs only'
+            new = ' / '.join('%+d' % (h['core'][i] - prev['core'][i]) for i in INV)
+        lines.append('| %s | %s | ' % (h['time'], added) + ' | '.join(str(h['core'][i]) for i in INV) + ' | %s |' % new)
+        prev = h
     lines += ['', '## Notes', '']
     for k, v in (notes.get('state') or {}).items():
         lines.append('- %s: %s' % (k, v))
