@@ -2,15 +2,20 @@
 from __future__ import annotations
 
 import csv
+import gzip
+import io
 import json
 import os
 import shutil
+import tarfile
 
 from . import names, passes, pd as P
 from .config import DATA, EXPORT
 from .solver import INVARIANTS, INV_DOM, PIN_COORDS, RULE_FAMILY
 
 MAX_TEXT = 100
+PART_LIMIT = 40 * 2 ** 20          # size limit of one file of the export (bytes on disk)
+XLSX_ROWS = 200000                # rows of peripheral nodes per workbook
 
 
 def dom_text(d):
@@ -61,29 +66,87 @@ def chain_text(node, pins, pin_event, events, ev_text, cons_by_id):
     return '\n'.join(lines) + '\n'
 
 
-class Writer:
-    """JSONL writer that splits into numbered parts below a size limit."""
+def _gz(raw):
+    """Deterministic gzip stream (no name, no time stamp)."""
+    return gzip.GzipFile(filename='', mode='wb', fileobj=raw, mtime=0, compresslevel=6)
 
-    def __init__(self, path, limit=45 * 2 ** 20):
-        self.base, self.limit, self.part, self.size = path, limit, 0, 0
-        for fn in os.listdir(os.path.dirname(path)):
-            stem = os.path.basename(path)
-            if fn == stem or (fn.startswith(stem[:-6] + '.') and fn.endswith('.jsonl')):
-                os.remove(os.path.join(os.path.dirname(path), fn))
-        self.f = open(path, 'w')
+
+def _is_part(fn, stem, exts):
+    """fn is <stem><ext> or <stem>.<k><ext> for one of the extensions."""
+    for ext in exts:
+        if fn == stem + ext:
+            return True
+        if fn.startswith(stem + '.') and fn.endswith(ext) and fn[len(stem) + 1:-len(ext)].isdigit():
+            return True
+    return False
+
+
+class Writer:
+    """JSONL writer that splits into numbered parts below a size limit (gzip parts by default)."""
+
+    def __init__(self, path, limit=PART_LIMIT, compress=True):
+        self.stem, self.limit, self.compress = path[:-len('.jsonl')], limit, compress
+        self.part, self.size, self.n = 0, 0, 0
+        d, stem = os.path.dirname(path), os.path.basename(self.stem)
+        for fn in os.listdir(d):
+            if _is_part(fn, stem, ('.jsonl', '.jsonl.gz')):
+                os.remove(os.path.join(d, fn))
+        self._open()
+
+    def _open(self):
+        name = self.stem + ('.%d' % self.part if self.part else '') + '.jsonl' + ('.gz' if self.compress else '')
+        self.raw = open(name, 'wb')
+        self.f = _gz(self.raw) if self.compress else self.raw
+        self.size = 0
+
+    def _close(self):
+        if self.compress:
+            self.f.close()
+        self.raw.close()
 
     def write(self, obj):
-        line = _dumps(obj) + '\n'
-        if self.size + len(line) > self.limit:
-            self.f.close()
+        line = (_dumps(obj) + '\n').encode('utf-8')
+        self.n += 1
+        if self.compress:
+            full = self.n % 500 == 0 and self.raw.tell() > self.limit
+        else:
+            full = self.size + len(line) > self.limit
+        if full:
+            self._close()
             self.part += 1
-            self.f = open(self.base[:-6] + '.%d.jsonl' % self.part, 'w')
-            self.size = 0
+            self._open()
         self.f.write(line)
         self.size += len(line)
 
     def close(self):
-        self.f.close()
+        self._close()
+
+
+class ChainPack:
+    """Chain files as members <file>.txt of the archives chains/chains-NNN.tar.gz (each below the size limit)."""
+
+    def __init__(self, directory, limit=PART_LIMIT):
+        self.dir, self.limit, self.part, self.tar = directory, limit, 0, None
+
+    def add(self, name, text):
+        if self.tar is None:
+            self.raw = open(os.path.join(self.dir, 'chains-%03d.tar.gz' % self.part), 'wb')
+            self.gz = _gz(self.raw)
+            self.tar = tarfile.open(fileobj=self.gz, mode='w', format=tarfile.GNU_FORMAT)
+        data = text.encode('utf-8')
+        ti = tarfile.TarInfo(name)
+        ti.size, ti.mtime, ti.mode = len(data), 0, 0o644
+        self.tar.addfile(ti, io.BytesIO(data))
+        if self.raw.tell() > self.limit:
+            self.close()
+            self.part += 1
+
+    def close(self):
+        if self.tar is not None:
+            self.tar.close()
+            self.gz.close()
+            self.raw.close()
+            self.tar = None
 
 
 def expand_edge(e, diag_cache):
@@ -126,25 +189,26 @@ def expand_edge(e, diag_cache):
     return out
 
 
-def export_all(problem, solver, out_dir=EXPORT, ablation=None, extra=None, write_chains=True):
+def export_all(problem, solver, out_dir=EXPORT, ablation=None, extra=None, write_chains=True, pack=True):
+    """pack: gzip parts for the JSONL files and tar archives for the chain files (FORMAT.md, section 1)."""
     os.makedirs(out_dir, exist_ok=True)
     cons_by_id = {c['id']: c for c in solver.cons}
     events = solver.events
     ev_text = [dom_text(d) for d in solver.ev_dom]
     # --- events
-    w = Writer(os.path.join(out_dir, 'events.jsonl'))
+    w = Writer(os.path.join(out_dir, 'events.jsonl'), compress=pack)
     for e in events:
         w.write(e)
     w.close()
     # --- constraints
-    w = Writer(os.path.join(out_dir, 'constraints.jsonl'))
+    w = Writer(os.path.join(out_dir, 'constraints.jsonl'), compress=pack)
     for c in solver.cons:
         c2 = dict(c)
         c2['fam'] = RULE_FAMILY.get(c['rule'], '?')
         w.write(c2)
     w.close()
     # --- edges
-    w = Writer(os.path.join(out_dir, 'edges.jsonl'))
+    w = Writer(os.path.join(out_dir, 'edges.jsonl'), compress=pack)
     cache = {}
     for e in problem.edges:
         w.write(expand_edge(e, cache))
@@ -171,8 +235,9 @@ def export_all(problem, solver, out_dir=EXPORT, ablation=None, extra=None, write
         if os.path.isdir(chdir):
             shutil.rmtree(chdir)
         os.makedirs(chdir)
+    chpack = ChainPack(chdir) if (write_chains and pack) else None
     rows = []
-    f = Writer(os.path.join(out_dir, 'knots.jsonl'))
+    f = Writer(os.path.join(out_dir, 'knots.jsonl'), compress=pack)
     if True:
         for n in sorted(problem.nodes, key=lambda x: (problem.nodes[x]['tier'] if problem.nodes[x]['tier'] is not None else 99, x)):
             info = problem.nodes[n]
@@ -196,9 +261,15 @@ def export_all(problem, solver, out_dir=EXPORT, ablation=None, extra=None, write
             f.write(rec)
             rows.append(table_row(rec, solver, n))
             if pins and write_chains:
-                with open(os.path.join(chdir, names.file_name(n) + '.txt'), 'w') as g:
-                    g.write(chain_text(n, pins, pe, events, ev_text, cons_by_id))
+                text = chain_text(n, pins, pe, events, ev_text, cons_by_id)
+                if chpack:
+                    chpack.add(names.file_name(n) + '.txt', text)
+                else:
+                    with open(os.path.join(chdir, names.file_name(n) + '.txt'), 'w') as g:
+                        g.write(text)
     f.close()
+    if chpack:
+        chpack.close()
     # --- parameters
     import importlib.metadata as md
     versions = {}
@@ -210,7 +281,7 @@ def export_all(problem, solver, out_dir=EXPORT, ablation=None, extra=None, write
             versions[pkg] = None
     par = {'scope': problem.params, 'slope_sets': {k: [list(x) for x in v] for k, v in problem.slopes.items()},
            'versions': versions, 'stats': dict(problem.stats), 'log': problem.log,
-           'max_statement_text': MAX_TEXT}
+           'max_statement_text': MAX_TEXT, 'packed': bool(pack)}
     if extra:
         par.update(extra)
     with open(os.path.join(out_dir, 'parameters.json'), 'w') as f:
@@ -282,17 +353,54 @@ def pins_by_tier(problem, rows):
     return out
 
 
+def _row_size(r):
+    return sum(len(str(v)) for v in r.values()) + len(r) + 1
+
+
+def write_csv(rows, out_dir, limit=PART_LIMIT):
+    """knots.csv, continued in knots.1.csv, knots.2.csv, ... (each with the header line) below the size limit."""
+    for fn in os.listdir(out_dir):
+        if _is_part(fn, 'knots', ('.csv',)):
+            os.remove(os.path.join(out_dir, fn))
+    part, f, size = 0, None, 0
+    for r in rows:
+        n = _row_size(r)
+        if f is None or size + n > limit:
+            if f:
+                f.close()
+                part += 1
+            f = open(os.path.join(out_dir, 'knots%s.csv' % ('.%d' % part if part else '')), 'w', newline='',
+                     encoding='utf-8')
+            w = csv.DictWriter(f, fieldnames=COLUMNS)
+            w.writeheader()
+            size = 0
+        w.writerow(r)
+        size += n
+    if f:
+        f.close()
+
+
 def write_tables(rows, out_dir, problem, ablation=None):
-    with open(os.path.join(out_dir, 'knots.csv'), 'w', newline='', encoding='utf-8') as f:
-        w = csv.DictWriter(f, fieldnames=COLUMNS)
-        w.writeheader()
-        for r in rows:
-            w.writerow(r)
+    """knots.csv (all nodes); knots.xlsx (sheets knots, pins, ablation, parameters; the sheet knots has the
+    nodes that are not peripheral); knots_peripheral[.k].xlsx (peripheral nodes, XLSX_ROWS per workbook)."""
+    write_csv(rows, out_dir)
     from openpyxl import Workbook
+    for fn in os.listdir(out_dir):
+        if _is_part(fn, 'knots_peripheral', ('.xlsx',)):
+            os.remove(os.path.join(out_dir, fn))
+    core = [r for r in rows if not r['kind'].endswith('/peripheral')]
+    peri = [r for r in rows if r['kind'].endswith('/peripheral')]
+    for k in range(0, len(peri), XLSX_ROWS):
+        wb = Workbook(write_only=True)
+        ws = wb.create_sheet('knots')
+        ws.append(COLUMNS)
+        for r in peri[k:k + XLSX_ROWS]:
+            ws.append([r[c] for c in COLUMNS])
+        wb.save(os.path.join(out_dir, 'knots_peripheral%s.xlsx' % ('.%d' % (k // XLSX_ROWS) if k else '')))
     wb = Workbook(write_only=True)
     ws = wb.create_sheet('knots')
     ws.append(COLUMNS)
-    for r in rows:
+    for r in core:
         ws.append([r[c] for c in COLUMNS])
     ws = wb.create_sheet('pins')
     ws.append(['tier', 'nodes'] + INVARIANTS)

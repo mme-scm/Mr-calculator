@@ -1,8 +1,23 @@
 # Export format
 
-All files are UTF-8. JSON lines are written with sorted keys and no spaces. Each of `knots.jsonl`,
-`edges.jsonl`, `constraints.jsonl`, `events.jsonl` may be continued in `X.1.jsonl`, `X.2.jsonl`, ... (the
-exporter starts a new part at 45 MiB); readers concatenate the parts in order.
+All files are UTF-8. JSON lines are written with sorted keys and no spaces.
+
+**Parts and packing.** No file of the export is larger than 50 MB. To keep that limit:
+
+* Each of `knots.jsonl`, `edges.jsonl`, `constraints.jsonl`, `events.jsonl` is stored as parts `X.jsonl`,
+  `X.1.jsonl`, `X.2.jsonl`, ...; each part is either plain or gzip-compressed (then it has the further suffix
+  `.gz`, e.g. `events.3.jsonl.gz`). The file `X.jsonl` of this document is the concatenation of the
+  (decompressed) parts in order. The exporter writes gzip parts and starts a new one at 40 MiB.
+* A chain file `chains/<node>.txt` is stored either as that file or as the member named `<node>.txt` of one
+  of the archives `chains/chains-NNN.tar.gz` (gzip-compressed tar; the exporter writes archives). No chain
+  file is stored twice.
+* `knots.csv` may be continued in `knots.1.csv`, `knots.2.csv`, ...; every part starts with the header line.
+* `knots.xlsx` has the sheets `knots`, `pins`, `ablation`, `parameters`; its sheet `knots` has the nodes that
+  are not peripheral. The peripheral nodes are in `knots_peripheral.xlsx`, `knots_peripheral.1.xlsx`, ...
+  (one sheet `knots`, same columns, 200000 rows per workbook). `knots.csv` has all nodes.
+
+`python3 scripts/export_pack.py unpack export <dir>` writes the plain layout (one `X.jsonl` per file, one
+file per chain); `checker/check.py` and `route.py` read both layouts.
 
 ## 1. Files
 

@@ -8,12 +8,14 @@ library.  It does not import the solver package: the domains, the operators and 
 are re-implemented here from FORMAT.md.
 
 What is checked
-  a. constraints.jsonl, events.jsonl, knots.jsonl (with continuation parts) and parameters.json load;
+  a. constraints.jsonl, events.jsonl, knots.jsonl (with continuation parts; each part plain or gzip,
+     suffix .gz) and parameters.json load;
   b. replay of all events from TOP domains: every event is produced by applying its constraint to
      the current domains, its target changes, the digest of the new target equals `dg`, and `in`
      equals the latest earlier events of the domains read;
   c. final domains, pins, pin events (and last events, chain file names) of knots.jsonl;
-  d. every chains/<node>.txt is rebuilt from the replay and compared byte for byte;
+  d. every chains/<node>.txt (a file, or a member of an archive chains/*.tar.gz) is rebuilt from the
+     replay and compared byte for byte;
   e. knots.csv agrees with knots.jsonl (node, <inv>_pin, <inv>_lo, <inv>_hi);
   f. every edge id used as `ref` by the constraint of an event exists in edges.jsonl;
   g. a summary is printed; the exit status is 0 only if everything agrees.
@@ -26,10 +28,12 @@ Data model (all values immutable and canonical, so that equality is equality of 
 """
 import argparse
 import csv
+import gzip
 import hashlib
 import json
 import os
 import sys
+import tarfile
 import time
 from itertools import product
 
@@ -1647,16 +1651,35 @@ def convention_tests():
 # ======================================================================================
 # files
 # ======================================================================================
-def jsonl_parts(directory, name):
-    """Paths X.jsonl, X.1.jsonl, X.2.jsonl, ... that exist, in order."""
-    base = os.path.join(directory, name)
-    paths = [base] if os.path.exists(base) else []
-    stem = base[:-len('.jsonl')]
+def _part(stem, ext, k):
+    """Path of part k of a file (plain, or gzip with the further suffix .gz), or None."""
+    base = stem + ('.%d' % k if k else '') + ext
+    for path in (base, base + '.gz'):
+        if os.path.exists(path):
+            return path
+    return None
+
+
+def file_parts(directory, name):
+    """Paths X.ext, X.1.ext, X.2.ext, ... that exist, in order (each plain or with the suffix .gz)."""
+    stem, ext = os.path.splitext(os.path.join(directory, name))
+    first = _part(stem, ext, 0)
+    paths = [first] if first else []
     k = 1
-    while os.path.exists('%s.%d.jsonl' % (stem, k)):
-        paths.append('%s.%d.jsonl' % (stem, k))
+    while _part(stem, ext, k):
+        paths.append(_part(stem, ext, k))
         k += 1
     return paths
+
+
+def jsonl_parts(directory, name):
+    return file_parts(directory, name)
+
+
+def open_text(path, newline=None):
+    if path.endswith('.gz'):
+        return gzip.open(path, 'rt', encoding='utf-8', newline=newline)
+    return open(path, encoding='utf-8', newline=newline)
 
 
 def read_jsonl(directory, name):
@@ -1664,10 +1687,26 @@ def read_jsonl(directory, name):
     if not paths:
         raise IOError('missing file %s' % os.path.join(directory, name))
     for path in paths:
-        with open(path, encoding='utf-8') as f:
+        with open_text(path) as f:
             for line in f:
                 if line.strip():
                     yield json.loads(line)
+
+
+def chain_sources(cdir):
+    """(file name, bytes) of every chain file: the files of chains/ and the members of chains/*.tar.gz."""
+    if not os.path.isdir(cdir):
+        return
+    for fn in sorted(os.listdir(cdir)):
+        path = os.path.join(cdir, fn)
+        if fn.endswith('.tar.gz'):
+            with tarfile.open(path, 'r:gz') as tar:
+                for m in tar:
+                    if m.isfile():
+                        yield m.name, tar.extractfile(m).read()
+        else:
+            with open(path, 'rb') as f:
+                yield fn, f.read()
 
 
 def chain_file_name(node):
@@ -1963,12 +2002,10 @@ def check_knots(directory, replay, rep):
 def check_chains(directory, replay, order, rep):
     """d. rebuild every chain file and compare byte for byte."""
     cdir = os.path.join(directory, 'chains')
-    present = set(os.listdir(cdir)) if os.path.isdir(cdir) else set()
-    same = different = 0
+    same = different = extra = 0
     expected = {}
     for node in order:
-        pins = replay.pins(node)
-        if not pins:
+        if not replay.pins(node):
             continue
         fn = chain_file_name(node) + '.txt'
         if fn in expected:
@@ -1976,27 +2013,34 @@ def check_chains(directory, replay, order, rep):
             different += 1
             continue
         expected[fn] = node
-        if fn not in present:
-            rep.err('chain', 'chain file %s of node %s is missing' % (fn, node))
+    seen = set()
+    for fn, data in chain_sources(cdir):
+        if fn in seen:
+            rep.err('chain', 'chain file %s occurs twice' % fn)
             different += 1
             continue
+        seen.add(fn)
+        node = expected.get(fn)
+        if node is None:
+            rep.err('chain', 'chain file %s does not belong to a node with a pin' % fn)
+            extra += 1
+            continue
         try:
-            text = replay.chain_text(node, pins).encode('utf-8')
+            text = replay.chain_text(node, replay.pins(node)).encode('utf-8')
         except KeyError as ex:
             rep.err('chain', 'chain of %s cannot be built: no pin event %s' % (node, ex))
             different += 1
             continue
-        with open(os.path.join(cdir, fn), 'rb') as f:
-            data = f.read()
         if data == text:
             same += 1
         else:
             different += 1
-            rep.err('chain', lambda: 'chain file %s differs from the replay: %s' % (fn, first_difference(data, text)))
-    extra = sorted(present - set(expected))
-    for fn in extra:
-        rep.err('chain', 'chain file %s does not belong to a node with a pin' % fn)
-    return same, different, len(extra)
+            rep.err('chain', lambda fn=fn, data=data, text=text:
+                    'chain file %s differs from the replay: %s' % (fn, first_difference(data, text)))
+    for fn in sorted(set(expected) - seen):
+        rep.err('chain', 'chain file %s of node %s is missing' % (fn, expected[fn]))
+        different += 1
+    return same, different, extra
 
 
 def first_difference(data, text):
@@ -2012,18 +2056,28 @@ def first_difference(data, text):
 
 def check_csv(directory, knots, rep):
     """e. knots.csv against knots.jsonl."""
-    path = os.path.join(directory, 'knots.csv')
-    if not os.path.exists(path):
+    paths = file_parts(directory, 'knots.csv')
+    if not paths:
         rep.err('csv', 'knots.csv is missing')
         return 0
     rows = 0
     seen = set()
-    with open(path, newline='', encoding='utf-8') as f:
+    for path in paths:
+        rows += check_csv_part(path, knots, seen, rep)
+    for node in knots:
+        if node not in seen:
+            rep.err('csv', 'node %s of knots.jsonl is not in knots.csv' % node)
+    return rows
+
+
+def check_csv_part(path, knots, seen, rep):
+    rows = 0
+    with open_text(path, newline='') as f:
         rd = csv.DictReader(f)
         need = ['node'] + ['%s_%s' % (inv, x) for inv in INVARIANTS for x in ('pin', 'lo', 'hi')]
         missing = [c for c in need if c not in (rd.fieldnames or [])]
         if missing:
-            rep.err('csv', 'knots.csv has no column(s) %s' % ', '.join(missing))
+            rep.err('csv', '%s has no column(s) %s' % (os.path.basename(path), ', '.join(missing)))
             return 0
         for row in rd:
             rows += 1
@@ -2059,9 +2113,6 @@ def check_csv(directory, knots, rep):
                 if inv in pins and (lo != pins[inv] or hi != pins[inv]):
                     rep.err('csv', '%s: pin %s = %r but the projection of the domain is [%r, %r]'
                             % (node, inv, pins[inv], lo, hi))
-    for node in knots:
-        if node not in seen:
-            rep.err('csv', 'node %s of knots.jsonl is not in knots.csv' % node)
     return rows
 
 

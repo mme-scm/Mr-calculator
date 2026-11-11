@@ -1,5 +1,7 @@
 """Re-solve and export.
-usage: solve.py [upsilon] [ablation] [nochains] [out=<dir>]"""
+usage: solve.py [upsilon] [ablation] [nochains] [plain] [out=<dir>]
+
+plain: write uncompressed JSONL parts and one file per chain (default: gzip parts and chain archives)."""
 import json
 import os
 import sys
@@ -173,7 +175,8 @@ def main():
     print('validation: mirror violations %d / %d, composite violations %d / %d' % (
         val['n_mirror_violations'], val['mirror_checked'], val['n_composite_violations'], val['composite_checked']),
         flush=True)
-    export.export_all(problem, S, out_dir, ablation=abl, write_chains='nochains' not in args)
+    export.export_all(problem, S, out_dir, ablation=abl, write_chains='nochains' not in args,
+                      pack='plain' not in args)
     with open(os.path.join(out_dir, 'summary.json'), 'w') as f:
         json.dump({'nodes': len(problem.nodes), 'constraints': len(problem.cons), 'edges': len(problem.edges),
                    'events': len(S.events), 'pins': counts, 'stats': dict(problem.stats), 'validation': val},

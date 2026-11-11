@@ -17,32 +17,59 @@ export/FORMAT.md.  The output is
 
 Exit status: 0 if the chain was printed, 1 if the invariant is not pinned, 2 on errors.
 """
+import gzip
 import json
 import os
 import sys
+import tarfile
 
 INVARIANTS = ('M', 'r_2', 'nu', 'r_0', 'tau', 'upsilon')
 SLOPE_RULES = ('S1', 'S3', 'S4', 'F10', 'F16')
 PAD = '        '
 
 
+def _part(stem, k):
+    base = stem + ('.%d' % k if k else '') + '.jsonl'
+    for path in (base, base + '.gz'):
+        if os.path.exists(path):
+            return path
+    return None
+
+
 def jsonl_parts(directory, name):
-    """Paths X.jsonl, X.1.jsonl, X.2.jsonl, ... that exist, in order."""
-    base = os.path.join(directory, name)
-    paths = [base] if os.path.exists(base) else []
+    """Paths X.jsonl, X.1.jsonl, X.2.jsonl, ... that exist, in order (each plain or gzip, suffix .gz)."""
+    stem = os.path.join(directory, name)[:-6]
+    paths = [_part(stem, 0)] if _part(stem, 0) else []
     k = 1
-    while os.path.exists('%s.%d.jsonl' % (base[:-6], k)):
-        paths.append('%s.%d.jsonl' % (base[:-6], k))
+    while _part(stem, k):
+        paths.append(_part(stem, k))
         k += 1
     return paths
 
 
 def lines_of(directory, name):
     for path in jsonl_parts(directory, name):
-        with open(path, encoding='utf-8') as f:
+        opener = gzip.open if path.endswith('.gz') else open
+        with opener(path, 'rt', encoding='utf-8') as f:
             for line in f:
                 if line.strip():
                     yield line
+
+
+def read_chain(directory, chain):
+    """Text of a chain file: the file itself, or the member of that name of an archive chains/*.tar.gz."""
+    path = os.path.join(directory, chain)
+    if os.path.exists(path):
+        with open(path, encoding='utf-8') as f:
+            return f.read()
+    cdir, member = os.path.dirname(path), os.path.basename(path)
+    for fn in sorted(os.listdir(cdir)) if os.path.isdir(cdir) else []:
+        if fn.endswith('.tar.gz'):
+            with tarfile.open(os.path.join(cdir, fn), 'r:gz') as tar:
+                for m in tar:
+                    if m.name == member:
+                        return tar.extractfile(m).read().decode('utf-8')
+    raise IOError('no file and no archive member of that name')
 
 
 def compact(obj):
@@ -214,8 +241,7 @@ def main(argv):
         return 2
     path = os.path.join(directory, rec['chain'])
     try:
-        with open(path, encoding='utf-8') as f:
-            lines = f.read().split('\n')
+        lines = read_chain(directory, rec['chain']).split('\n')
     except (IOError, OSError) as ex:
         print('error: cannot read %s: %s' % (path, ex))
         return 2

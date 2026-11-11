@@ -26,8 +26,10 @@ ROUTE = os.path.join(ROOT, 'route.py')
 EXPORT = os.path.join(ROOT, 'export')
 TINY = os.path.join(ROOT, 'tests', 'tiny_export')
 
-needs_export = pytest.mark.skipif(not os.path.exists(os.path.join(EXPORT, 'events.jsonl')),
+needs_export = pytest.mark.skipif(not (os.path.exists(os.path.join(EXPORT, 'events.jsonl')) or
+                                       os.path.exists(os.path.join(EXPORT, 'events.jsonl.gz'))),
                                   reason='export/ is not present')
+PACK = os.path.join(ROOT, 'scripts', 'export_pack.py')
 
 
 def load(path, name):
@@ -94,10 +96,10 @@ def test_checker_accepts_export():
     assert 'RESULT: OK' in out
     assert_only(out)
     s = summary(out)
-    with open(os.path.join(EXPORT, 'events.jsonl')) as f:
-        first_part = sum(1 for _ in f)
-    assert s['events checked'] >= first_part > 0
-    assert s['chain files identical'] == len(os.listdir(os.path.join(EXPORT, 'chains')))
+    with open(os.path.join(EXPORT, 'summary.json')) as f:
+        info = json.load(f)
+    assert s['events checked'] == info['events'] > 0
+    assert s['chain files identical'] > 0
 
 
 # --------------------------------------------------------------------------------------
@@ -221,6 +223,68 @@ def test_corrupt_chain_file(tiny):
     # the chain step can be skipped
     code, out = run(CHECK, tiny, '--no-chains')
     assert code == 0 and 'not compared' in out
+
+
+def test_packed_export(tiny, tmp_path):
+    """gzip parts and chain archives (FORMAT.md, section 1) are read like the plain files."""
+    packed, plain = str(tmp_path / 'packed'), str(tmp_path / 'plain')
+    code, out = run(PACK, 'pack', tiny, packed)
+    assert code == 0, out
+    assert not os.path.exists(os.path.join(packed, 'events.jsonl'))
+    assert os.listdir(os.path.join(packed, 'chains')) == ['chains-000.tar.gz']
+    code, out = run(CHECK, packed)
+    assert code == 0, out
+    assert_only(out)
+    assert summary(out)['chain files identical'] == len(os.listdir(os.path.join(tiny, 'chains')))
+    code, out2 = run(ROUTE, '10_44', 'M', packed)
+    assert code == 0 and out2 == run(ROUTE, '10_44', 'M', tiny)[1]
+    # unpacking gives the plain export back, byte for byte
+    code, out = run(PACK, 'unpack', packed, plain)
+    assert code == 0, out
+    for d, _, files in os.walk(tiny):
+        for fn in files:
+            a = os.path.join(d, fn)
+            with open(a, 'rb') as f, open(os.path.join(plain, os.path.relpath(a, tiny)), 'rb') as g:
+                assert f.read() == g.read(), fn
+    # a chain file that differs inside an archive is found; a file in two places is reported
+    path = os.path.join(tiny, 'chains', '10_44.txt')
+    with open(path) as f:
+        text = f.read()
+    with open(path, 'w') as f:
+        f.write(text.replace('r_2{>=8}', 'r_2{>=4}', 1))
+    bad = str(tmp_path / 'bad')
+    assert run(PACK, 'pack', tiny, bad)[0] == 0
+    code, out = run(CHECK, bad)
+    assert code == 1
+    assert_only(out, {'chain files different': 1})
+    shutil.copy(os.path.join(TINY, 'chains', '4_1.txt'), os.path.join(packed, 'chains', '4_1.txt'))
+    code, out = run(CHECK, packed)
+    assert code == 1 and 'occurs twice' in out
+
+
+def test_split_parts(tiny):
+    """Continuation parts: events.1.jsonl (plain next to a gzip first part) and knots.1.csv."""
+    import gzip
+    path = os.path.join(tiny, 'events.jsonl')
+    with open(path) as f:
+        lines = f.readlines()
+    os.remove(path)
+    with gzip.open(path + '.gz', 'wt') as f:
+        f.writelines(lines[:30])
+    with open(os.path.join(tiny, 'events.1.jsonl'), 'w') as f:
+        f.writelines(lines[30:])
+    path = os.path.join(tiny, 'knots.csv')
+    with open(path) as f:
+        rows = f.readlines()
+    with open(path, 'w') as f:
+        f.writelines(rows[:4])
+    with open(os.path.join(tiny, 'knots.1.csv'), 'w') as f:
+        f.writelines(rows[:1] + rows[4:])
+    code, out = run(CHECK, tiny)
+    assert code == 0, out
+    assert_only(out)
+    assert summary(out)['events checked'] == len(lines)
+    assert 'rows: %d' % (len(rows) - 1) in out
 
 
 def test_missing_and_unexpected_chain_file(tiny):

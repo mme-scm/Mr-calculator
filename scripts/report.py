@@ -100,16 +100,15 @@ def main():
     knots = {}
     kinds = collections.Counter()
     open_sizes = {i: collections.Counter() for i in INV}
-    kpath = os.path.join(EXPORT, 'knots.jsonl')
-    if os.path.exists(kpath):
-        for line in open(kpath):
-            k = json.loads(line)
+    sys.path.insert(0, os.path.join(ROOT, 'checker'))
+    import check as _chk                      # only its file readers (parts, gzip)
+    if _chk.jsonl_parts(EXPORT, 'knots.jsonl'):
+        for k in _chk.read_jsonl(EXPORT, 'knots.jsonl'):
             knots[k['node']] = k
             kinds[k['kind'] + (' (peripheral)' if k['peripheral'] else '')] += 1
     import csv
-    cpath = os.path.join(EXPORT, 'knots.csv')
-    if os.path.exists(cpath):
-        with open(cpath, newline='', encoding='utf-8') as f:
+    for cpath in _chk.file_parts(EXPORT, 'knots.csv'):
+        with _chk.open_text(cpath, newline='') as f:
             for row in csv.DictReader(f):
                 for i in INV:
                     if row['%s_pin' % i] != '':
