@@ -22,7 +22,7 @@ then no two signatures agreed, while 103 of the 359 other clusters tested had eq
 knots lie in one mutation class (classes of the mu pass) are therefore tested last; which=nonmutant leaves
 them out of a run (signatures already in the caches are used in any case).
 usage: find_coincidences.py [budget=<seconds, 0: none>] [procs=4] [prefilter=1] [compute=1] [which=all|nonmutant]
-                            [out=<path>]
+                            [usig=<cache of unverified signatures>] [out=<path>]
        compute=0: no new signatures, only the caches are used.
 """
 import hashlib
@@ -165,6 +165,7 @@ def main():
     procs = int(kv.get('procs', 4))
     prefilter = kv.get('prefilter', '1') != '0'
     compute = kv.get('compute', '1') != '0'
+    usig_cache = kv.get('usig', USIG_CACHE)    # a long run appends to a copy outside the repository
     out_path = kv.get('out', os.path.join(DATA, 'coincidences.jsonl'))
     # priority: clusters containing a node whose r_2 or r_0 is pinned in the last export
     prio = set()
@@ -216,8 +217,8 @@ def main():
     need = None                       # fillings that need a verified signature (None: all candidates)
     if prefilter:
         usig = {}
-        if os.path.exists(USIG_CACHE):
-            with open(USIG_CACHE) as f:
+        if os.path.exists(usig_cache):
+            with open(usig_cache) as f:
                 for line in f:
                     r = json.loads(line)
                     usig[(r['node'], r['p'], r['q'])] = r
@@ -229,7 +230,7 @@ def main():
                     todo.append(k)
         if not compute:
             todo = []
-        nu, complete = run_pool(usig_task, chunks(todo), USIG_CACHE, usig, procs, budget, t0,
+        nu, complete = run_pool(usig_task, chunks(todo), usig_cache, usig, procs, budget, t0,
                                 'unverified signatures')
 
         def h_of(k):
