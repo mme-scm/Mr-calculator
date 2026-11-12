@@ -50,3 +50,37 @@ def test_regina_routes_agree():
                 n += 1
                 assert a == b, (node, p, q, a, b)
     assert n >= 5
+
+
+def test_mirror_fillings_coincide():
+    """S_{-p/q}(K*) = -S_{p/q}(K), and the certificates are up to orientation: the filling p/q of K and the
+    filling -p/q of the mirror get the same verified signature and the same normalised name, while the
+    fillings p/q of K and of the mirror (chiral knots, slopes chosen for the test) do not."""
+    import regina
+    from mrcalc import pd as PD
+    for node, slope in (('8_20', (7, 2)), ('10_139', (3, 1)), ('5_2', (-7, 1))):
+        d = nodeset.diagram(node)
+        E, Em = S.exterior(d), S.exterior(PD.mirror(d))
+        p, q = slope
+        a = S.hyperbolic_signature(E, (p, q))
+        b = S.hyperbolic_signature(Em, (-p, q))
+        c = S.hyperbolic_signature(Em, (p, q))
+        assert a and b and a['sig'] == b['sig'], (node, slope)
+        assert c is None or c['sig'] != a['sig'], (node, slope)
+
+    def name(E, slope):
+        T = regina.Triangulation3(S.filled_string(E, slope))
+        T.intelligentSimplify()
+        st = regina.StandardTriangulation.recognise(T)
+        return S.norm_manifold(st.manifold()) if st is not None else (None, None)
+    d = nodeset.diagram('3_1')
+    E, Em = S.exterior(d), S.exterior(PD.mirror(d))
+    n = 0
+    for p, q in ((1, 1), (-1, 1), (2, 1), (-2, 1), (7, 2), (-7, 2), (4, 1), (-4, 1)):
+        a, b, c = name(E, (p, q)), name(Em, (-p, q)), name(Em, (p, q))
+        if a[0] and b[0]:
+            n += 1
+            assert a == b, (p, q, a, b)
+            if c[0]:
+                assert c != a, (p, q, a, c)
+    assert n >= 4

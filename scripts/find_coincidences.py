@@ -10,7 +10,14 @@
  (c) one side is a torus-knot filling named by S2 (Moser): its Regina name is first checked
      against Moser's fibre orders.
 Output: data/coincidences.jsonl (rewritten; out=<path> writes elsewhere).
-usage: find_coincidences.py [budget=<seconds, 0: none>] [procs=4] [prefilter=1] [out=<path>]
+Orientation: a coincidence is a homeomorphism of the fillings, orientation preserving or not (all three
+certificates are up to orientation).  The fillings S_{-p/q}(K*) = -S_{p/q}(K) of the mirror are therefore
+the same manifolds; they are never built or compared (fillings exist for one chirality of a knot, with
+slopes of both signs), and the equations of the mirror nodes follow from F3/C3.  Records that say nothing
+are not written: the same knot under two names at the same slope, and p/q against -p/q on an
+amphichiral knot.
+usage: find_coincidences.py [budget=<seconds, 0: none>] [procs=4] [prefilter=1] [compute=1] [out=<path>]
+       compute=0: no new signatures, only the caches are used.
 """
 import hashlib
 import json
@@ -128,6 +135,7 @@ def main():
     budget = float(kv.get('budget', 0))        # time budget for the signature steps (seconds); 0: none
     procs = int(kv.get('procs', 4))
     prefilter = kv.get('prefilter', '1') != '0'
+    compute = kv.get('compute', '1') != '0'
     out_path = kv.get('out', os.path.join(DATA, 'coincidences.jsonl'))
     # priority: clusters containing a node whose r_2 or r_0 is pinned in the last export
     prio = set()
@@ -180,6 +188,8 @@ def main():
                 if k not in sigs and k not in usig and k not in seen:
                     seen.add(k)
                     todo.append(k)
+        if not compute:
+            todo = []
         nu, complete = run_pool(usig_task, chunks(todo), USIG_CACHE, usig, procs, budget, t0,
                                 'unverified signatures')
 
@@ -209,6 +219,8 @@ def main():
             if k not in sigs and k not in queued and (need is None or k in need):
                 queued.add(k)
                 todo.append(k)
+    if not compute:
+        todo = []
     t1 = time.time()
     ndone, _complete = run_pool(sig_task, chunks(todo), SIG_CACHE, sigs, procs,
                                 max(1.0, budget - (t1 - t0)) if budget else 0, t1, 'verified signatures')
@@ -231,7 +243,7 @@ def main():
                         'orientation': 'isometry signature computed ignoring orientation'})
     na = len(out)
     # ---- (b), (c) Regina names
-    torus = {}
+    torus, same = {}, {}                       # same: torus-knot node -> table node of the same knot
     for p, q in nodeset.torus_params():
         torus[names.torus_name(p, q)] = (p, q)
     cons = os.path.join(DATA, 'constructions.jsonl')
@@ -240,10 +252,14 @@ def main():
             r = json.loads(line)
             if r.get('family') == 'torus' and 'node' in r:
                 torus[r['node']] = (r['params']['p'], r['params']['q'])
+                if r.get('chirality') != 'mirror' and r['construction'] != r['node']:
+                    same[r['construction']] = r['node']
     by_name = defaultdict(list)
     moser_bad = []
     for r in recs:
         if r['kind'] != 'sfs' or not r.get('name'):
+            continue
+        if r['node'] in amph and r['p'] < 0:   # as in (a): -p/q on an amphichiral knot is p/q up to orientation
             continue
         cert = 'b'
         if r['node'] in torus:
@@ -253,7 +269,7 @@ def main():
                 moser_bad.append((r['node'], r['p'], r['q'], r['name'], kind, orders))
                 continue
             cert = 'c'
-        by_name[r['name']].append((r['node'], r['p'], r['q'], cert))
+        by_name[r['name']].append((same.get(r['node'], r['node']), r['p'], r['q'], cert))
     for name, members in sorted(by_name.items()):
         members = sorted(set(members))
         if len(members) < 2:
