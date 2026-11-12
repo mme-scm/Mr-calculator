@@ -19,15 +19,65 @@ def exterior(pd):
     return spherogram.Link([list(c) for c in pd]).exterior()
 
 
-def geometric_filling(E, slope, tries=12):
-    """Return a copy of E filled along slope with a positively oriented solution, or None."""
+def redescriptions(N, max_curves=6):
+    """Other surgery descriptions of the closed manifold N (a one-cusped manifold with a filling).
+
+    A short curve of the dual 1-skeleton is drilled (Manifold.drill; the old cusp keeps its filling), the old
+    cusp is filled for good, and the new cusp is filled along its meridian (1,0), which gives N back
+    (convention of SnapPy's drilling, tested in tests/test_surgery.py and mrcalc/conventions.py).  For small
+    closed hyperbolic manifolds the filled triangulation of a knot exterior often has no positively oriented
+    solution under any randomisation, while such a description has one.  Yields one-cusped filled manifolds."""
+    try:
+        n = min(len(N.dual_curves()), max_curves)
+    except Exception:
+        return
+    for i in range(n):
+        try:
+            F = N.drill(i).filled_triangulation()
+            if F.num_cusps() != 1:
+                continue
+            F.dehn_fill((1, 0), 0)
+        except Exception:
+            continue
+        yield F
+
+
+def _redescribed_geometric(N, tries=4):
+    """A redescription of N with a positively oriented solution, or None.  N must have a solution (negatively
+    oriented tetrahedra allowed) of volume above 0.5; the result is kept only if it has the homology of N and
+    the same volume up to 1e-6 (guard against a wrong description)."""
+    try:
+        if N.solution_type() in ('contains degenerate tetrahedra', 'no solution found', 'not attempted'):
+            return None
+        vol = float(N.volume())
+        if vol < 0.5:
+            return None
+        hom = str(N.homology())
+    except Exception:
+        return None
+    for F in redescriptions(N):
+        try:
+            for t in range(tries):
+                if F.solution_type() == GEOMETRIC:
+                    if str(F.homology()) == hom and abs(float(F.volume()) - vol) < 1e-6:
+                        return F
+                    break
+                F.randomize()
+        except Exception:
+            continue
+    return None
+
+
+def geometric_filling(E, slope, tries=12, redescribe=True):
+    """Return the filling of E along slope with a positively oriented solution, or None: a filled copy of E,
+    or (redescribe) another surgery description of the same closed manifold, see redescriptions()."""
     N = E.copy()
     N.dehn_fill(tuple(slope))
     for t in range(tries):
         if N.solution_type() == GEOMETRIC:
             return N
         N.randomize()
-    return None
+    return _redescribed_geometric(N) if redescribe else None
 
 
 def hyperbolic_signature(E, slope, verified=True, tries=12):
@@ -37,20 +87,32 @@ def hyperbolic_signature(E, slope, verified=True, tries=12):
     the filling (verified=True) so that it refers to a verified hyperbolic structure."""
     N = E.copy()
     N.dehn_fill(tuple(slope))
+    geo = False
     for t in range(tries):
         if N.solution_type() == GEOMETRIC:
-            try:
-                ok = N.verify_hyperbolicity()[0]
-            except Exception:
-                ok = False
-            if ok:
-                try:
-                    sig = N.isometry_signature(verified=verified)
-                    return {'sig': sig, 'verified': True, 'volume': float(N.volume())}
-                except Exception:
-                    pass
+            geo = True
+            r = _signature(N, verified)
+            if r:
+                return r
         N.randomize()
+    if not geo:                           # no positively oriented solution: another surgery description
+        F = _redescribed_geometric(N)
+        for t in range(4 if F is not None else 0):
+            if F.solution_type() == GEOMETRIC:
+                r = _signature(F, verified)
+                if r:
+                    return r
+            F.randomize()
     return None
+
+
+def _signature(N, verified):
+    try:
+        if not N.verify_hyperbolicity()[0]:
+            return None
+        return {'sig': N.isometry_signature(verified=verified), 'verified': True, 'volume': float(N.volume())}
+    except Exception:
+        return None
 
 
 # ----------------------------------------------------------------------

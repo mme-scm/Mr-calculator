@@ -15,6 +15,11 @@ fillings without a geometric solution.  The classes of equal verified signature 
      signatures (an isometry found there would mean that the signature separates isometric fillings);
   e. the fillings that stay without a signature or a name.
 
+First result (2026-11-12, knots up to 8 crossings): filters 2 and 3 lost nothing, but 36 fillings were
+hyperbolic without a positively oriented solution on any randomisation of the filled triangulation, and
+were dropped by step 1.  S.redescriptions (drilling a dual curve) now gives them a geometric description;
+this script uses it too, for the fillings its first pass leaves open.
+
 usage: audit_coincidences.py [tmax=8] [procs=3] [dir=<work dir>] [analyse=1] [regina=60]
        analyse=1: no new computation, report on the knots already done.
 Output: <work dir>/<knot>.json per knot, data/coincidence_audit.json (summary).
@@ -64,7 +69,41 @@ def verified_signature(E, slope, tries=60):
         except BaseException as e:
             if _fatal(e):
                 raise
+    if vol is None:                      # no positively oriented solution: another surgery description
+        r = S.hyperbolic_signature(E, slope, verified=True, tries=2)
+        if r:
+            return r['volume'], r['sig'], -1
     return vol, None, tries
+
+
+def repair(work, nodes):
+    """Fillings left without geometric solution and without name by an earlier run of this script: the
+    redescription of S.redescriptions is tried (tries = -1 marks a signature found that way)."""
+    n = 0
+    for node in nodes:
+        path = os.path.join(work, node + '.json')
+        if not os.path.exists(path):
+            continue
+        recs = json.load(open(path))
+        todo = [r for r in recs if r['vol'] is None and r.get('kind') == 'unknown' and 'redescribed' not in r]
+        if not todo:
+            continue
+        E = S.exterior(nodeset.diagram(node))
+        for r in todo:
+            try:
+                x = S.hyperbolic_signature(E, (r['p'], r['q']), verified=True, tries=2)
+            except BaseException as e:
+                if _fatal(e):
+                    raise
+                x = None
+            r['redescribed'] = bool(x)
+            if x:
+                r.update(vol=x['volume'], sig=x['sig'], tries=-1)
+                n += 1
+        with open(path + '.tmp', 'w') as f:
+            json.dump(recs, f)
+        os.replace(path + '.tmp', path)
+    return n
 
 
 def node_task(args):
@@ -139,6 +178,8 @@ def analyse(work, nodes, torus, amph):
             by_sig[r['sig']].add(fold(r))
     truth = {frozenset(v) for v in by_sig.values() if len(v) > 1}
     rep['hyperbolic fillings with a verified signature'] = sum(1 for r in hyp if r['sig'])
+    rep['of these, only through a redescription (no positively oriented filled triangulation)'] = sum(
+        1 for r in hyp if r['sig'] and r.get('tries') == -1)
     rep['classes of equal verified signature (two or more fillings)'] = len(truth)
     rep['independent equations in them'] = sum(len(c) - 1 for c in truth)
     # ---- a. the pipeline's coincidences on these knots
@@ -147,10 +188,11 @@ def analyse(work, nodes, torus, amph):
     with open(os.path.join(DATA, 'coincidences.jsonl')) as f:
         for line in f:
             c = json.loads(line)
-            if c['cert'] == 'a' and c['A'] in ks and c['B'] in ks:
+            if c['cert'] == 'a':
                 pipe_pairs.append((fold({'node': c['A'], 'p': c['sA'][0], 'q': c['sA'][1]}),
                                    fold({'node': c['B'], 'p': c['sB'][0], 'q': c['sB'][1]})))
-    pipe = classes_of(pipe_pairs)
+    # classes over all knots first (a class may be linked through a larger knot), then these knots only
+    pipe = {c for c in (frozenset(k for k in c0 if k[0] in ks) for c0 in classes_of(pipe_pairs)) if len(c) > 1}
     cls_of = {k: c for c in pipe for k in c}
     missing, extra = [], []
     for c in truth:                              # every pair of a true class must be in one pipeline class
@@ -251,10 +293,10 @@ def analyse(work, nodes, torus, amph):
     with open(os.path.join(DATA, 'coincidences.jsonl')) as f:
         for line in f:
             c = json.loads(line)
-            if c['cert'] != 'a' and c['A'] in ks and c['B'] in ks:
+            if c['cert'] != 'a':
                 npairs.append((fold({'node': c['A'], 'p': c['sA'][0], 'q': c['sA'][1]}),
                                fold({'node': c['B'], 'p': c['sB'][0], 'q': c['sB'][1]})))
-    pname = classes_of(npairs)
+    pname = {c for c in (frozenset(k for k in c0 if k[0] in ks) for c0 in classes_of(npairs)) if len(c) > 1}
     pc = {k: c for c in pname for k in c}
     rep['names: classes of equal Regina name here'] = len(tname)
     rep['names: classes the pipeline does not have (in full)'] = sorted(
@@ -294,6 +336,9 @@ def main():
                     json.dump(out, f)
                 os.replace(os.path.join(work, node + '.json.tmp'), os.path.join(work, node + '.json'))
                 print('  %s %.0fs (total %.0fs)' % (node, dt, time.time() - t0), flush=True)
+    n = repair(work, nodes)
+    if n:
+        print('redescribed: %d fillings without geometric solution now have a verified signature' % n, flush=True)
     rep = analyse(work, nodes, torus, amph)
     rep['tmax'] = tmax
     with open(os.path.join(DATA, 'coincidence_audit.json'), 'w') as f:

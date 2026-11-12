@@ -184,6 +184,34 @@ def t_surgery_mirror():
     return n >= 3, '%d slopes with verified hyperbolic fillings' % n
 
 
+def t_drill_redescription():
+    """S.redescriptions: drilling a dual curve of a filling, filling the old cusp for good and the new cusp along
+    (1,0) gives the same closed manifold.  Checked on fillings that have a verified signature directly."""
+    t = knotinfo.by_name()
+    n = 0
+    for name, s in (('5_2', (-7, 1)), ('6_2', (9, 2)), ('7_4', (5, 1)), ('8_20', (7, 3)), ('8_5', (-4, 1))):
+        E = S.exterior(t[name]['pd'])
+        a = S.hyperbolic_signature(E, s)
+        N = E.copy()
+        N.dehn_fill(s)
+        if not a:
+            continue
+        for F in S.redescriptions(N, max_curves=3):
+            b = None
+            for k in range(6):
+                if F.solution_type() == S.GEOMETRIC:
+                    b = S._signature(F, True)
+                    if b:
+                        break
+                F.randomize()
+            if b is None:
+                continue
+            n += 1
+            if b['sig'] != a['sig']:
+                return False, '%s %s' % (name, s)
+    return n >= 8, '%d redescriptions with the signature of the filling' % n
+
+
 def t_moser():
     t = knotinfo.by_name()
     E = S.exterior(t['3_1']['pd'])
@@ -254,6 +282,7 @@ TESTS = [
     ('pretzel convention', t_pretzel),
     ('twist knots', t_twist_knots),
     ('surgery on mirror', t_surgery_mirror),
+    ('drilled redescription of a filling', t_drill_redescription),
     ('Moser test', t_moser),
     ('cable surgery identity (sanity)', t_cable_surgery_identity),
 ]

@@ -44,15 +44,12 @@ def node_fillings(node, pd, slopes, time_limit=2.0, regina_nonhyp=True, torus=No
                 rec['moser_orders'] = list(nm)
                 out.append(rec)
                 continue
-            N = E.copy()
-            N.dehn_fill((p, q))
-            geo = False
-            for t in range(4):
-                if N.solution_type() == S.GEOMETRIC:
-                    geo = True
-                    break
-                N.randomize()
-            if geo:
+            N = S.geometric_filling(E, (p, q), tries=4, redescribe=False)
+            if N is None:                  # another surgery description of the filling (S.redescriptions)
+                N = S.geometric_filling(E, (p, q), tries=0)
+                if N is not None:
+                    rec['how'] = 'drill'
+            if N is not None:
                 rec['kind'] = 'geo'
                 rec['vol'] = round(float(N.volume()), 9)
             elif regina_nonhyp:
