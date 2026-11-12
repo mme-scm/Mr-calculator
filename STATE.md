@@ -1,8 +1,6 @@
 # STATE
 
-Updated 2026-11-12 06:21 UTC.
-Pin counts below are from a re-solve on all pass data synced so far (not exported; the last exported and checked checkpoint is described in REPORT.md).
-
+Updated 2026-11-12 10:26 UTC.
 
 ## Pinned values per invariant
 
@@ -23,8 +21,8 @@ Pin counts below are from a re-solve on all pass data synced so far (not exporte
 | 14 | 10 | 10 | 0 | 2 | 0 | 10 | 10 |
 | 15 | 20 | 20 | 0 | 8 | 0 | 20 | 20 |
 | constructions | 2328 | 28 | 28 | 124 | 124 | 66 | 150 |
-| peripheral | 464718 | 123410 | 4 | 11580 | 48 | 269430 | 413194 |
-| total | 494416 | 144102 | 86 | 30680 | 309 | 294566 | 439478 |
+| peripheral | 464718 | 123410 | 4 | 11622 | 48 | 269630 | 413976 |
+| total | 494416 | 144102 | 86 | 30722 | 309 | 294766 | 440260 |
 
 ## Pass progress (shards done out of 360; by tier)
 
@@ -34,7 +32,7 @@ Pin counts below are from a re-solve on all pass data synced so far (not exporte
 - `tw2`: 334 shards {3: 1, 4: 1, 5: 1, 6: 2, 7: 2, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 250}
 - `tw3`: 332 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 250}
 - `tw4`: 27 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14}
-- `tw5`: 15 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 2}
+- `tw5`: 18 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 5}
 - `fillings`: 334 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 250, 99: 2}
 
 ## Taper tracking: pins on knots with at most 13 crossings
@@ -55,6 +53,7 @@ Taper = a notable decrease in new pins on knots with at most 13 crossings (prime
 | 2026-11-12 00:05 | tw3 +101 | 19780 | 54 | 17644 | 137 | 22754 | 26100 | +748 / +0 / +0 / +0 / +0 / +0 |
 | 2026-11-12 05:57 | tw3 +68 | 20632 | 54 | 17644 | 137 | 22754 | 26102 | +852 / +0 / +0 / +0 / +0 / +2 |
 | 2026-11-12 06:21 | cc +21, ccb +305, mu +21, tw4 +21, tw5 +15 | 20634 | 54 | 18966 | 137 | 25040 | 26104 | +2 / +0 / +1322 / +0 / +2286 / +2 |
+| 2026-11-12 10:26 | tw5 +3 | 20634 | 54 | 18966 | 137 | 25040 | 26104 | +0 / +0 / +0 / +0 / +0 / +0 |
 
 ## Notes
 
