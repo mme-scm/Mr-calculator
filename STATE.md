@@ -1,6 +1,6 @@
 # STATE
 
-Updated 2026-11-12 15:50 UTC.
+Updated 2026-11-12 19:12 UTC.
 Pin counts below are from a re-solve on all pass data synced so far (not exported; the last exported and checked checkpoint is described in REPORT.md).
 
 
@@ -38,7 +38,7 @@ Pin counts below are from a re-solve on all pass data synced so far (not exporte
 - `tw4x`: 332 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 250}
 - `tw5`: 27 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14}
 - `tw5x`: 27 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14}
-- `tw6`: 5 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1}
+- `tw6`: 7 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1}
 - `tw6x`: 13 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5}
 - `fillings`: 334 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 250, 99: 2}
 
@@ -63,6 +63,7 @@ Taper = a notable decrease in new pins on knots with at most 13 crossings (prime
 | 2026-11-12 10:26 | tw5 +3 | 20634 | 54 | 18966 | 137 | 25040 | 26104 | +0 / +0 / +0 / +0 / +0 / +0 |
 | 2026-11-12 15:23 | tw3x +332, tw4x +27, tw5 +9, tw6 +5 | 24534 | 58 | 18966 | 137 | 25040 | 26104 | +3900 / +4 / +0 / +0 / +0 / +0 |
 | 2026-11-12 15:50 | tw4x +305, tw5x +27, tw6x +13 | 24572 | 58 | 18966 | 137 | 25040 | 26104 | +38 / +0 / +0 / +0 / +0 / +0 |
+| 2026-11-12 19:12 | tw6 +2 | 24572 | 58 | 18966 | 137 | 25040 | 26104 | +0 / +0 / +0 / +0 / +0 / +0 |
 
 ## Notes
 
