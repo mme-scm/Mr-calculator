@@ -1,10 +1,13 @@
 """Re-solve and export.
-usage: solve.py [upsilon] [ablation] [nochains] [plain] [out=<dir>]
-       solve.py ablate [upsilon] [out=<dir>]             second phase of `ablation` (started by the first)
+usage: solve.py [upsilon] [ablation] [nochains] [plain] [out=<dir>] [runs=<name,name>]
+       solve.py ablate [upsilon] [out=<dir>] [runs=..]   second phase of `ablation` (started by the first)
        solve.py ablate-run=<name> [upsilon] [out=<dir>]  one ablation run; prints its counts as one JSON line
 
 ablation: the full run solves, exports and leaves a table of its pins; then every ablation run is a process
 of its own (the problem is built again each time), so that the memory in use is that of one problem.
+The runs are the rule families and single rules of section 10 and, for every group of passes of
+config.PASS_ABLATIONS that has records, one run without the records of these passes (all rules used).
+runs=: only the named ablation runs (tests).
 
 plain: write uncompressed JSONL parts and one file per chain (default: gzip parts and chain archives)."""
 import json
@@ -14,7 +17,7 @@ import time
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from mrcalc import export, prepare, solver  # noqa: E402
-from mrcalc.config import EXPORT, ROOT  # noqa: E402
+from mrcalc.config import EXPORT, PASS_ABLATIONS, ROOT  # noqa: E402
 from mrcalc.solver import FAMILIES, INVARIANTS, RULE_FAMILY  # noqa: E402
 
 
@@ -116,6 +119,19 @@ def ablation_runs():
     return runs + [(r, [r]) for r in ('F11', 'F12', 'F13', 'F14', 'C11', 'C12', 'C13', 'C14')]
 
 
+def pass_ablation_runs():
+    """Data ablations: the groups of passes of config.PASS_ABLATIONS that have records."""
+    from mrcalc import passes
+    have = set(pn for pn, shard, path in passes.pass_files())
+    return [(name, list(ps)) for name, ps in PASS_ABLATIONS.items() if have & set(ps)]
+
+
+def _core13(info):
+    """Unknot, table knots and composites with at most 13 crossings (the tiers 0-13 of pins_by_tier.json)."""
+    return (info is not None and info['kind'] in ('table', 'composite', 'unknot')
+            and info['tier'] is not None and info['tier'] <= 13)
+
+
 def write_ablation_base(problem, full, out_dir):
     """What an ablation run needs from the full run: its pins and, for every pin, the set of rules used by
     its chain (as a bit mask: own rule of every event of the chain)."""
@@ -146,6 +162,9 @@ def ablation_run(name, out_dir, include_upsilon):
     rule is a violation."""
     import pickle
     t0 = time.time()
+    skipped = dict(pass_ablation_runs()).get(name)
+    if skipped is not None:
+        return pass_ablation_run(name, skipped, out_dir, include_upsilon)
     rules = dict(ablation_runs())[name]
     with open(os.path.join(out_dir, ABLATION_BASE), 'rb') as f:
         base = pickle.load(f)
@@ -161,6 +180,7 @@ def ablation_run(name, out_dir, include_upsilon):
                 'lost': {i: None for i in INVARIANTS}, 'violations': None}
     pins = pin_counts(problem, S)
     lost = {i: 0 for i in INVARIANTS}
+    lost13 = {i: 0 for i in INVARIANTS}
     viol = changed = 0
     rs = 0
     for r in rules:
@@ -168,24 +188,73 @@ def ablation_run(name, out_dir, include_upsilon):
     pin_mask = base['mask']
     for n, fp in base['pins'].items():
         now = S.pins(n)
+        core = _core13(problem.nodes[n])
         for inv, v in fp.items():
             if inv not in now:
                 lost[inv] += 1
+                lost13[inv] += core
                 if not (pin_mask[n][inv] & rs):
                     viol += 1
             elif now[inv] != v:
                 changed += 1
-    return {'withheld': name, 'rules': rules, 'pins': pins, 'lost': lost, 'violations': viol,
+    return {'withheld': name, 'rules': rules, 'pins': pins, 'lost': lost, 'lost_core': lost13, 'violations': viol,
             'changed_values': changed, 'seconds': round(time.time() - t0, 1)}
 
 
-def ablation_driver(out_dir, include_upsilon):
+def pass_ablation_run(name, skipped, out_dir, include_upsilon):
+    """Data ablation: the problem is built without the records of the passes `skipped` (fewer edges, and
+    fewer peripheral nodes where a node was included because of these records) and solved with all rules.
+    lost: pins of the full run that this run does not have.  The constraints of this run are constraints
+    of the full run, so each of its pins must be a pin of the full run with the same value: the pins for
+    which this fails are counted as violations."""
+    import pickle
+    t0 = time.time()
+    with open(os.path.join(out_dir, ABLATION_BASE), 'rb') as f:
+        base = pickle.load(f)
+    del base['mask']
+    already = set(filter(None, os.environ.get('MRCALC_SKIP_PASSES', '').split(',')))
+    os.environ['MRCALC_SKIP_PASSES'] = ','.join(sorted(already | set(skipped)))
+    problem = prepare.Problem(include_upsilon=include_upsilon)
+    head = {'withheld': name, 'rules': [], 'passes': skipped}
+    try:
+        S = solve(problem, keep=None, record=False)
+    except solver.Contradiction as e:
+        return dict(head, error=str(e), pins={i: None for i in INVARIANTS}, lost={i: None for i in INVARIANTS},
+                    violations=None)
+    pins = pin_counts(problem, S)
+    lost = {i: 0 for i in INVARIANTS}
+    lost13 = {i: 0 for i in INVARIANTS}
+    full = base['pins']
+    for n, fp in full.items():
+        info = problem.nodes.get(n)
+        now = S.pins(n) if info is not None else {}
+        core = _core13(info)
+        for inv in fp:
+            if inv not in now:
+                lost[inv] += 1
+                lost13[inv] += core
+    viol = 0
+    for n in problem.nodes:
+        fp = full.get(n, {})
+        for inv, v in S.pins(n).items():
+            if inv not in fp or fp[inv] != v:
+                viol += 1
+    return dict(head, pins=pins, lost=lost, lost_core=lost13, violations=viol, nodes=len(problem.nodes),
+                constraints=len(problem.cons), full_nodes=base['nodes'], full_constraints=base['constraints'],
+                seconds=round(time.time() - t0, 1))
+
+
+def ablation_driver(out_dir, include_upsilon, only=None):
     """Second phase of `solve.py ablation`: the full run has exported and left the process; every ablation
     run is a process of its own, one after the other, so that the memory in use is that of one problem.
     Writes ablation.json and the sheet `ablation` of knots.xlsx.  Exit code 3 if a run died."""
     import subprocess
     out, died = [], 0
-    for name, rules in ablation_runs():
+    runs = [(name, {'rules': rules}) for name, rules in ablation_runs()]
+    runs += [(name, {'rules': [], 'passes': ps}) for name, ps in pass_ablation_runs()]
+    for name, head in runs:
+        if only is not None and name not in only:
+            continue
         t0 = time.time()
         cmd = [sys.executable, '-W', 'ignore', os.path.abspath(__file__), 'ablate-run=' + name, 'out=' + out_dir]
         proc = subprocess.run(cmd + (['upsilon'] if include_upsilon else []), stdout=subprocess.PIPE)
@@ -197,8 +266,8 @@ def ablation_driver(out_dir, include_upsilon):
                 res = None
         if res is None:
             died += 1
-            res = {'withheld': name, 'rules': rules, 'error': 'run died (exit code %d)' % proc.returncode,
-                   'pins': {i: None for i in INVARIANTS}, 'lost': {i: None for i in INVARIANTS}, 'violations': None}
+            res = dict(head, withheld=name, error='run died (exit code %d)' % proc.returncode,
+                       pins={i: None for i in INVARIANTS}, lost={i: None for i in INVARIANTS}, violations=None)
         out.append(res)
         print('ablation %-18s pins %s lost %s violations %s (%.0fs)' % (
             name, res['pins'], res['lost'], res['violations'], time.time() - t0), flush=True)
@@ -220,7 +289,7 @@ def main():
         print(json.dumps(ablation_run(kv['ablate-run'], out_dir, upsilon)), flush=True)
         return
     if 'ablate' in args:
-        sys.exit(ablation_driver(out_dir, upsilon))
+        sys.exit(ablation_driver(out_dir, upsilon, kv['runs'].split(',') if 'runs' in kv else None))
     t0 = time.time()
     problem = prepare.Problem(include_upsilon=upsilon)
     print('problem: %d nodes, %d constraints, %d edges (%.0fs)' % (
@@ -254,7 +323,8 @@ def main():
         # the ablation runs start only after this process has given its memory back
         sys.stdout.flush()
         os.execv(sys.executable, [sys.executable, '-W', 'ignore', os.path.abspath(__file__), 'ablate',
-                                  'out=' + out_dir] + (['upsilon'] if upsilon else []))
+                                  'out=' + out_dir] + (['upsilon'] if upsilon else []) +
+                 (['runs=' + kv['runs']] if 'runs' in kv else []))
 
 
 if __name__ == '__main__':

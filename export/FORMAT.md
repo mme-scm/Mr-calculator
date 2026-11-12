@@ -15,6 +15,12 @@ All files are UTF-8. JSON lines are written with sorted keys and no spaces.
 * `knots.xlsx` has the sheets `knots`, `pins`, `ablation`, `parameters`; its sheet `knots` has the nodes that
   are not peripheral. The peripheral nodes are in `knots_peripheral.xlsx`, `knots_peripheral.1.xlsx`, ...
   (one sheet `knots`, same columns, 200000 rows per workbook). `knots.csv` has all nodes.
+* `ablation.json` (and the sheet `ablation`): one entry per ablation run. Rule runs withhold the rules of a
+  family or one rule (`rules`); `violations` counts the lost pins whose chain in the full run uses no
+  withheld rule. Pass runs (`passes` present, `rules` empty) withhold the records of the named passes and use
+  all rules; `violations` counts the pins of the run that are not pins of the full run with the same value.
+  `lost` are the pins of the full run that the run does not have, `lost_core` (sheet: `lost13_*`) those on
+  the unknot, table knots and composites with at most 13 crossings.
 
 `python3 scripts/export_pack.py unpack export <dir>` writes the plain layout (one `X.jsonl` per file, one
 file per chain); `checker/check.py` and `route.py` read both layouts.

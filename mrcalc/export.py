@@ -454,10 +454,13 @@ class TableWriter:
 
 def _ablation_rows(ws, ablation):
     ws.append(['withheld', 'rules'] + ['pins_%s' % i for i in INVARIANTS] + ['lost_%s' % i for i in INVARIANTS] +
-              ['lost pins whose full-run chain lacks the withheld family'])
+              ['lost pins whose full-run chain lacks the withheld family (rows "passes: ...": pins of the run '
+               'that are not pins of the full run)'] + ['lost13_%s' % i for i in INVARIANTS])
     for a in ablation or []:
-        ws.append([a['withheld'], ' '.join(a['rules'])] + [a['pins'][i] for i in INVARIANTS] +
-                  [a['lost'][i] for i in INVARIANTS] + [a['violations']])
+        what = 'passes: ' + ' '.join(a['passes']) if a.get('passes') else ' '.join(a['rules'])
+        core = a.get('lost_core') or {}
+        ws.append([a['withheld'], what] + [a['pins'][i] for i in INVARIANTS] +
+                  [a['lost'][i] for i in INVARIANTS] + [a['violations']] + [core.get(i) for i in INVARIANTS])
 
 
 def write_ablation_sheet(out_dir, ablation):

@@ -3,6 +3,8 @@
 usage: run_pass.py diagrams <tier-lo> <tier-hi>
        run_pass.py <pass-name> <move: cc|tw|mu> <tier-lo> <tier-hi> [kinds=pd,braid,re] [kmin=2] [kmax=2]
                    [nodes=<file with node names>] [procs=4] [budget=<seconds>]
+                   [imb_min=<n>] [imb_max=<n>|none]   (twists: limits on |a - b|; default 0 and the
+                   scope parameter max_imbalance)
 Pass records go to data/passes/<pass-name>/<shard>.jsonl; finished shards are listed in done.txt.
 """
 import json
@@ -54,6 +56,10 @@ def main():
     pname, move, lo, hi = pos[0], pos[1], int(pos[2]), int(pos[3])
     opt = {'move': move, 'params': params, 'kinds': kv.get('kinds', 'pd,braid,re').split(','),
            'kmin': int(kv.get('kmin', 2)), 'kmax': int(kv.get('kmax', 2))}
+    if 'imb_min' in kv:
+        opt['imb_min'] = int(kv['imb_min'])
+    if 'imb_max' in kv:
+        opt['imb_max'] = None if kv['imb_max'] == 'none' else int(kv['imb_max'])
     if 'nodes' in kv:
         with open(kv['nodes']) as f:
             opt['only_nodes'] = set(l.strip() for l in f if l.strip())

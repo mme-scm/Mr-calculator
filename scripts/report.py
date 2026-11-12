@@ -169,13 +169,20 @@ def main():
     R += ['## Ablation', '']
     if abl:
         R += ['| withheld | pins ' + ' / '.join(INV) + ' | lost ' + ' / '.join(INV) +
-              ' | lost pins whose full-run chain lacks the withheld family |', '|---|---|---|---|']
+              ' | of these on knots up to 13 crossings | check |', '|---|---|---|---|---|']
         for a in abl:
+            what = a['withheld'] + (' (passes %s)' % ', '.join(a['passes']) if a.get('passes') else '')
             if a.get('error'):
-                R.append('| %s | error: %s | | |' % (a['withheld'], a['error']))
+                R.append('| %s | error: %s | | | |' % (what, a['error']))
                 continue
-            R.append('| %s | %s | %s | %s |' % (a['withheld'], ' / '.join(str(a['pins'][i]) for i in INV),
-                                                ' / '.join(str(a['lost'][i]) for i in INV), a['violations']))
+            core = a.get('lost_core')
+            R.append('| %s | %s | %s | %s | %s |' % (
+                what, ' / '.join(str(a['pins'][i]) for i in INV), ' / '.join(str(a['lost'][i]) for i in INV),
+                ' / '.join(str(core[i]) for i in INV) if core else '', a['violations']))
+        R += ['', 'Rule rows: the rules of a family (or one rule) are withheld; check = lost pins whose chain in '
+              'the full run uses no withheld rule (must be 0).  Pass rows: the records of the named passes are '
+              'withheld and all rules are used; check = pins of that run that are not pins of the full run with '
+              'the same value (must be 0).']
     else:
         R.append('Not run yet.')
     R += ['', '## Check set (section 2.6)', '']

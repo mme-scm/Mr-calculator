@@ -102,12 +102,16 @@ def cc_records(diag):
     return out
 
 
-def twist_records(diag, ks, max_imbalance=2):
+def twist_records(diag, ks, max_imbalance=2, min_imbalance=0):
+    """Full twists along the dual paths crossing k edges with min_imbalance <= |a - b| <= max_imbalance
+    (max_imbalance None: no upper limit)."""
     D = P.Diagram.from_pd(diag['pd'])
     w0 = D.writhe()
     out = []
     for k in ks:
         for edges, faces, dirs in P.dual_paths(D, k, max_imbalance):
+            if abs(sum(dirs)) < min_imbalance:
+                continue
             for h in (1, -1):
                 new, a, b, d2 = P.twist(diag['pd'], edges, h)
                 w1 = P.writhe(new)
@@ -243,7 +247,7 @@ def shard_task(args):
             elif opt['move'] == 'tw':
                 kmax = min(opt['kmax'], k_max_for(d['n'], params))
                 recs.extend(twist_records(d, list(range(opt.get('kmin', 2), kmax + 1)),
-                                          params['max_imbalance']))
+                                          opt.get('imb_max', params['max_imbalance']), opt.get('imb_min', 0)))
             elif opt['move'] == 'mu':
                 recs.extend(mutation_records(d))
         except BaseException as e:      # cysignals' SignalError is a BaseException
