@@ -16,7 +16,13 @@ the same manifolds; they are never built or compared (fillings exist for one chi
 slopes of both signs), and the equations of the mirror nodes follow from F3/C3.  Records that say nothing
 are not written: the same knot under two names at the same slope, and p/q against -p/q on an
 amphichiral knot.
-usage: find_coincidences.py [budget=<seconds, 0: none>] [procs=4] [prefilter=1] [compute=1] [out=<path>]
+Order (budget choice): the fillings of mutant knots at corresponding slopes have equal volume, and such pairs
+are almost all of the candidates (55,669 of 56,152 clusters on 2026-11-12); in the 36,128 of them tested by
+then no two signatures agreed, while 103 of the 359 other clusters tested had equal signatures.  Clusters whose
+knots lie in one mutation class (classes of the mu pass) are therefore tested last; which=nonmutant leaves
+them out of a run (signatures already in the caches are used in any case).
+usage: find_coincidences.py [budget=<seconds, 0: none>] [procs=4] [prefilter=1] [compute=1] [which=all|nonmutant]
+                            [out=<path>]
        compute=0: no new signatures, only the caches are used.
 """
 import hashlib
@@ -118,6 +124,29 @@ def chunks(keys, n=24):
     return [keys[i:i + n] for i in range(0, len(keys), n)]
 
 
+def mutation_classes():
+    """Representative of the mutation class of a table knot (mirror ignored), from the records of the mu pass."""
+    import glob
+    import gzip
+    par = {}
+
+    def find(x):
+        par.setdefault(x, x)
+        while par[x] != x:
+            par[x] = par[par[x]]
+            x = par[x]
+        return x
+    for fn in sorted(glob.glob(os.path.join(DATA, 'passes', 'mu', '*.jsonl.gz'))):
+        with gzip.open(fn, 'rt') as f:
+            for line in f:
+                r = json.loads(line)
+                if r.get('kind') == 'table' and r.get('dst'):
+                    a, b = find(r['src'].rstrip('*')), find(r['dst'].rstrip('*'))
+                    if a != b:
+                        par[a] = b
+    return find
+
+
 def main():
     recs = list(F.iter_fillings())
     print('fillings:', len(recs), flush=True)
@@ -150,7 +179,9 @@ def main():
             k = json.loads(line)
             if 'r_2' in k['pins'] or 'r_0' in k['pins']:
                 prio.add(k['node'])
-    clusters = []
+    which = kv.get('which', 'all')
+    mclass = mutation_classes()
+    clusters = []                              # (rank, |p|, keys); rank 0: pinned r_2/r_0 node, 2: one mutation class
     for p, lst in by_p.items():
         lst.sort(key=lambda r: r['vol'])
         i = 0
@@ -161,12 +192,20 @@ def main():
             if j > i:
                 keys = sorted({(r['node'], r['p'], r['q']) for r in lst[i:j + 1]})
                 if len(keys) > 1:
-                    clusters.append((0 if any(k[0] in prio for k in keys) else 1, p, keys))
+                    nodes = {k[0] for k in keys}
+                    if len(nodes) > 1 and len({mclass(n) for n in nodes}) == 1:
+                        rank = 2
+                    else:
+                        rank = 0 if any(k[0] in prio for k in keys) else 1
+                    clusters.append((rank, p, keys))
             i = j + 1
     clusters.sort(key=lambda x: (x[0], x[1], x[2]))
     cand = set(k for _, _, keys in clusters for k in keys)
-    print('volume-coincidence candidates: %d fillings in %d clusters (%d clusters with a pinned r_2/r_0 node)' % (
-        len(cand), len(clusters), sum(1 for x in clusters if x[0] == 0)), flush=True)
+    print('volume-coincidence candidates: %d fillings in %d clusters (%d clusters with a pinned r_2/r_0 node, '
+          '%d others, %d within one mutation class)' % (
+              len(cand), len(clusters), sum(1 for x in clusters if x[0] == 0), sum(1 for x in clusters if x[0] == 1),
+              sum(1 for x in clusters if x[0] == 2)), flush=True)
+    work = [x for x in clusters if which == 'all' or x[0] < 2]        # the clusters this run computes
     sigs = {}
     if os.path.exists(SIG_CACHE):
         with open(SIG_CACHE) as f:
@@ -183,7 +222,7 @@ def main():
                     r = json.loads(line)
                     usig[(r['node'], r['p'], r['q'])] = r
         todo, seen = [], set()
-        for _, _, keys in clusters:            # priority order, one task per cluster group
+        for _, _, keys in work:                # priority order, one task per cluster group
             for k in keys:
                 if k not in sigs and k not in usig and k not in seen:
                     seen.add(k)
@@ -199,7 +238,7 @@ def main():
             return usig[k]['h'] if k in usig else None
         need = set()
         nfail = 0
-        for _, _, keys in clusters:
+        for _, _, keys in work:
             if any(k not in sigs and k not in usig for k in keys):
                 continue                       # not prefiltered yet (budget): left for a later run
             hs = [h_of(k) for k in keys]
@@ -214,7 +253,7 @@ def main():
               'unverified signatures or without one (%d clusters without one)' % (
                   nu, time.time() - t0, '' if complete else ' (incomplete)', len(need), nfail), flush=True)
     todo, queued = [], set()
-    for _, _, keys in clusters:
+    for _, _, keys in work:
         for k in keys:
             if k not in sigs and k not in queued and (need is None or k in need):
                 queued.add(k)

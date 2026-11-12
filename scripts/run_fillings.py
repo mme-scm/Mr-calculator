@@ -1,5 +1,10 @@
 """Surgery pass over shards (resumable).
-usage: run_fillings.py <tier-lo> <tier-hi> [procs=4] [p=30] [q=4] [time_limit=2] [budget=sec]"""
+usage: run_fillings.py <tier-lo> <tier-hi> [procs=4] [p=30] [q=4] [time_limit=2] [budget=sec]
+       run_fillings.py <tier-lo> <tier-hi> extend=1 outdir=<dir> [geo_tries=40] [...]
+extend=1: for the table shards already in data/fillings, the slopes of the slope set that are missing are
+filled and the fillings recorded as 'unknown' (no geometric solution, not recognised) are tried again for a
+geometric solution with more randomisations; the completed shards are written to outdir (same file names;
+shards already there are skipped), data/fillings is not touched."""
 import multiprocessing as mp
 import os
 import sys
@@ -40,12 +45,39 @@ def main():
     shards = {s: [n for n in ns if n not in tab_torus] for s, ns in shards.items()}
     shards['x-tabletorus-0000'] = tab_torus
     done = F.done_shards()
-    todo = [(s, ns, opt) for s, ns in shards.items() if lo <= passes.shard_tier(s) <= hi and s not in done
-            and ns and (s[0] != 's' or kv.get('composites') == '1')]
-    print('fillings: %d shards, %d generic slopes' % (len(todo), len(opt['slopes_G'])), flush=True)
+    extend = kv.get('extend') == '1'
+    outdir = kv.get('outdir')
+    if extend:
+        assert outdir, 'extend=1 needs outdir=<dir>'
+        opt['geo_tries'] = int(kv.get('geo_tries', 40))
+        have = set(fn[:-9] for fn in os.listdir(outdir) if fn.endswith('.jsonl.gz')) if os.path.isdir(outdir) else set()
+        todo = [(s, ns, opt) for s, ns in shards.items() if lo <= passes.shard_tier(s) <= hi and s in done
+                and s[0] == 't' and ns and s not in have]
+        full = set(opt['slopes_G'])
+        tasks = []
+        nmiss = nretry = 0
+        for s, ns, _ in todo:
+            by_node = {}
+            for r in F.read_shard(s):
+                by_node.setdefault(r['node'], []).append(r)
+            for nd in ns:
+                rs = by_node.get(nd, [])
+                seen = {(r['p'], r['q']) for r in rs}
+                ext = {'missing': sorted(full - seen, key=lambda x: (x[1], x[0])) if rs else [],
+                       'retry': [(r['p'], r['q']) for r in rs if r['kind'] == 'unknown'
+                                 and not str(r.get('how', '')).startswith('error')]}
+                nmiss += len(ext['missing'])
+                nretry += len(ext['retry'])
+                tasks.append((s, nd, dict(opt, extend=ext, torus_like={})))
+        print('fillings (extend): %d shards, %d missing slopes, %d unknown fillings to retry' % (
+            len(todo), nmiss, nretry), flush=True)
+    else:
+        todo = [(s, ns, opt) for s, ns in shards.items() if lo <= passes.shard_tier(s) <= hi and s not in done
+                and ns and (s[0] != 's' or kv.get('composites') == '1')]
+        print('fillings: %d shards, %d generic slopes' % (len(todo), len(opt['slopes_G'])), flush=True)
+        tasks = [(s, n, opt) for s, ns, _ in todo for n in ns]
     t0 = time.time()
     budget = float(kv.get('budget', 1e9))
-    tasks = [(s, n, opt) for s, ns, _ in todo for n in ns]
     pending = {s: set(ns) for s, ns, _ in todo}
     recs = {s: {} for s, ns, _ in todo}
     order = {s: list(ns) for s, ns, _ in todo}
@@ -57,7 +89,19 @@ def main():
         recs[shard][node] = rs
         pending[shard].discard(node)
         if not pending[shard]:
-            F.write_shard(shard, [x for nd in order[shard] for x in recs[shard].get(nd, [])])
+            if extend:                         # old records (a retried 'unknown' is replaced), then the new ones
+                old = {}                       # node order of the file (it may hold nodes that are not tasks)
+                for r in F.read_shard(shard):
+                    old.setdefault(r['node'], []).append(r)
+                out = []
+                for nd in old:
+                    new = recs[shard].get(nd, [])
+                    geo = {(x['p'], x['q']): x for x in new if x.get('how') == 'retry'}
+                    out += [geo.get((x['p'], x['q']), x) for x in old[nd]]
+                    out += [x for x in new if x.get('how') != 'retry']
+                F.write_shard(shard, out, out_dir=outdir)
+            else:
+                F.write_shard(shard, [x for nd in order[shard] for x in recs[shard].get(nd, [])])
             del recs[shard]
             n += 1
             if n % 5 == 0 or n == len(todo):
@@ -81,26 +125,39 @@ def main():
 
     for _ in range(nproc):
         spawn()
-    remaining = len(tasks)
+    import queue
     node_timeout = float(kv.get('node_timeout', 1500))
-    while remaining > 0:
+    outstanding = {(t[0], t[1]) for t in tasks}
+    taskmap = {(t[0], t[1]): t for t in tasks}
+
+    def handle(msg):
+        if msg[0] == 'start':
+            if msg[1] in procs:
+                procs[msg[1]][1] = (msg[2], msg[3])
+                procs[msg[1]][2] = time.time()
+            return
+        _, pid, shard, node, rs, err = msg
+        if pid in procs:
+            procs[pid][1] = None
+        if err:
+            print('error', shard, node, err, flush=True)
+        if (shard, node) in outstanding:
+            outstanding.discard((shard, node))
+            finish(shard, node, rs)
+
+    def drain(timeout):
         try:
-            msg = res_q.get(timeout=5)
-        except Exception:
-            msg = None
-        if msg is not None:
-            if msg[0] == 'start':
-                if msg[1] in procs:
-                    procs[msg[1]][1] = (msg[2], msg[3])
-                    procs[msg[1]][2] = time.time()
-            else:
-                _, pid, shard, node, rs, err = msg
-                if pid in procs:
-                    procs[pid][1] = None
-                if err:
-                    print('error', shard, node, err, flush=True)
-                finish(shard, node, rs)
-                remaining -= 1
+            handle(res_q.get(timeout=timeout))
+            while True:
+                handle(res_q.get_nowait())
+        except queue.Empty:
+            return
+
+    rounds = 0
+    while outstanding:
+        drain(5)
+        if any(not v[0].is_alive() for v in procs.values()):
+            drain(0.5)                     # what a worker sent before it ended is read first
         for pid in list(procs):
             p, cur, started = procs[pid]
             dead = not p.is_alive()
@@ -111,24 +168,37 @@ def main():
                 dead = True
             if dead:
                 del procs[pid]
-                if cur is not None:
+                if cur is not None and cur in outstanding:
                     crashed.append(cur[1])
                     print('worker lost on %s (%s); node recorded as error' % (cur[1], 'timeout' if hung else 'crash'),
                           flush=True)
+                    outstanding.discard(cur)
                     finish(cur[0], cur[1], [])
-                    remaining -= 1
-                if remaining > 0 and (cur is not None or p.exitcode not in (0, None)):
+                if outstanding and (cur is not None or p.exitcode not in (0, None)):
                     task_q.put(None)
                     spawn()
-        if not procs and remaining > 0:
-            task_q.put(None)
-            spawn()
+        if not procs and outstanding:
+            # every worker has ended although nodes are open (their messages were lost in a crash):
+            # these nodes are queued again, twice at most, then recorded as errors
+            rounds += 1
+            if rounds > 2:
+                for key in sorted(outstanding):
+                    crashed.append(key[1])
+                    print('node %s lost; recorded as error' % key[1], flush=True)
+                    finish(key[0], key[1], [])
+                outstanding.clear()
+            else:
+                for key in sorted(outstanding):
+                    task_q.put(taskmap[key])
+                for _ in range(nproc):
+                    task_q.put(None)
+                    spawn()
         if time.time() - t0 > budget:
             break
     for pid, (p, cur, started) in procs.items():
         p.terminate()
     if crashed:
-        with open(os.path.join(F.FILL_DIR, 'crashed_nodes.txt'), 'a') as f:
+        with open(os.path.join(outdir if extend else F.FILL_DIR, 'crashed_nodes.txt'), 'a') as f:
             for c in crashed:
                 f.write(c + '\n')
     print('fillings done: %d shards %.0fs' % (n, time.time() - t0), flush=True)

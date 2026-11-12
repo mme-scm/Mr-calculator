@@ -70,11 +70,36 @@ def node_fillings(node, pd, slopes, time_limit=2.0, regina_nonhyp=True, torus=No
     return out
 
 
+def retry_geometric(node, pd, slopes, tries=40):
+    """Fillings recorded as 'unknown': look again for a positively oriented solution, with more
+    randomisations.  Returns 'geo' records for the slopes where one is found."""
+    E = S.exterior(pd)
+    out = []
+    for p, q in slopes:
+        try:
+            N = S.geometric_filling(E, (p, q), tries=tries)
+            if N is not None:
+                out.append({'node': node, 'p': p, 'q': q, 'kind': 'geo', 'vol': round(float(N.volume()), 9),
+                            'how': 'retry'})
+        except BaseException as e:          # cysignals' SignalError is a BaseException
+            if _fatal(e):
+                raise
+    return out
+
+
 def node_task(args):
-    """Fillings of one node (run in a short-lived worker)."""
+    """Fillings of one node (run in a short-lived worker).  With opt['extend'] = {'missing': slopes,
+    'retry': slopes} only the missing slopes are filled and the 'unknown' ones are retried."""
     shard, n, opt = args
     try:
         pd = nodeset.diagram(n)
+        ext = opt.get('extend')
+        if ext is not None:
+            rs = node_fillings(n, pd, [tuple(x) for x in ext['missing']], opt.get('time_limit', 2.0)) \
+                if ext['missing'] else []
+            if ext['retry']:
+                rs += retry_geometric(n, pd, [tuple(x) for x in ext['retry']], opt.get('geo_tries', 40))
+            return shard, n, rs, None
         tor = opt.get('torus_like', {}).get(n)
         if tor:
             return shard, n, node_fillings(n, pd, opt['slopes_T'], opt.get('time_limit_torus', 0.5),
@@ -99,13 +124,24 @@ def worker_loop(task_q, res_q):
         res_q.put(('done', pid, shard, node, rs, err))
 
 
-def write_shard(shard, recs):
-    os.makedirs(FILL_DIR, exist_ok=True)
-    with gzip.open(os.path.join(FILL_DIR, '%s.jsonl.gz' % shard), 'wt') as f:
+def write_shard(shard, recs, out_dir=None):
+    """Writes a shard to data/fillings and marks it done; with out_dir, writes it there instead
+    (atomically, done.txt untouched)."""
+    d = out_dir or FILL_DIR
+    os.makedirs(d, exist_ok=True)
+    path = os.path.join(d, '%s.jsonl.gz' % shard)
+    with gzip.open(path + '.tmp', 'wt') as f:
         for r in recs:
             f.write(json.dumps(r, separators=(',', ':')) + '\n')
-    with open(os.path.join(FILL_DIR, 'done.txt'), 'a') as f:
-        f.write(shard + '\n')
+    os.replace(path + '.tmp', path)
+    if out_dir is None:
+        with open(os.path.join(FILL_DIR, 'done.txt'), 'a') as f:
+            f.write(shard + '\n')
+
+
+def read_shard(shard):
+    with gzip.open(os.path.join(FILL_DIR, '%s.jsonl.gz' % shard), 'rt') as f:
+        return [json.loads(line) for line in f]
 
 
 def shard_task(args):
