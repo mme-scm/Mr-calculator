@@ -46,10 +46,11 @@ SPEC = {
 
 # Groups of passes that the ablation also withholds as data: one extra ablation run per group that has
 # records, solved with all rules but without the records of these passes (scripts/solve.py).
-# stage6c: twists with |a - b| > 2 (k = 3, 4 on diagrams with at most 13 crossings, k = 5 with at most 11,
-# k = 6 with at most 10).
+# stage6a: k = 5 twists on at most 11 crossings; stage6b: k = 6 twists on at most 10 crossings (both with
+# |a - b| <= 2); stage6c: twists with |a - b| > 2 (k = 3, 4 on diagrams with at most 13 crossings, k = 5
+# with at most 11, k = 6 with at most 10).
 # MRCALC_PASS_ABLATIONS="name=pass+pass,name=pass" replaces the table (tests).
-PASS_ABLATIONS = {'stage6c': ['tw3x', 'tw4x', 'tw5x', 'tw6x']}
+PASS_ABLATIONS = {'stage6a': ['tw5'], 'stage6b': ['tw6'], 'stage6c': ['tw3x', 'tw4x', 'tw5x', 'tw6x']}
 if os.environ.get('MRCALC_PASS_ABLATIONS'):
     PASS_ABLATIONS = {kv.split('=')[0]: kv.split('=')[1].split('+')
                       for kv in os.environ['MRCALC_PASS_ABLATIONS'].split(',')}
