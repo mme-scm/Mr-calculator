@@ -1,20 +1,20 @@
 # REPORT
 
-Interim report. Generated 2026-11-12 10:26 UTC from `export/`.
+Interim report. Generated 2026-11-12 15:23 UTC from `export/`.
 
 ## Nodes by kind
 
 | kind | nodes |
 |---|---|
 | cable | 2264 |
-| census (peripheral) | 368710 |
+| census (peripheral) | 368852 |
 | composite | 1517 |
-| hyp (peripheral) | 96008 |
+| hyp (peripheral) | 96238 |
 | table | 25852 |
 | torus | 64 |
 | unknot | 1 |
 
-Constraints (rule instances): 8320994; move edges: 1265035; events: 5707529.
+Constraints (rule instances): 8349538; move edges: 1277429; events: 5750462.
 
 ## Pinned values per invariant
 
@@ -25,29 +25,29 @@ Constraints (rule instances): 8320994; move edges: 1265035; events: 5707529.
 | 4 | 1 | 1 | 1 | 1 | 1 | 1 | 1 |
 | 5 | 4 | 4 | 4 | 4 | 4 | 4 | 4 |
 | 6 | 8 | 8 | 2 | 8 | 5 | 8 | 8 |
-| 7 | 16 | 14 | 4 | 12 | 8 | 16 | 16 |
-| 8 | 46 | 42 | 6 | 40 | 13 | 46 | 46 |
-| 9 | 116 | 102 | 6 | 84 | 14 | 114 | 116 |
-| 10 | 363 | 309 | 6 | 279 | 14 | 353 | 357 |
-| 11 | 1226 | 990 | 8 | 868 | 22 | 1178 | 1204 |
-| 12 | 4607 | 3637 | 8 | 3261 | 17 | 4323 | 4411 |
-| 13 | 20950 | 15524 | 6 | 14406 | 36 | 18994 | 19938 |
+| 7 | 16 | 16 | 4 | 12 | 8 | 16 | 16 |
+| 8 | 46 | 46 | 6 | 40 | 13 | 46 | 46 |
+| 9 | 116 | 114 | 6 | 84 | 14 | 114 | 116 |
+| 10 | 363 | 349 | 8 | 279 | 14 | 353 | 357 |
+| 11 | 1226 | 1154 | 8 | 868 | 22 | 1178 | 1204 |
+| 12 | 4607 | 4207 | 8 | 3261 | 17 | 4323 | 4411 |
+| 13 | 20950 | 18632 | 8 | 14406 | 36 | 18994 | 19938 |
 | 14 | 10 | 10 | 0 | 2 | 0 | 10 | 10 |
 | 15 | 20 | 20 | 0 | 8 | 0 | 20 | 20 |
 | constructions | 2328 | 28 | 28 | 124 | 124 | 66 | 150 |
-| peripheral | 464718 | 123410 | 4 | 11622 | 48 | 269630 | 413976 |
-| total | 494416 | 144102 | 86 | 30722 | 309 | 294766 | 440260 |
+| peripheral | 465090 | 180712 | 4 | 11652 | 48 | 269760 | 414170 |
+| total | 494788 | 205304 | 90 | 30752 | 309 | 294896 | 440454 |
 
 ## Open domains (projection hull sizes of the unpinned values)
 
 | invariant | <= 2 values | <= 3 values | <= 4 values | <= 5 values | > 5 values | unbounded |
 |---|---|---|---|---|---|---|
-| M | 300382 | 45128 | 2572 | 30 | 616 | 1586 |
-| r_2 | 26 | 40 | 22 | 16 | 616 | 493610 |
-| nu | 374 | 266460 | 6 | 11396 | 184602 | 856 |
-| r_0 | 4 | 14 | 0 | 26 | 1056 | 493007 |
-| tau | 14100 | 944 | 26 | 3186 | 180538 | 856 |
-| upsilon | 40040 | 8612 | 3056 | 278 | 490 | 1680 |
+| M | 260968 | 25388 | 908 | 18 | 616 | 1586 |
+| r_2 | 24 | 38 | 22 | 16 | 616 | 493982 |
+| nu | 374 | 266560 | 6 | 11396 | 184844 | 856 |
+| r_0 | 4 | 14 | 0 | 26 | 1056 | 493379 |
+| tau | 14100 | 944 | 26 | 3186 | 180780 | 856 |
+| upsilon | 40068 | 8612 | 3174 | 308 | 492 | 1680 |
 
 Sizes are the number of lattice points between the lower and upper end of the projection (M, r_2 on 4Z); the exact finite joint domains are in `export/knots.csv`.
 
@@ -55,22 +55,25 @@ Sizes are the number of lattice points between the lower and upper end of the pr
 
 | withheld | pins M / r_2 / nu / r_0 / tau / upsilon | lost M / r_2 / nu / r_0 / tau / upsilon | of these on knots up to 13 crossings | check |
 |---|---|---|---|---|
-| I | 12219 / 2 / 1 / 0 / 33052 / 242834 | 131883 / 84 / 30721 / 309 / 261714 / 197426 | 15375 / 52 / 18965 / 137 / 781 / 6041 | 0 |
-| unary | 144102 / 86 / 10178 / 293 / 14600 / 355348 | 0 / 0 / 20544 / 16 / 280166 / 84912 | 0 / 0 / 9196 / 16 / 10732 / 748 | 0 |
-| cc | 143658 / 86 / 27978 / 309 / 290218 / 440176 | 444 / 0 / 2744 / 0 / 4548 / 84 | 2 / 0 / 2744 / 0 / 4168 / 2 | 0 |
-| twist | 13202 / 80 / 30722 / 309 / 294766 / 406266 | 130900 / 6 / 0 / 0 / 0 / 33994 | 7752 / 4 / 0 / 0 / 0 / 12 | 0 |
-| coincidence | 144090 / 60 / 30708 / 275 / 294766 / 440260 | 12 / 26 / 14 / 34 / 0 / 0 | 2 / 18 / 2 / 22 / 0 / 0 | 0 |
-| coupling | 144102 / 86 / 30722 / 309 / 294766 / 440260 | 0 / 0 / 0 / 0 / 0 / 0 | 0 / 0 / 0 / 0 / 0 / 0 | 0 |
-| mutation | 142892 / 86 / 30722 / 309 / 294766 / 440260 | 1210 / 0 / 0 / 0 / 0 / 0 | 94 / 0 / 0 / 0 / 0 / 0 | 0 |
-| mirror_composite | 48420 / 58 / 24686 / 179 / 254214 / 350062 | 95682 / 28 / 6036 / 130 / 40552 / 90198 | 9466 / 15 / 3196 / 50 / 4289 / 4648 | 0 |
-| F11 | 144102 / 86 / 30722 / 309 / 294766 / 440260 | 0 / 0 / 0 / 0 / 0 / 0 | 0 / 0 / 0 / 0 / 0 / 0 | 0 |
-| F12 | 144016 / 66 / 30722 / 309 / 294766 / 440260 | 86 / 20 / 0 / 0 / 0 / 0 | 14 / 4 / 0 / 0 / 0 / 0 | 0 |
-| F13 | 144098 / 76 / 30722 / 309 / 294766 / 440260 | 4 / 10 / 0 / 0 / 0 / 0 | 0 / 6 / 0 / 0 / 0 / 0 | 0 |
-| F14 | 144100 / 86 / 30722 / 309 / 294766 / 440260 | 2 / 0 / 0 / 0 / 0 / 0 | 0 / 0 / 0 / 0 / 0 / 0 | 0 |
-| C11 | 144102 / 86 / 30676 / 263 / 294766 / 440260 | 0 / 0 / 46 / 46 / 0 / 0 | 0 / 0 / 0 / 0 / 0 / 0 | 0 |
-| C12 | 144102 / 86 / 30718 / 305 / 294766 / 440260 | 0 / 0 / 4 / 4 / 0 / 0 | 0 / 0 / 2 / 2 / 0 / 0 | 0 |
-| C13 | 144102 / 86 / 30716 / 286 / 294762 / 440260 | 0 / 0 / 6 / 23 / 4 / 0 | 0 / 0 / 0 / 17 / 0 / 0 | 0 |
-| C14 | 144102 / 86 / 30720 / 209 / 294766 / 440260 | 0 / 0 / 2 / 100 / 0 / 0 | 0 / 0 / 2 / 62 / 0 / 0 | 0 |
+| I | 12219 / 2 / 1 / 0 / 33052 / 242834 | 193085 / 88 / 30751 / 309 / 261844 / 197620 | 19275 / 56 / 18965 / 137 / 781 / 6041 | 0 |
+| unary | 205304 / 90 / 10178 / 293 / 14600 / 355542 | 0 / 0 / 20574 / 16 / 280296 / 84912 | 0 / 0 / 9196 / 16 / 10732 / 748 | 0 |
+| cc | 204732 / 90 / 28008 / 309 / 290348 / 440370 | 572 / 0 / 2744 / 0 / 4548 / 84 | 0 / 0 / 2744 / 0 / 4168 / 2 | 0 |
+| twist | 13202 / 80 / 30752 / 309 / 294896 / 406460 | 192102 / 10 / 0 / 0 / 0 / 33994 | 11652 / 8 / 0 / 0 / 0 / 12 | 0 |
+| coincidence | 205290 / 60 / 30738 / 275 / 294896 / 440454 | 14 / 30 / 14 / 34 / 0 / 0 | 4 / 22 / 2 / 22 / 0 / 0 | 0 |
+| coupling | 205304 / 90 / 30752 / 309 / 294896 / 440454 | 0 / 0 / 0 / 0 / 0 / 0 | 0 / 0 / 0 / 0 / 0 / 0 | 0 |
+| mutation | 203732 / 90 / 30752 / 309 / 294896 / 440454 | 1572 / 0 / 0 / 0 / 0 / 0 | 90 / 0 / 0 / 0 / 0 / 0 | 0 |
+| mirror_composite | 56045 / 59 / 24701 / 179 / 254279 / 350162 | 149259 / 31 / 6051 / 130 / 40617 / 90292 | 12196 / 18 / 3196 / 50 / 4289 / 4648 | 0 |
+| F11 | 205304 / 90 / 30752 / 309 / 294896 / 440454 | 0 / 0 / 0 / 0 / 0 / 0 | 0 / 0 / 0 / 0 / 0 / 0 | 0 |
+| F12 | 205200 / 70 / 30752 / 309 / 294896 / 440454 | 104 / 20 / 0 / 0 / 0 / 0 | 14 / 4 / 0 / 0 / 0 / 0 | 0 |
+| F13 | 205300 / 80 / 30752 / 309 / 294896 / 440454 | 4 / 10 / 0 / 0 / 0 / 0 | 0 / 6 / 0 / 0 / 0 / 0 | 0 |
+| F14 | 205302 / 90 / 30752 / 309 / 294896 / 440454 | 2 / 0 / 0 / 0 / 0 / 0 | 0 / 0 / 0 / 0 / 0 / 0 | 0 |
+| C11 | 205304 / 90 / 30706 / 263 / 294896 / 440454 | 0 / 0 / 46 / 46 / 0 / 0 | 0 / 0 / 0 / 0 / 0 / 0 | 0 |
+| C12 | 205304 / 90 / 30748 / 305 / 294896 / 440454 | 0 / 0 / 4 / 4 / 0 / 0 | 0 / 0 / 2 / 2 / 0 / 0 | 0 |
+| C13 | 205304 / 90 / 30746 / 286 / 294892 / 440454 | 0 / 0 / 6 / 23 / 4 / 0 | 0 / 0 / 0 / 17 / 0 / 0 | 0 |
+| C14 | 205304 / 90 / 30750 / 209 / 294896 / 440454 | 0 / 0 / 2 / 100 / 0 / 0 | 0 / 0 / 2 / 62 / 0 / 0 | 0 |
+| stage6a (passes tw5) | 205304 / 90 / 30752 / 309 / 294896 / 440454 | 0 / 0 / 0 / 0 / 0 / 0 | 0 / 0 / 0 / 0 / 0 / 0 | 0 |
+| stage6b (passes tw6) | 205304 / 90 / 30752 / 309 / 294896 / 440454 | 0 / 0 / 0 / 0 / 0 / 0 | 0 / 0 / 0 / 0 / 0 / 0 | 0 |
+| stage6c (passes tw3x, tw4x, tw5x, tw6x) | 144102 / 86 / 30722 / 309 / 294766 / 440260 | 61202 / 4 / 30 / 0 / 130 / 194 | 3900 / 4 / 0 / 0 / 0 / 0 | 0 |
 
 Rule rows: the rules of a family (or one rule) are withheld; check = lost pins whose chain in the full run uses no withheld rule (must be 0).  Pass rows: the records of the named passes are withheld and all rules are used; check = pins of that run that are not pins of the full run with the same value (must be 0).
 
@@ -108,7 +111,7 @@ Rule rows: the rules of a family (or one rule) are withheld; check = lost pins w
 - mutations: every diagrammatic Conway circle, three rotations: PD and braid-closure diagrams for at most 11 crossings, PD diagrams for 12-13 crossings; composites with crossing sum <= 9
 - slope set: X1/X3 (all nodes): |p| <= 30, q <= 4 (specification), plus integers |p| <= 60 for torus knots and the S3/S4 slopes for cables. Fillings actually built: |p| <= 30, q <= 4 for prime knots with at most 11 crossings; |p| <= 30, q <= 2 for 12 crossings; |p| <= 30, q = 1 for 13 crossings; torus slope set for torus knots; none for composites and cables (S3/S4 need no recognition)
 - recognition time limit: 1.5 s per filling (at most 11 crossings), 0.3 s (12 crossings), 0.2 s (13 crossings), 0.5 s for torus-knot fillings (shrunk from 60 s); enforced inside the Regina retriangulation search instead of a subprocess; each node is processed by a worker that is replaced if it crashes or exceeds 25 minutes
-- coincidence certificates: candidates are fillings with equal |p| and volume within 2e-7 (119,174 fillings in 56,152 clusters); self-coincidences p/q, -p/q of amphichiral knots are skipped because their equations are implied by F5/C5. Up to the stage 4+5 checkpoint the verified isometry signature was computed under a time budget, in priority order (clusters containing a node with pinned r_2 or r_0 first): 3,589 of the candidates (1,777 clusters) were tested, which gave the 68 hyperbolic coincidences of these exports. From 2026-11-12 the step runs without a budget (scripts/find_coincidences.py, logs/coinc3.log) with a prefilter (budget choice): the unverified isometry signature is computed for every candidate (hashes in data/filling_usig.jsonl) and the verified signature only for the fillings of a cluster whose unverified signatures agree or are missing; a certificate still requires equal verified signatures
+- coincidence certificates: candidates are fillings with equal |p| and volume within 2e-7 (119,174 fillings in 56,152 clusters); self-coincidences p/q, -p/q of amphichiral knots are skipped because their equations are implied by F5/C5. Up to the stage 4+5 checkpoint the verified isometry signature was computed under a time budget, in priority order (clusters containing a node with pinned r_2 or r_0 first): 3,589 of the candidates (1,777 clusters) were tested, which gave the 68 hyperbolic coincidences of these exports. From 2026-11-12 the step runs without a budget (scripts/find_coincidences.py, logs/coinc3.log) with a prefilter (budget choice): the unverified isometry signature is computed for every candidate (hashes in data/filling_usig.jsonl) and the verified signature only for the fillings of a cluster whose unverified signatures agree or are missing; a certificate still requires equal verified signatures. Orientation: a coincidence is a homeomorphism of fillings that may reverse orientation (isometry signatures with ignore_orientation, lens and Seifert names normalised up to orientation); candidates are matched on |p|. The mirror identities S_{-p/q}(K*) = -S_{p/q}(K) are not coincidences: fillings exist for one chirality of each knot with slopes of both signs, and mirror nodes are reached through F3/C3. Counting: the 1,059 records written up to the stage 4+5 checkpoint include 922 that name the same torus knot twice at the same slope (T(p,q) and its table name; the solver drops them) and 2 that compare p/q with -p/q on the amphichiral knot 4_1; they form 98 classes of fillings, i.e. 110 independent equations (68 hyperbolic, 42 by name). From 2026-11-12 scripts/find_coincidences.py writes only those.
 - peripheral nodes: a result that is not a core node is instantiated as a node only if it is reached from two distinct nodes or a homogeneous diagram of it was found; other identified results are counted (parameters.json, stats) but not instantiated; unidentified results are discarded. Census names (K14a.., K14n.., K15a.., K15n..) come from the SnapPy census of 14-15 crossing knots (300,265 knots, matched by orientation-sensitive verified isometry signature)
 - calculator: KnotInfo PD codes of all table knots; construction diagrams of composites, torus knots and family constructions; cable diagrams with at most 40 crossings (10 s limit); every instantiated peripheral node known when the checkpoint started (60 s limit; 184,868 results, no failures); complexes (milestone 7) only for nodes whose upsilon was not pinned, and for peripheral nodes only if they are Floer-thin or carry the L-space flag (U2)
 - identification: Regina solid-torus test only when the Alexander polynomial is trivial; Regina isosig matching of non-hyperbolic results against the pool of torus knots, composites, family constructions and small cables with a bounded retriangulation search
@@ -121,8 +124,11 @@ Rule rows: the rules of a family (or one rule) are withheld; check = lost pins w
 - `mu`: 357 shards done, by tier {3: 1, 4: 1, 5: 1, 6: 2, 7: 2, 8: 2, 9: 3, 10: 6, 11: 16, 12: 60, 13: 263}
 - `tw2`: 334 shards done, by tier {3: 1, 4: 1, 5: 1, 6: 2, 7: 2, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 250}
 - `tw3`: 332 shards done, by tier {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 250}
+- `tw3x`: 332 shards done, by tier {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 250}
 - `tw4`: 27 shards done, by tier {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14}
-- `tw5`: 18 shards done, by tier {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 5}
+- `tw4x`: 27 shards done, by tier {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14}
+- `tw5`: 27 shards done, by tier {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14}
+- `tw6`: 5 shards done, by tier {3: 1, 4: 1, 5: 1, 6: 1, 7: 1}
 - `fillings`: 334 shards done, by tier {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 250, 99: 2}
 
 ## Tests failed / passes skipped
