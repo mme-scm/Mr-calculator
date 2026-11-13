@@ -3,7 +3,8 @@
  (a) hyperbolic: fillings with equal |p| and volume (within 2e-7) are candidates; for each
      candidate the hyperbolic structure is verified (verify_hyperbolicity) and the verified
      isometry signature (orientation ignored) is computed; equal signatures certify an
-     isometry.  Prefilter (budget choice, prefilter=0 switches it off): the unverified isometry
+     isometry (a filling whose signature cannot be computed is compared with the other fillings of its
+     cluster by SnapPy's isometry checker instead).  Prefilter (budget choice, prefilter=0 switches it off): the unverified isometry
      signature is computed first (cached as a hash in data/filling_usig.jsonl) and the verified
      one only for the fillings of a cluster whose unverified signatures agree, or are missing.
  (b) both recognised by Regina with the same normalised Seifert fibred name.
@@ -52,13 +53,24 @@ def sig_task(keys):
                 if len(_ext) > 40:
                     _ext.clear()
                 _ext[node] = S.exterior(nodeset.diagram(node))
-            r = S.hyperbolic_signature(_ext[node], (p, q), verified=True, tries=10)
+            r = _twice(_ext[node], (p, q), True)
         except BaseException as e:           # cysignals' SignalError is a BaseException
             if isinstance(e, (KeyboardInterrupt, SystemExit)):
                 raise
             r = None
-        out.append({'node': node, 'p': p, 'q': q, 'sig': r['sig'] if r else None, 'verified': bool(r)})
+        out.append({'node': node, 'p': p, 'q': q, 'sig': r['sig'] if r else None, 'verified': bool(r), 'hard': True})
     return out
+
+
+def _twice(E, slope, verified):
+    """The signature with the usual effort, then (hard attempt) with 40 randomisations."""
+    try:
+        r = S.hyperbolic_signature(E, slope, verified=verified, tries=10)
+    except BaseException as e:
+        if isinstance(e, (KeyboardInterrupt, SystemExit)):
+            raise
+        r = None
+    return r or S.hyperbolic_signature(E, slope, verified=verified, tries=40)
 
 
 USIG_CACHE = os.path.join(DATA, 'filling_usig.jsonl')
@@ -78,12 +90,12 @@ def usig_task(keys):
                 if len(_ext) > 40:
                     _ext.clear()
                 _ext[node] = S.exterior(nodeset.diagram(node))
-            r = S.hyperbolic_signature(_ext[node], (p, q), verified=False, tries=10)
+            r = _twice(_ext[node], (p, q), False)
         except BaseException as e:           # cysignals' SignalError is a BaseException
             if isinstance(e, (KeyboardInterrupt, SystemExit)):
                 raise
             r = None
-        out.append({'node': node, 'p': p, 'q': q, 'h': sig_hash(r['sig']) if r else None})
+        out.append({'node': node, 'p': p, 'q': q, 'h': sig_hash(r['sig']) if r else None, 'hard': True})
     return out
 
 
@@ -122,6 +134,26 @@ def run_pool(task, tasks, cache_path, store, procs, budget, t0, what):
 
 def chunks(keys, n=24):
     return [keys[i:i + n] for i in range(0, len(keys), n)]
+
+
+ISO_CACHE = os.path.join(DATA, 'filling_isometries.jsonl')
+
+
+def isometric(a, b):
+    """True if SnapPy finds an isometry between the fillings a, b = (node, p, q), both with a verified
+    hyperbolic structure; False if it finds none; None if a structure or the comparison is not available."""
+    try:
+        Ms = []
+        for node, p, q in (a, b):
+            M = S.verified_filling(S.exterior(nodeset.diagram(node)), (p, q))
+            if M is None:
+                return None
+            Ms.append(M)
+        return bool(Ms[0].is_isometric_to(Ms[1]))
+    except BaseException as e:               # cysignals' SignalError is a BaseException
+        if isinstance(e, (KeyboardInterrupt, SystemExit)):
+            raise
+        return None
 
 
 def mutation_classes():
@@ -212,7 +244,10 @@ def main():
         with open(SIG_CACHE) as f:
             for line in f:
                 r = json.loads(line)
-                sigs[(r['node'], r['p'], r['q'])] = r
+                if r.get('sig') or r.get('hard'):          # an earlier failure without the hard attempt: again
+                    sigs[(r['node'], r['p'], r['q'])] = r
+                else:
+                    sigs.pop((r['node'], r['p'], r['q']), None)
     t0 = time.time()
     need = None                       # fillings that need a verified signature (None: all candidates)
     if prefilter:
@@ -221,7 +256,10 @@ def main():
             with open(usig_cache) as f:
                 for line in f:
                     r = json.loads(line)
-                    usig[(r['node'], r['p'], r['q'])] = r
+                    if r.get('h') or r.get('hard'):
+                        usig[(r['node'], r['p'], r['q'])] = r
+                    else:
+                        usig.pop((r['node'], r['p'], r['q']), None)
         todo, seen = [], set()
         for _, _, keys in work:                # priority order, one task per cluster group
             for k in keys:
@@ -281,6 +319,37 @@ def main():
             out.append({'A': a[0], 'sA': [a[1], a[2]], 'B': b[0], 'sB': [b[1], b[2]], 'cert': 'a',
                         'signature': sig, 'verified': True,
                         'orientation': 'isometry signature computed ignoring orientation'})
+    # Fillings of a tested cluster that still have no verified signature: the certificate as S1(a) states it,
+    # SnapPy finds an isometry between two fillings with verified hyperbolic structures (either orientation).
+    iso = {}
+    if os.path.exists(ISO_CACHE):
+        with open(ISO_CACHE) as f:
+            for line in f:
+                r = json.loads(line)
+                iso[(tuple(r['A']), tuple(r['B']))] = r['iso']
+    nosig = {k for k in cand if k in sigs and not sigs[k].get('sig')}
+    niso = 0
+    with open(ISO_CACHE, 'a') as f:
+        for _, _, keys in work:
+            for a in keys:
+                if a not in nosig:
+                    continue
+                for b in keys:
+                    if b == a or (b in nosig and b < a):
+                        continue
+                    if (a, b) not in iso:
+                        if not compute:
+                            continue
+                        iso[(a, b)] = isometric(a, b)
+                        f.write(json.dumps({'A': list(a), 'B': list(b), 'iso': iso[(a, b)]}) + '\n')
+                        f.flush()
+                    if iso[(a, b)]:
+                        niso += 1
+                        out.append({'A': a[0], 'sA': [a[1], a[2]], 'B': b[0], 'sB': [b[1], b[2]], 'cert': 'a',
+                                    'method': 'SnapPy is_isometric_to on verified hyperbolic fillings',
+                                    'verified': True, 'orientation': 'isometry of either orientation'})
+    print('fillings of tested clusters without verified signature: %d; isometries found by SnapPy: %d' % (
+        sum(1 for _, _, keys in work for k in keys if k in nosig), niso), flush=True)
     na = len(out)
     # ---- (b), (c) Regina names
     torus, same = {}, {}                       # same: torus-knot node -> table node of the same knot

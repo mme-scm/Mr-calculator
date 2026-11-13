@@ -87,32 +87,60 @@ def hyperbolic_signature(E, slope, verified=True, tries=12):
     the filling (verified=True) so that it refers to a verified hyperbolic structure."""
     N = E.copy()
     N.dehn_fill(tuple(slope))
-    geo = False
     for t in range(tries):
         if N.solution_type() == GEOMETRIC:
-            geo = True
             r = _signature(N, verified)
             if r:
                 return r
         N.randomize()
-    if not geo:                           # no positively oriented solution: another surgery description
-        F = _redescribed_geometric(N)
-        for t in range(4 if F is not None else 0):
-            if F.solution_type() == GEOMETRIC:
-                r = _signature(F, verified)
-                if r:
-                    return r
-            F.randomize()
+    # no signature from the filled triangulation (no positively oriented solution on it, or the signature
+    # computation failed on those found): another surgery description of the same closed manifold
+    F = _redescribed_geometric(N)
+    for t in range(4 if F is not None else 0):
+        if F.solution_type() == GEOMETRIC:
+            r = _signature(F, verified)
+            if r:
+                return r
+        F.randomize()
     return None
+
+
+# second attempt of the verified signature: more interval precision and higher degrees of the exact fields
+_HARD = {'interval_bits_precs': [53, 212, 1000],
+         'exact_bits_prec_and_degrees': [(212, 10), (1000, 20), (2000, 20), (4000, 40)]}
 
 
 def _signature(N, verified):
     try:
         if not N.verify_hyperbolicity()[0]:
             return None
-        return {'sig': N.isometry_signature(verified=verified), 'verified': True, 'volume': float(N.volume())}
-    except Exception:
+    except BaseException as e:            # cysignals' SignalError is a BaseException
+        if isinstance(e, (KeyboardInterrupt, SystemExit)):
+            raise
         return None
+    for kw in (({}, _HARD) if verified else ({},)):
+        try:
+            return {'sig': N.isometry_signature(verified=verified, **kw), 'verified': True,
+                    'volume': float(N.volume())}
+        except BaseException as e:
+            if isinstance(e, (KeyboardInterrupt, SystemExit)):
+                raise
+    return None
+
+
+def verified_filling(E, slope, tries=40):
+    """A description of the filling with a positively oriented solution on which verify_hyperbolicity
+    succeeds, or None."""
+    N = geometric_filling(E, slope, tries=tries)
+    for t in range(12 if N is not None else 0):
+        try:
+            if N.solution_type() == GEOMETRIC and N.verify_hyperbolicity()[0]:
+                return N
+            N.randomize()
+        except BaseException as e:
+            if isinstance(e, (KeyboardInterrupt, SystemExit)):
+                raise
+    return None
 
 
 # ----------------------------------------------------------------------
