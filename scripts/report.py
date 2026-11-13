@@ -131,6 +131,26 @@ def main():
         lines.insert(4, '')
     with open(os.path.join(ROOT, 'STATE.md'), 'w') as f:
         f.write('\n'.join(lines) + '\n')
+    if state_dir and label:
+        # the table the user asked for at every checkpoint (2026-11-13): pinned nodes per crossing number, per
+        # invariant, up to 13 crossings (a node is a knot or its mirror image; composites by crossing sum)
+        ck = os.path.join(ROOT, 'checkpoints', label)
+        os.makedirs(ck, exist_ok=True)
+        rows = ['# Pinned values at checkpoint `%s`' % label, '',
+                'Nodes with at most 13 crossings: prime knots and their mirror images (counted separately) and '
+                'composites (by crossing sum); the unknot is crossing number 0.', '',
+                '| crossings | nodes | ' + ' | '.join(INV) + ' |', '|---|---|' + '---|' * len(INV)]
+        sub = collections.Counter()
+        for t in sorted((t for t in tiers if t.lstrip('-').isdigit() and int(t) <= 13), key=int):
+            d = tiers[t]
+            rows.append('| %s | %d | ' % (t, d.get('nodes', 0)) + ' | '.join(str(d[i]) for i in INV) + ' |')
+            for i in INV:
+                sub[i] += d[i]
+            sub['nodes'] += d.get('nodes', 0)
+        rows.append('| all | %d | ' % sub['nodes'] + ' | '.join(str(sub[i]) for i in INV) + ' |')
+        rows.append('| open | | ' + ' | '.join(str(sub['nodes'] - sub[i]) for i in INV) + ' |')
+        with open(os.path.join(ck, 'PINS.md'), 'w') as f:
+            f.write('\n'.join(rows) + '\n')
     if state_dir:
         print('STATE.md written')
         return
