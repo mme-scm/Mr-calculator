@@ -230,8 +230,11 @@ def t_moser():
 
 def t_cable_surgery_identity():
     """Sanity of the cable convention: S^3_{rs+-1}(C_{r,s}(K)) and S^3_{(rs+-1)/s^2}(K) have equal
-    volume and homology, and equal isometry signatures whenever SnapPy finds a geometric
-    triangulation of the cable filling (K = 4_1, 5_2)."""
+    volume and homology, and equal verified isometry signatures whenever a positively oriented
+    description of the cable filling is found (K = 4_1, 5_2).  The cable filling is retriangulated as a
+    closed manifold, several times, and re-described by S.redescriptions when that is not positively
+    oriented; the test asks for 4 of the 8 fillings (6 or 7 are usual; before 2026-11-13 it asked for 1
+    from a single triangulation, which failed by chance on one run)."""
     import snappy
     t = knotinfo.by_name()
     nsig = nvol = 0
@@ -243,29 +246,37 @@ def t_cable_surgery_identity():
             p = r * s + sg
             N = C.copy()
             N.dehn_fill((p, 1))
-            M = snappy.Manifold(N.filled_triangulation())
-            for _ in range(10):
-                if M.solution_type() == S.GEOMETRIC:
-                    break
-                M.randomize()
             Kf = K.copy()
             Kf.dehn_fill((p, s * s))
-            if str(M.homology()) != str(Kf.homology()):
-                return False, '%s r=%d s=%d sign %d: homology differs' % (name, r, s, sg)
-            if M.solution_type() == S.GEOMETRIC and Kf.solution_type() == S.GEOMETRIC:
-                if abs(float(M.volume()) - float(Kf.volume())) > 1e-6:
-                    return False, '%s r=%d s=%d sign %d: volume differs' % (name, r, s, sg)
-            nvol += 1
             b = S.hyperbolic_signature(K, (p, s * s))
-            if M.solution_type() == S.GEOMETRIC and b:
-                try:
-                    a = M.isometry_signature(verified=True)
-                except Exception:
-                    continue
+            a = None
+            for attempt in range(6):
+                M = snappy.Manifold(N.filled_triangulation())
+                for _ in range(10):
+                    if M.solution_type() == S.GEOMETRIC:
+                        break
+                    M.randomize()
+                if attempt == 0:
+                    if str(M.homology()) != str(Kf.homology()):
+                        return False, '%s r=%d s=%d sign %d: homology differs' % (name, r, s, sg)
+                    if M.solution_type() == S.GEOMETRIC and Kf.solution_type() == S.GEOMETRIC:
+                        if abs(float(M.volume()) - float(Kf.volume())) > 1e-6:
+                            return False, '%s r=%d s=%d sign %d: volume differs' % (name, r, s, sg)
+                    nvol += 1
+                D = M if M.solution_type() == S.GEOMETRIC else S._redescribed_geometric(M)
+                for _ in range(4 if D is not None else 0):
+                    if D.solution_type() == S.GEOMETRIC:
+                        a = S._signature(D, True)
+                        if a:
+                            break
+                    D.randomize()
+                if a:
+                    break
+            if a and b:
                 nsig += 1
-                if a != b['sig']:
+                if a['sig'] != b['sig']:
                     return False, '%s r=%d s=%d sign %d: signatures differ' % (name, r, s, sg)
-    return nvol == 8 and nsig >= 1, '%d homology agreements, %d signature agreements' % (nvol, nsig)
+    return nvol == 8 and nsig >= 4, '%d homology agreements, %d signature agreements' % (nvol, nsig)
 
 
 TESTS = [
