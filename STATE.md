@@ -1,6 +1,8 @@
 # STATE
 
-Updated 2026-11-13 06:00 UTC.
+Updated 2026-11-13 06:27 UTC.
+Pin counts below are from a re-solve on all pass data synced so far (not exported; the last exported and checked checkpoint is described in REPORT.md).
+
 
 ## Pinned values per invariant
 
