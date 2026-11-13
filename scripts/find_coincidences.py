@@ -38,6 +38,7 @@ nodes by the flag of the last export (identification certificate); only their po
 usage: find_coincidences.py [budget=<seconds, 0: none>] [procs=4] [prefilter=1] [compute=1] [which=all|nonmutant]
                             [usig=<cache of unverified signatures>] [out=<path>] [spill=<directory>]
                             [systematic=<n, 0: off>] [tol=<volume tolerance>] [fill=<directory of filling shards>]
+                            [sig=<cache of verified signatures>] [iso=<cache of isometry checks>]
        compute=0: no new signatures, only the caches are used.
 """
 import hashlib
@@ -286,6 +287,8 @@ def main():
     prefilter = kv.get('prefilter', '1') != '0'
     compute = kv.get('compute', '1') != '0'
     usig_cache = kv.get('usig', USIG_CACHE)    # a long run appends to a copy outside the repository
+    sig_cache = kv.get('sig', SIG_CACHE)       # the caches of the verified signatures and of the isometry checks
+    iso_cache = kv.get('iso', ISO_CACHE)
     out_path = kv.get('out', os.path.join(DATA, 'coincidences.jsonl'))
     which = kv.get('which', 'all')
     vol_tol = float(kv.get('tol', VOL_TOL))
@@ -293,8 +296,10 @@ def main():
     # (rank, |p|, keys) in the order (rank, |p|, keys); rank 0: pinned r_2/r_0 node, 2: one mutation class.
     # Same clusters as sorting each |p| by volume and chaining gaps below vol_tol (mrcalc/candidates.py).
     sigs = {}
-    if os.path.exists(SIG_CACHE):
-        with open(SIG_CACHE) as f:
+    for part in cache_parts(sig_cache):
+        if not os.path.exists(part):
+            continue
+        with open(part) as f:
             for line in f:
                 try:
                     r = json.loads(line)
@@ -385,7 +390,7 @@ def main():
     if not compute:
         todo = []
     t1 = time.time()
-    ndone, _complete = run_pool(sig_task, chunks(todo), SIG_CACHE, sigs, procs,
+    ndone, _complete = run_pool(sig_task, chunks(todo), sig_cache, sigs, procs,
                                 max(1.0, budget - (t1 - t0)) if budget else 0, t1, 'verified signatures')
     print('signatures: %d computed in %.0fs, %d candidates without signature' % (
         ndone, time.time() - t1, sum(1 for k in cand if k not in sigs)), flush=True)
@@ -407,14 +412,14 @@ def main():
     # Fillings of a tested cluster that still have no verified signature: the certificate as S1(a) states it,
     # SnapPy finds an isometry between two fillings with verified hyperbolic structures (either orientation).
     iso = {}
-    if os.path.exists(ISO_CACHE):
-        with open(ISO_CACHE) as f:
+    if os.path.exists(iso_cache):
+        with open(iso_cache) as f:
             for line in f:
                 r = json.loads(line)
                 iso[(tuple(r['A']), tuple(r['B']))] = r['iso']
     nosig = {k for k in cand if k in sigs and not sigs[k].get('sig')}
     niso = 0
-    with open(ISO_CACHE, 'a') as f:
+    with open(iso_cache, 'a') as f:
         for _, _, keys in work:
             for a in keys:
                 if a not in nosig:
