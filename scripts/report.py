@@ -61,6 +61,9 @@ def main():
     # state=<dir>: write only STATE.md, from the pin counts of a scratch re-solve (REPORT.md stays tied
     # to the last exported checkpoint in export/)
     state_dir = next((a.split('=', 1)[1] for a in sys.argv[1:] if a.startswith('state=')), None)
+    # label=<name>: the re-solve is a checkpoint (checked by the independent checker; small tables in
+    # checkpoints/<name>/)
+    label = next((a.split('=', 1)[1] for a in sys.argv[1:] if a.startswith('label=')), None)
     summary = load(os.path.join(EXPORT, 'summary.json'), {})
     tiers = load(os.path.join(state_dir or EXPORT, 'pins_by_tier.json'), {})
     abl = load(os.path.join(EXPORT, 'ablation.json'))
@@ -115,9 +118,16 @@ def main():
     lines += ['', '## Notes', '']
     for k, v in (notes.get('state') or {}).items():
         lines.append('- %s: %s' % (k, v))
-    if state_dir:
-        lines.insert(3, 'Pin counts below are from a re-solve on all pass data synced so far (not exported; the last '
-                        'exported and checked checkpoint is described in REPORT.md).')
+    if state_dir and label:
+        lines.insert(3, 'Pin counts below are those of the checkpoint `%s`: solved with chains and verified by the '
+                        'independent checker (checkpoints/%s/: knots.xlsx, pins_by_tier.json, summary.json, check.log, '
+                        'tests.txt). Checkpoints carry no ablation and no packed export; export/ and REPORT.md are '
+                        'the last full export.' % (label, label))
+        lines.insert(4, '')
+    elif state_dir:
+        lines.insert(3, 'Pin counts below are from a re-solve on all pass data synced so far (not exported and not '
+                        'checked; the last checked checkpoint is in checkpoints/, the last full export in export/ '
+                        'and REPORT.md).')
         lines.insert(4, '')
     with open(os.path.join(ROOT, 'STATE.md'), 'w') as f:
         f.write('\n'.join(lines) + '\n')

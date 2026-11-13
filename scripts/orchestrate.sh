@@ -1,7 +1,8 @@
 #!/bin/bash
 # Watches the pass queue (logs/queue_A.log) and runs, without supervision:
-#   * a full checkpoint (convention tests, calculator inputs, milestone 7, solve, ablation, packed export,
-#     independent check, report, commit) at the milestones agreed with the user on 2026-11-11:
+#   * a checkpoint (convention tests, calculator inputs, milestone 7, solve with chains, independent check,
+#     tests, STATE.md, commit of the small tables in checkpoints/<label>/) at the milestones agreed with the
+#     user on 2026-11-11:
 #     end of stage 3, of stages 4 and 5, of stage 6a, of stage 6b, of stage 7.  Stage 6c (twists with
 #     |a - b| > 2, added 2026-11-12, scripts/queue_6c.sh) runs between 6b and 7 and belongs to the stage 6b
 #     checkpoint, which therefore waits for A7C_DONE instead of A7_DONE;
@@ -9,6 +10,14 @@
 #     stage ends and every 3 hours, so that pass data are never more than 3 hours from being pushed.
 # 2026-11-13: an extra full checkpoint (A6C_DONE, written by hand) after stage 6c and the repair of the surgery
 # coincidences, because stage 6b lost 9 hours to a restart of the machine.
+# 2026-11-13 (user): checkpoints are simplified.  No ablation at a checkpoint (it took about three hours;
+# scripts/solve.py runs it on request, and the final export has it), and the packed export (1.1 GB of
+# compressed files that do not delta, i.e. 1.1 GB of repository per checkpoint) is no longer committed: it is
+# built in $SCR/full, checked there by the independent checker, and only the small tables are committed
+# (checkpoints/<label>/: knots.xlsx with the nodes that are not peripheral, pins_by_tier.json, summary.json,
+# parameters.json, solve.log, check.log, tests.txt).  export/ keeps the last full export (stage 6c) until the
+# final one.  `orchestrate.sh finish <label> "<description>"` runs the second half of a checkpoint (from the
+# independent check on) for a solve that is already in $SCR/full, and exits.
 # An empty domain or a failed convention test stops this script (section 0): the minimal event/edge set is
 # copied to export/contradiction, a flag file is written, nothing else is exported.
 cd /home/user/Mr-calculator
@@ -70,7 +79,7 @@ light() {    # $1 label
 }
 
 full() {     # $1 label, $2 description for the commit message
-  say "full checkpoint $1"
+  say "checkpoint $1"
   sh scripts/sync_stage.sh all > /dev/null
   commit "Checkpoint $1: pass data"
   date +%s > $FLAGS/last_sync
@@ -82,25 +91,33 @@ full() {     # $1 label, $2 description for the commit message
   commit "Checkpoint $1: calculator inputs and complexes"
   OUT=$SCR/full
   rm -rf $OUT; mkdir -p $OUT
-  $PY scripts/solve.py upsilon ablation out=$OUT > $OUT/solve.log 2>&1
+  $PY scripts/solve.py upsilon out=$OUT > $OUT/solve.log 2>&1
   rc=$?
   [ $rc -eq 2 ] && halt $1 "empty domain" $OUT
-  [ $rc -ne 0 ] && { say "full $1: solve failed with exit $rc"; echo "solve exit $rc" > $FLAGS/FAILED_$1; return 1; }
+  [ $rc -ne 0 ] && { say "checkpoint $1: solve failed with exit $rc"; echo "solve exit $rc" > $FLAGS/FAILED_$1; return 1; }
+  finish "$1" "$2"
+}
+
+finish() {   # $1 label, $2 description: independent check of the solve in $SCR/full, tests, small tables, commit
+  OUT=$SCR/full
   python3 checker/check.py $OUT > $OUT/check.log 2>&1
   rc=$?
   if [ $rc -ne 0 ] || ! grep -q "RESULT: OK" $OUT/check.log; then
-    say "full $1: independent check FAILED (export not replaced)"; tail -25 $OUT/check.log
+    say "checkpoint $1: independent check FAILED (nothing published)"; tail -25 $OUT/check.log
     echo "checker exit $rc" > $FLAGS/FAILED_$1; return 1
   fi
-  cp export/FORMAT.md $OUT/FORMAT.md
-  rm -rf export; cp -r $OUT export
-  $PY -m pytest -q tests -x > $SCR/pytest_$1.log 2>&1; tail -1 $SCR/pytest_$1.log > export/tests.txt
-  $PY scripts/report.py > /dev/null 2>&1
+  $PY -m pytest -q tests -x > $SCR/pytest_$1.log 2>&1
+  CK=checkpoints/$1
+  rm -rf $CK; mkdir -p $CK
+  for f in knots.xlsx pins_by_tier.json summary.json parameters.json solve.log check.log; do cp $OUT/$f $CK/; done
+  tail -1 $SCR/pytest_$1.log > $CK/tests.txt
+  $PY scripts/report.py state=$OUT label=$1 > /dev/null 2>&1
   commit "Checkpoint $1: $2
 
-$(grep -E 'problem:|pins:|validation' export/solve.log | cut -c1-200)
-independent check: $(grep RESULT export/check.log); tests: $(cat export/tests.txt)"
-  say "full $1 done: $(grep pins: export/solve.log | cut -c1-160)"
+$(grep -E 'problem:|pins:|validation' $CK/solve.log | cut -c1-200)
+independent check: $(grep RESULT $CK/check.log); tests: $(cat $CK/tests.txt)
+(no ablation; small tables in $CK, the packed export is not committed)"
+  say "checkpoint $1 done: $(grep pins: $CK/solve.log | cut -c1-160)"
   echo ok > $FLAGS/full_$1
 }
 
@@ -117,6 +134,7 @@ handle() {   # marker name
   esac
 }
 
+if [ "$1" = "finish" ]; then finish "$2" "$3"; exit $?; fi
 [ -f $FLAGS/last_sync ] || date +%s > $FLAGS/last_sync
 say "orchestrator started"
 while true; do
