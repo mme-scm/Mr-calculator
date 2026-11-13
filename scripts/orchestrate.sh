@@ -18,6 +18,9 @@
 # parameters.json, solve.log, check.log, tests.txt).  export/ keeps the last full export (stage 6c) until the
 # final one.  `orchestrate.sh finish <label> "<description>"` runs the second half of a checkpoint (from the
 # independent check on) for a solve that is already in $SCR/full, and exits.
+# A file $FLAGS/request_checkpoint_<label> (content: description) asks the loop for a checkpoint; a file
+# $FLAGS/push_export makes the next checkpoint publish its full export to mme-scm/Mr-export
+# (scripts/push_export.sh).  The loop no longer ends with stage 7: the targeted search continues after it.
 # An empty domain or a failed convention test stops this script (section 0): the minimal event/edge set is
 # copied to export/contradiction, a flag file is written, nothing else is exported.
 cd /home/user/Mr-calculator
@@ -119,6 +122,15 @@ independent check: $(grep RESULT $CK/check.log); tests: $(cat $CK/tests.txt)
 (no ablation; small tables in $CK, the packed export is not committed)"
   say "checkpoint $1 done: $(grep pins: $CK/solve.log | cut -c1-160)"
   echo ok > $FLAGS/full_$1
+  # full export to the export repository mme-scm/Mr-export, when asked for (flag file push_export; user,
+  # 2026-11-13: at significant events only)
+  if [ -f $FLAGS/push_export ]; then
+    if sh scripts/push_export.sh $1 >> logs/push_export.log 2>&1; then
+      rm -f $FLAGS/push_export; say "export $1 published to Mr-export"; echo ok > $FLAGS/pushed_$1
+    else
+      say "export $1: publishing FAILED (logs/push_export.log); the checkpoint itself is complete"
+    fi
+  fi
 }
 
 handle() {   # marker name
@@ -144,7 +156,12 @@ while true; do
       handle $m
     fi
   done
-  [ -f $FLAGS/seen_A8_DONE ] && { say "queue finished; orchestrator exits"; echo ok > $FLAGS/ALL_DONE; exit 0; }
+  # a checkpoint asked for by hand: a file request_checkpoint_<label> whose content is the description
+  for rq in $FLAGS/request_checkpoint_*; do
+    [ -f "$rq" ] || continue
+    lab=${rq##*request_checkpoint_}; desc=$(cat "$rq"); rm -f "$rq"
+    full "$lab" "$desc"
+  done
   if [ $(( $(date +%s) - $(cat $FLAGS/last_sync) )) -gt 10800 ]; then
     light "$(date -u +%d-%H%M)"
   fi
