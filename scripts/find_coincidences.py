@@ -480,6 +480,15 @@ def main():
                         'regina_name': name, 'orientation': 'names normalised up to orientation'})
     for i, c in enumerate(out):
         c['id'] = 's1-%d' % i
+    # records with a node outside the table name the diagrams the fillings were built from (section 6: both PD
+    # codes): the KnotInfo diagram of a table knot, the source move of a census or 'H:' node (mrcalc/node_pd.py)
+    def dref(n):
+        if names.kind(n) in ('census', 'hyp'):
+            return {'move': _SRC[n]} if n in _SRC else None
+        return '%s|pd' % n
+    for c in out:
+        if names.kind(c['A']) in ('census', 'hyp') or names.kind(c['B']) in ('census', 'hyp'):
+            c['dA'], c['dB'] = dref(c['A']), dref(c['B'])
     with open(out_path + '.tmp', 'w') as f:
         for c in out:
             f.write(json.dumps(c, separators=(',', ':')) + '\n')
