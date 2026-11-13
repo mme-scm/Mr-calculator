@@ -33,8 +33,8 @@ Claude-Session: https://claude.ai/code/session_01GfGHdHRq15nAGeNaZqJMAq"
 
 conventions() {
   $PY -c "import sys; sys.path.insert(0,'.'); from mrcalc import conventions; conventions.assert_all(verbose=False); print('CONVENTIONS_OK')" \
-     > $SCR/conventions.log 2>&1
-  grep -q CONVENTIONS_OK $SCR/conventions.log
+     > $SCR/conventions.log 2>&1 || return 1       # exit status first: a traceback quotes the command line
+  [ "$(tail -1 $SCR/conventions.log)" = "CONVENTIONS_OK" ]
 }
 
 halt() {     # $1 label, $2 reason, $3 directory of the failed solve (optional)
