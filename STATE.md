@@ -1,7 +1,7 @@
 # STATE
 
-Updated 2026-11-13 11:55 UTC.
-Pin counts below are those of the checkpoint `stage6b`: solved with chains and verified by the independent checker (checkpoints/stage6b/: knots.xlsx, pins_by_tier.json, summary.json, check.log, tests.txt). Checkpoints carry no ablation and no packed export; export/ and REPORT.md are the last full export.
+Updated 2026-11-13 12:18 UTC.
+Pin counts below are from a re-solve on all pass data synced so far (not exported and not checked; the last checked checkpoint is in checkpoints/, the last full export in export/ and REPORT.md).
 
 
 ## Pinned values per invariant
@@ -23,8 +23,8 @@ Pin counts below are those of the checkpoint `stage6b`: solved with chains and v
 | 14 | 10 | 10 | 0 | 2 | 0 | 10 | 10 |
 | 15 | 20 | 20 | 0 | 8 | 0 | 20 | 20 |
 | constructions | 2328 | 30 | 30 | 124 | 124 | 68 | 150 |
-| peripheral | 466534 | 181058 | 4 | 11666 | 48 | 269780 | 414302 |
-| total | 496232 | 205690 | 221 | 30774 | 382 | 294920 | 440586 |
+| peripheral | 467448 | 181090 | 4 | 11666 | 48 | 269782 | 414302 |
+| total | 497146 | 205722 | 221 | 30774 | 382 | 294922 | 440586 |
 
 ## Pass progress (shards done out of 360; by tier)
 
@@ -34,7 +34,7 @@ Pin counts below are those of the checkpoint `stage6b`: solved with chains and v
 - `tw2`: 334 shards {3: 1, 4: 1, 5: 1, 6: 2, 7: 2, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 250}
 - `tw3`: 332 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 250}
 - `tw3x`: 332 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 250}
-- `tw4`: 27 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14}
+- `tw4`: 55 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14, 12: 28}
 - `tw4x`: 332 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 250}
 - `tw5`: 27 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14}
 - `tw5x`: 27 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14}
@@ -67,6 +67,7 @@ Taper = a notable decrease in new pins on knots with at most 13 crossings (prime
 | 2026-11-12 22:34 | tw6 +2 | 24572 | 70 | 18966 | 145 | 25040 | 26104 | +0 / +12 / +0 / +8 / +0 / +0 |
 | 2026-11-13 06:00 | tw6 +1 | 24572 | 187 | 18974 | 210 | 25042 | 26104 | +0 / +117 / +8 / +65 / +2 / +0 |
 | 2026-11-13 11:55 | tw6 +3 | 24572 | 187 | 18974 | 210 | 25042 | 26104 | +0 / +0 / +0 / +0 / +0 / +0 |
+| 2026-11-13 12:18 | tw4 +28 | 24572 | 187 | 18974 | 210 | 25042 | 26104 | +0 / +0 / +0 / +0 / +0 / +0 |
 
 ## Notes
 
