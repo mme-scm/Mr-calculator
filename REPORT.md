@@ -1,20 +1,20 @@
 # REPORT
 
-Interim report. Generated 2026-11-12 15:23 UTC from `export/`.
+Interim report. Generated 2026-11-13 06:01 UTC from `export/`.
 
 ## Nodes by kind
 
 | kind | nodes |
 |---|---|
 | cable | 2264 |
-| census (peripheral) | 368852 |
+| census (peripheral) | 368928 |
 | composite | 1517 |
-| hyp (peripheral) | 96238 |
+| hyp (peripheral) | 97606 |
 | table | 25852 |
 | torus | 64 |
 | unknot | 1 |
 
-Constraints (rule instances): 8349538; move edges: 1277429; events: 5750462.
+Constraints (rule instances): 8386317; move edges: 1288777; events: 5768937.
 
 ## Pinned values per invariant
 
@@ -24,30 +24,30 @@ Constraints (rule instances): 8349538; move edges: 1277429; events: 5750462.
 | 3 | 2 | 2 | 2 | 2 | 2 | 2 | 2 |
 | 4 | 1 | 1 | 1 | 1 | 1 | 1 | 1 |
 | 5 | 4 | 4 | 4 | 4 | 4 | 4 | 4 |
-| 6 | 8 | 8 | 2 | 8 | 5 | 8 | 8 |
-| 7 | 16 | 16 | 4 | 12 | 8 | 16 | 16 |
-| 8 | 46 | 46 | 6 | 40 | 13 | 46 | 46 |
-| 9 | 116 | 114 | 6 | 84 | 14 | 114 | 116 |
-| 10 | 363 | 349 | 8 | 279 | 14 | 353 | 357 |
-| 11 | 1226 | 1154 | 8 | 868 | 22 | 1178 | 1204 |
-| 12 | 4607 | 4207 | 8 | 3261 | 17 | 4323 | 4411 |
-| 13 | 20950 | 18632 | 8 | 14406 | 36 | 18994 | 19938 |
+| 6 | 8 | 8 | 5 | 8 | 6 | 8 | 8 |
+| 7 | 16 | 16 | 8 | 12 | 8 | 16 | 16 |
+| 8 | 46 | 46 | 17 | 40 | 17 | 46 | 46 |
+| 9 | 116 | 114 | 16 | 84 | 16 | 114 | 116 |
+| 10 | 363 | 349 | 30 | 283 | 30 | 353 | 357 |
+| 11 | 1226 | 1156 | 26 | 868 | 32 | 1178 | 1204 |
+| 12 | 4607 | 4207 | 37 | 3263 | 39 | 4323 | 4411 |
+| 13 | 20950 | 18668 | 40 | 14408 | 54 | 18996 | 19938 |
 | 14 | 10 | 10 | 0 | 2 | 0 | 10 | 10 |
 | 15 | 20 | 20 | 0 | 8 | 0 | 20 | 20 |
-| constructions | 2328 | 28 | 28 | 124 | 124 | 66 | 150 |
-| peripheral | 465090 | 180712 | 4 | 11652 | 48 | 269760 | 414170 |
-| total | 494788 | 205304 | 90 | 30752 | 309 | 294896 | 440454 |
+| constructions | 2328 | 30 | 30 | 124 | 124 | 68 | 150 |
+| peripheral | 466534 | 181058 | 4 | 11666 | 48 | 269780 | 414302 |
+| total | 496232 | 205690 | 221 | 30774 | 382 | 294920 | 440586 |
 
 ## Open domains (projection hull sizes of the unpinned values)
 
 | invariant | <= 2 values | <= 3 values | <= 4 values | <= 5 values | > 5 values | unbounded |
 |---|---|---|---|---|---|---|
-| M | 260968 | 25388 | 908 | 18 | 616 | 1586 |
-| r_2 | 24 | 38 | 22 | 16 | 616 | 493982 |
-| nu | 374 | 266560 | 6 | 11396 | 184844 | 856 |
-| r_0 | 4 | 14 | 0 | 26 | 1056 | 493379 |
-| tau | 14100 | 944 | 26 | 3186 | 180780 | 856 |
-| upsilon | 40068 | 8612 | 3174 | 308 | 492 | 1680 |
+| M | 260954 | 25468 | 950 | 918 | 1314 | 938 |
+| r_2 | 54 | 38 | 22 | 16 | 1264 | 494617 |
+| nu | 380 | 266554 | 6 | 11420 | 186374 | 724 |
+| r_0 | 6 | 32 | 0 | 28 | 1234 | 494550 |
+| tau | 14120 | 936 | 28 | 3186 | 182318 | 724 |
+| upsilon | 40134 | 8678 | 3354 | 582 | 1218 | 1680 |
 
 Sizes are the number of lattice points between the lower and upper end of the projection (M, r_2 on 4Z); the exact finite joint domains are in `export/knots.csv`.
 
@@ -55,25 +55,28 @@ Sizes are the number of lattice points between the lower and upper end of the pr
 
 | withheld | pins M / r_2 / nu / r_0 / tau / upsilon | lost M / r_2 / nu / r_0 / tau / upsilon | of these on knots up to 13 crossings | check |
 |---|---|---|---|---|
-| I | 12219 / 2 / 1 / 0 / 33052 / 242834 | 193085 / 88 / 30751 / 309 / 261844 / 197620 | 19275 / 56 / 18965 / 137 / 781 / 6041 | 0 |
-| unary | 205304 / 90 / 10178 / 293 / 14600 / 355542 | 0 / 0 / 20574 / 16 / 280296 / 84912 | 0 / 0 / 9196 / 16 / 10732 / 748 | 0 |
-| cc | 204732 / 90 / 28008 / 309 / 290348 / 440370 | 572 / 0 / 2744 / 0 / 4548 / 84 | 0 / 0 / 2744 / 0 / 4168 / 2 | 0 |
-| twist | 13202 / 80 / 30752 / 309 / 294896 / 406460 | 192102 / 10 / 0 / 0 / 0 / 33994 | 11652 / 8 / 0 / 0 / 0 / 12 | 0 |
-| coincidence | 205290 / 60 / 30738 / 275 / 294896 / 440454 | 14 / 30 / 14 / 34 / 0 / 0 | 4 / 22 / 2 / 22 / 0 / 0 | 0 |
-| coupling | 205304 / 90 / 30752 / 309 / 294896 / 440454 | 0 / 0 / 0 / 0 / 0 / 0 | 0 / 0 / 0 / 0 / 0 / 0 | 0 |
-| mutation | 203732 / 90 / 30752 / 309 / 294896 / 440454 | 1572 / 0 / 0 / 0 / 0 / 0 | 90 / 0 / 0 / 0 / 0 / 0 | 0 |
-| mirror_composite | 56045 / 59 / 24701 / 179 / 254279 / 350162 | 149259 / 31 / 6051 / 130 / 40617 / 90292 | 12196 / 18 / 3196 / 50 / 4289 / 4648 | 0 |
-| F11 | 205304 / 90 / 30752 / 309 / 294896 / 440454 | 0 / 0 / 0 / 0 / 0 / 0 | 0 / 0 / 0 / 0 / 0 / 0 | 0 |
-| F12 | 205200 / 70 / 30752 / 309 / 294896 / 440454 | 104 / 20 / 0 / 0 / 0 / 0 | 14 / 4 / 0 / 0 / 0 / 0 | 0 |
-| F13 | 205300 / 80 / 30752 / 309 / 294896 / 440454 | 4 / 10 / 0 / 0 / 0 / 0 | 0 / 6 / 0 / 0 / 0 / 0 | 0 |
-| F14 | 205302 / 90 / 30752 / 309 / 294896 / 440454 | 2 / 0 / 0 / 0 / 0 / 0 | 0 / 0 / 0 / 0 / 0 / 0 | 0 |
-| C11 | 205304 / 90 / 30706 / 263 / 294896 / 440454 | 0 / 0 / 46 / 46 / 0 / 0 | 0 / 0 / 0 / 0 / 0 / 0 | 0 |
-| C12 | 205304 / 90 / 30748 / 305 / 294896 / 440454 | 0 / 0 / 4 / 4 / 0 / 0 | 0 / 0 / 2 / 2 / 0 / 0 | 0 |
-| C13 | 205304 / 90 / 30746 / 286 / 294892 / 440454 | 0 / 0 / 6 / 23 / 4 / 0 | 0 / 0 / 0 / 17 / 0 / 0 | 0 |
-| C14 | 205304 / 90 / 30750 / 209 / 294896 / 440454 | 0 / 0 / 2 / 100 / 0 / 0 | 0 / 0 / 2 / 62 / 0 / 0 | 0 |
-| stage6a (passes tw5) | 205304 / 90 / 30752 / 309 / 294896 / 440454 | 0 / 0 / 0 / 0 / 0 / 0 | 0 / 0 / 0 / 0 / 0 / 0 | 0 |
-| stage6b (passes tw6) | 205304 / 90 / 30752 / 309 / 294896 / 440454 | 0 / 0 / 0 / 0 / 0 / 0 | 0 / 0 / 0 / 0 / 0 / 0 | 0 |
-| stage6c (passes tw3x, tw4x, tw5x, tw6x) | 144102 / 86 / 30722 / 309 / 294766 / 440260 | 61202 / 4 / 30 / 0 / 130 / 194 | 3900 / 4 / 0 / 0 / 0 / 0 | 0 |
+| I | 12219 / 2 / 0 / 0 / 33056 / 242834 | 193471 / 219 / 30774 / 382 / 261864 / 197752 | 19313 / 185 / 18974 / 210 / 783 / 6041 | 0 |
+| unary | 205690 / 221 / 10188 / 330 / 14602 / 355674 | 0 / 0 / 20586 / 52 / 280318 / 84912 | 0 / 0 / 9194 / 52 / 10732 / 748 | 0 |
+| cc | 205124 / 221 / 28030 / 378 / 290372 / 440502 | 566 / 0 / 2744 / 4 / 4548 / 84 | 0 / 0 / 2744 / 4 / 4168 / 2 | 0 |
+| twist | 13786 / 168 / 30774 / 382 / 294920 / 406592 | 191904 / 53 / 0 / 0 / 0 / 33994 | 11106 / 49 / 0 / 0 / 0 / 12 | 0 |
+| coincidence | 205674 / 60 / 30752 / 275 / 294918 / 440586 | 16 / 161 / 22 / 107 / 2 / 0 | 4 / 151 / 10 / 95 / 2 / 0 | 0 |
+| coupling | 205690 / 221 / 30774 / 382 / 294920 / 440586 | 0 / 0 / 0 / 0 / 0 / 0 | 0 / 0 / 0 / 0 / 0 / 0 | 0 |
+| mutation | 204116 / 221 / 30774 / 382 / 294920 / 440586 | 1574 / 0 / 0 / 0 / 0 / 0 | 88 / 0 / 0 / 0 / 0 / 0 | 0 |
+| mirror_composite | 62768 / 121 / 24712 / 216 / 254291 / 350231 | 142922 / 100 / 6062 / 166 / 40629 / 90355 | 11285 / 86 / 3200 / 86 / 4290 / 4648 | 0 |
+| F11 | 205690 / 221 / 30774 / 382 / 294920 / 440586 | 0 / 0 / 0 / 0 / 0 / 0 | 0 / 0 / 0 / 0 / 0 / 0 | 0 |
+| F12 | 205586 / 201 / 30774 / 382 / 294920 / 440586 | 104 / 20 / 0 / 0 / 0 / 0 | 14 / 4 / 0 / 0 / 0 / 0 | 0 |
+| F13 | 205686 / 217 / 30774 / 382 / 294920 / 440586 | 4 / 4 / 0 / 0 / 0 / 0 | 0 / 0 / 0 / 0 / 0 / 0 | 0 |
+| F14 | 205688 / 221 / 30774 / 382 / 294920 / 440586 | 2 / 0 / 0 / 0 / 0 / 0 | 0 / 0 / 0 / 0 / 0 / 0 | 0 |
+| C11 | 205690 / 221 / 30730 / 338 / 294920 / 440586 | 0 / 0 / 44 / 44 / 0 / 0 | 0 / 0 / 0 / 0 / 0 / 0 | 0 |
+| C12 | 205690 / 221 / 30772 / 380 / 294920 / 440586 | 0 / 0 / 2 / 2 / 0 / 0 | 0 / 0 / 0 / 0 / 0 / 0 | 0 |
+| C13 | 205690 / 221 / 30768 / 375 / 294916 / 440586 | 0 / 0 / 6 / 7 / 4 / 0 | 0 / 0 / 0 / 1 / 0 / 0 | 0 |
+| C14 | 205690 / 221 / 30774 / 322 / 294920 / 440586 | 0 / 0 / 0 / 60 / 0 / 0 | 0 / 0 / 0 / 22 / 0 / 0 | 0 |
+| stage6a (passes tw5) | 205690 / 221 / 30774 / 382 / 294920 / 440586 | 0 / 0 / 0 / 0 / 0 / 0 | 0 / 0 / 0 / 0 / 0 / 0 | 0 |
+| stage6b (passes tw6) | 205690 / 221 / 30774 / 382 / 294920 / 440586 | 0 / 0 / 0 / 0 / 0 / 0 | 0 / 0 / 0 / 0 / 0 / 0 | 0 |
+| stage6c (passes tw3x, tw4x, tw5x, tw6x) | 173108 / 211 / 30730 / 382 / 294768 / 440260 | 32582 / 10 / 44 / 0 / 152 / 326 | 1776 / 8 / 0 / 0 / 0 / 0 | 0 |
+| stage6c_k3 (passes tw3x) | 200484 / 219 / 30744 / 382 / 294790 / 440586 | 5206 / 2 / 30 / 0 / 130 / 0 | 234 / 2 / 0 / 0 / 0 / 0 | 0 |
+| stage6c_k4 (passes tw4x) | 205634 / 219 / 30760 / 382 / 294898 / 440470 | 56 / 2 / 14 / 0 / 22 / 116 | 0 / 0 / 0 / 0 / 0 / 0 | 0 |
+| stage6c_k56 (passes tw5x, tw6x) | 205360 / 221 / 30774 / 382 / 294920 / 440570 | 330 / 0 / 0 / 0 / 0 / 16 | 38 / 0 / 0 / 0 / 0 / 0 | 0 |
 
 Rule rows: the rules of a family (or one rule) are withheld; check = lost pins whose chain in the full run uses no withheld rule (must be 0).  Pass rows: the records of the named passes are withheld and all rules are used; check = pins of that run that are not pins of the full run with the same value (must be 0).
 
@@ -109,13 +112,14 @@ Rule rows: the rules of a family (or one rule) are withheld; check = lost pins w
 - crossing changes: at most 11 crossings: every crossing of all 5 diagrams of every prime knot and of the composites with crossing sum <= 9. 12-13 crossings: every crossing of the KnotInfo PD diagram (braid-closure diagrams for the first 31 of 305 shards only). Torus knots: braid-closure diagrams. Mirror nodes: not recomputed (implied by F3/C3/U4b)
 - twists: KnotInfo PD diagrams of prime knots only, both handednesses, in stages (the pass progress in STATE.md says which passes are complete in an export): k = 2 and k = 3 on diagrams with at most 13 crossings (stages 1-3); k = 4 on at most 8 crossings (probe), on 9-11 crossings (stage 4) and on 12-13 crossings (stage 7); k = 5 on at most 11 crossings (stage 6a); k = 6 on at most 10 crossings (stage 6b); |a-b| <= 2 in all of these (specification value). Stage 6c (added 2026-11-12 at the user's request, a widening of the scope parameter): |a-b| > 2 for k = 3, 4 on at most 13 crossings, k = 5 on at most 11 crossings and k = 6 on at most 10 crossings (passes tw3x, tw4x, tw5x, tw6x; 292,045, 90,534, 62,261 and 1,253 twist regions, both handednesses); these records are withheld as a group in the ablation run `stage6c`; the passes of stages 6a (tw5) and 6b (tw6) are likewise withheld in the ablation runs `stage6a` and `stage6b`, because the pass data is copied into a checkpoint as soon as a shard is complete (the stage 4+5 checkpoint already contains the k = 5 shards up to 10 crossings and 5 of the 14 shards on 11 crossings). No twists on braid closures, re-diagrams, composite, torus or cable diagrams. The first run of the tw6 pass (stage 6b) stopped after the shards up to 7 crossings, because the pass runner gave up on shards that take more than 5400 s; the 8 shards of 8-10 crossings (326,916 records) are computed by scripts/queue_6d.sh after the stage 6c passes, and an export contains them only when STATE.md lists 13 tw6 shards
 - mutations: every diagrammatic Conway circle, three rotations: PD and braid-closure diagrams for at most 11 crossings, PD diagrams for 12-13 crossings; composites with crossing sum <= 9
-- slope set: X1/X3 (all nodes): |p| <= 30, q <= 4 (specification), plus integers |p| <= 60 for torus knots and the S3/S4 slopes for cables. Fillings actually built: |p| <= 30, q <= 4 for prime knots with at most 11 crossings; |p| <= 30, q <= 2 for 12 crossings; |p| <= 30, q = 1 for 13 crossings; torus slope set for torus knots; none for composites and cables (S3/S4 need no recognition)
-- recognition time limit: 1.5 s per filling (at most 11 crossings), 0.3 s (12 crossings), 0.2 s (13 crossings), 0.5 s for torus-knot fillings (shrunk from 60 s); enforced inside the Regina retriangulation search instead of a subprocess; each node is processed by a worker that is replaced if it crashes or exceeds 25 minutes
-- coincidence certificates: candidates are fillings with equal |p| and volume within 2e-7 (119,174 fillings in 56,152 clusters); self-coincidences p/q, -p/q of amphichiral knots are skipped because their equations are implied by F5/C5. Up to the stage 4+5 checkpoint the verified isometry signature was computed under a time budget, in priority order (clusters containing a node with pinned r_2 or r_0 first): 3,589 of the candidates (1,777 clusters) were tested, which gave the 68 hyperbolic coincidences of these exports. From 2026-11-12 the step runs without a budget (scripts/find_coincidences.py, logs/coinc3.log) with a prefilter (budget choice): the unverified isometry signature is computed for every candidate (hashes in data/filling_usig.jsonl) and the verified signature only for the fillings of a cluster whose unverified signatures agree or are missing; a certificate still requires equal verified signatures. Orientation: a coincidence is a homeomorphism of fillings that may reverse orientation (isometry signatures with ignore_orientation, lens and Seifert names normalised up to orientation); candidates are matched on |p|. The mirror identities S_{-p/q}(K*) = -S_{p/q}(K) are not coincidences: fillings exist for one chirality of each knot with slopes of both signs, and mirror nodes are reached through F3/C3. Counting: the 1,059 records written up to the stage 4+5 checkpoint include 922 that name the same torus knot twice at the same slope (T(p,q) and its table name; the solver drops them) and 2 that compare p/q with -p/q on the amphichiral knot 4_1; they form 98 classes of fillings, i.e. 110 independent equations (68 hyperbolic, 42 by name). From 2026-11-12 scripts/find_coincidences.py writes only those.
+- slope set: X1/X3 (all nodes): |p| <= 30, q <= 4 (specification), plus integers |p| <= 60 for torus knots and the S3/S4 slopes for cables. Fillings built: |p| <= 30, q <= 4 for every prime knot with at most 13 crossings (up to 2026-11-12, i.e. in the exports up to the stage 6a checkpoint, only q <= 2 at 12 crossings and q = 1 at 13 crossings; the other 1,151,020 fillings were added by scripts/run_fillings.py extend=1); torus slope set for torus knots; none for composites and cables (S3/S4 need no recognition)
+- recognition time limit: 1.5 s per filling (at most 11 crossings), 0.3 s (12 crossings), 0.2 s (13 crossings), 0.5 s for torus-knot fillings (shrunk from 60 s); enforced inside the Regina retriangulation search instead of a subprocess; each node is processed by a worker that is replaced if it crashes or exceeds 25 minutes; 1.5 s for the slopes added on 2026-11-12. The 990 table-knot fillings recorded as unknown were tried again for a geometric solution with 40 randomisations (4 in the first run): 408 are now geometric. A sample of 60 unknown fillings with a 20 s Regina limit recognised no further table-knot filling
+- coincidence certificates: candidates are fillings with equal |p| and volume within 2e-7; on the full slope set 299,482 fillings in 140,646 clusters; self-coincidences p/q, -p/q of amphichiral knots are skipped because their equations are implied by F5/C5. Certificate: equal verified isometry signatures; the unverified signature is computed first for every candidate of a cluster (hashes in data/filling_usig.jsonl) and the verified one only where unverified signatures agree or are missing (budget choice). 138,008 of the clusters consist of knots of one mutation class (classes of the mu pass; mutants have fillings of equal volume at corresponding slopes): in the 36,128 of them tested by 2026-11-12 no two signatures agreed, so they are tested last, at low priority (logs/coinc5.log), and are not part of the exports so far. All 2,638 other clusters are tested: 276 hyperbolic coincidences (79 at the same slope, 45 at slopes p/q and -p/q, 152 at different slopes; 243 closed manifolds). Up to the stage 6a checkpoint the exports had 68 of them, found under a time budget on the smaller slope set; the check-in of 2026-11-12 22:12 had 142 (full slope set); the other 134 involve fillings whose filled triangulation has no positively oriented solution (see geometric solutions). Audit (scripts/audit_coincidences.py, data/coincidence_audit.json): for the 35 prime knots with at most 8 crossings the verified signature of every filling of the slope set was computed with no filter (60 randomisations, Regina with 60 s on the rest); the classes of equal signature are the 25 classes the pipeline has on these knots, no class is split by the volume or the unverified-signature filter, and SnapPy's isometry checker finds no isometric pair among fillings with equal |p|, close volume and different signatures (there is no such pair); 11 fillings stay without geometric solution and without lens or Seifert name (degenerate solutions; Regina names 10 of them as graph manifolds). Lens-space pairs are not written as S1 records: F10 gives both equations on each filling. Further checks (2026-11-12): for 200 random candidates the filling -p/q of the mirror, built from a re-drawn mirror diagram, has the same unverified signature in all 200 cases; for 150 random fillings the volume from such a second triangulation differs by at most 5e-10. Orientation: a coincidence is a homeomorphism of fillings that may reverse orientation (isometry signatures with ignore_orientation, lens and Seifert names normalised up to orientation); candidates are matched on |p|. The mirror identities S_{-p/q}(K*) = -S_{p/q}(K) are not coincidences: fillings exist for one chirality of each knot with slopes of both signs, and mirror nodes are reached through F3/C3. Counting: the 1,059 records written up to the stage 4+5 checkpoint include 922 that name the same torus knot twice at the same slope (T(p,q) and its table name; the solver drops them) and 2 that compare p/q with -p/q on the amphichiral knot 4_1; they form 98 classes of fillings, i.e. 110 independent equations (68 hyperbolic, 42 by name). From 2026-11-12 scripts/find_coincidences.py writes only those. Search-key changes of 2026-11-13 (three engineering agents studied the step; their scripts and tables are in /home/user/mrcalc_scratch/agents): (1) the unverified signature is computed by mrcalc/fastsig.py, the same algorithm and the same string as SnapPy's isometry_signature(verified=False) with a scalar inner loop (0.15 instead of about 0.6 CPU-s per filling; identical strings on 568 fillings, the 25 audit classes and 40 mirror pairs; tests/test_fastsig.py compares it with SnapPy on every test run and must pass after any SnapPy upgrade); (2) the volume tolerance of the candidate clusters is 1e-8 instead of 2e-7 (volumes of two descriptions of one filling agreed to 1e-13 in 340 checked pairs and are recorded to 1e-9): 295,319 candidate fillings in 138,752 clusters, 374 of them outside a single mutation class, the same 328 coincidence records; (3) a failed signature is retried with 40 randomisations and higher precision, and a filling that still has none is compared with its cluster by SnapPy's isometry checker (none left); (4) considered and not used: homology of the covers of degree at most 5 as a further key (removes about a third of the mutation-class fillings at 0.04-0.06 CPU-s each, which no longer pays at 0.15 CPU-s per signature), Chern-Simons (splits no mutation-class cluster and, taken modulo 1/2, separated two certified coincidences), high-precision volume, length spectrum, Turaev-Viro (split nothing or cost as much as the signature).
 - peripheral nodes: a result that is not a core node is instantiated as a node only if it is reached from two distinct nodes or a homogeneous diagram of it was found; other identified results are counted (parameters.json, stats) but not instantiated; unidentified results are discarded. Census names (K14a.., K14n.., K15a.., K15n..) come from the SnapPy census of 14-15 crossing knots (300,265 knots, matched by orientation-sensitive verified isometry signature)
 - calculator: KnotInfo PD codes of all table knots; construction diagrams of composites, torus knots and family constructions; cable diagrams with at most 40 crossings (10 s limit); every instantiated peripheral node known when the checkpoint started (60 s limit; 184,868 results, no failures); complexes (milestone 7) only for nodes whose upsilon was not pinned, and for peripheral nodes only if they are Floer-thin or carry the L-space flag (U2)
 - identification: Regina solid-torus test only when the Alexander polynomial is trivial; Regina isosig matching of non-hyperbolic results against the pool of torus knots, composites, family constructions and small cables with a bounded retriangulation search
 - rule instantiations for peripheral nodes: I1-I3 and the unary rules use the calculator output of the node (genus, fibredness, tau, epsilon, L-space flag, ranks). C8 and U2a are instantiated for census knots whose census name marks them as alternating (K14a.., K15a..), with tau from the calculator; C8 also for nodes with a homogeneous diagram found by a pass; U3 for nodes whose calculator epsilon is 0
+- geometric solutions: a filling counts as hyperbolic when SnapPy has a positively oriented solution on a triangulation of it and verify_hyperbolicity succeeds. Triangulations tried: the filled triangulation of the knot exterior under randomisation (4 times in the fillings pass, 40 in the retry of unknown fillings, 10-12 in the signature step), and, from 2026-11-12, when none of these is positively oriented but a solution with volume above 0.5 exists, other surgery descriptions of the same closed manifold (mrcalc/surgery.py redescriptions: a curve of the dual 1-skeleton is drilled, the old cusp is filled for good, the new cusp is filled along its meridian (1,0), which restores the manifold by the SnapPea kernel's convention; convention test "drilled redescription of a filling"; a description is kept only if homology and volume agree). Before that date such fillings were recorded as unknown and could not enter a coincidence: 36 fillings on knots with at most 8 crossings, 406 on all prime knots up to 13 crossings (volumes from 0.98; 129 below 3). 432 table-knot fillings are still unknown.
 
 ## Pass progress
 
@@ -126,9 +130,11 @@ Rule rows: the rules of a family (or one rule) are withheld; check = lost pins w
 - `tw3`: 332 shards done, by tier {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 250}
 - `tw3x`: 332 shards done, by tier {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 250}
 - `tw4`: 27 shards done, by tier {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14}
-- `tw4x`: 27 shards done, by tier {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14}
+- `tw4x`: 332 shards done, by tier {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 250}
 - `tw5`: 27 shards done, by tier {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14}
-- `tw6`: 5 shards done, by tier {3: 1, 4: 1, 5: 1, 6: 1, 7: 1}
+- `tw5x`: 27 shards done, by tier {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14}
+- `tw6`: 10 shards done, by tier {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 2}
+- `tw6x`: 13 shards done, by tier {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5}
 - `fillings`: 334 shards done, by tier {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 250, 99: 2}
 
 ## Tests failed / passes skipped
