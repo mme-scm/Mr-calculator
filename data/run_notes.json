@@ -73,6 +73,13 @@
    "date": "2026-11-13",
    "what": "machine restarted at about 00:15 UTC",
    "detail": "All running jobs were lost: three shards of the k = 6 pass on 10 crossings after about 9 hours of work each (restarted from zero), the low-priority signature run (resumed from its cache) and a solve. Move passes now keep per-diagram progress of unfinished shards (mrcalc/passes.py, progress files outside the pass directory)."
+  },
+  {
+   "date": "2026-11-13",
+   "what": "machine restarts at 07:08 and 11:00 UTC (after the one at 00:15)",
+   "effect": "running jobs stopped; nothing written was lost: pass shards resume from their per-diagram progress files, the fillings pass from its journal; in-flight diagrams and one test run of the stage 6b checkpoint were repeated",
+   "cause": "not known (no log survives a restart); from 11:02 UTC logs/mem.log records memory and load every 30 seconds so that the state before a further restart can be read",
+   "action": "queue, orchestrator, fillings and pilot restarted by hand each time"
   }
  ]
 }
