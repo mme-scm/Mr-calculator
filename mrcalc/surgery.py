@@ -13,10 +13,29 @@ from math import gcd
 GEOMETRIC = 'all tetrahedra positively oriented'
 
 
+class _Lazy:
+    """mrcalc.fastsig, imported on first use (it imports SnapPy, as the functions below do)."""
+
+    def __getattr__(self, name):
+        try:
+            from . import fastsig as m
+        except ImportError:               # used outside the package (benchmarks)
+            import fastsig as m
+        return getattr(m, name)
+
+
+fastsig = _Lazy()
+
+
 def exterior(pd):
     import snappy  # noqa: F401  (registers the exterior constructor)
     import spherogram
     return spherogram.Link([list(c) for c in pd]).exterior()
+
+
+def exterior_info(E):
+    """Per-exterior data for the unverified signatures of the fillings of E (fastsig.ExteriorInfo)."""
+    return fastsig.ExteriorInfo(E)
 
 
 def redescriptions(N, max_curves=6):
@@ -80,16 +99,20 @@ def geometric_filling(E, slope, tries=12, redescribe=True):
     return _redescribed_geometric(N) if redescribe else None
 
 
-def hyperbolic_signature(E, slope, verified=True, tries=12):
+def hyperbolic_signature(E, slope, verified=True, tries=12, info=None):
     """(isometry signature ignoring orientation, verified flag) of the filling or None.
 
-    The signature is only returned when verify_hyperbolicity succeeds on a triangulation of
-    the filling (verified=True) so that it refers to a verified hyperbolic structure."""
+    verified=True: the signature is only returned when verify_hyperbolicity succeeds on a triangulation of
+    the filling, so that it refers to a verified hyperbolic structure (the certificate of S1(a)).
+    verified=False: a search key only (prefilter of the coincidence step): no verify_hyperbolicity, and the
+    signature is computed by fastsig.unverified_signature (the same string as SnapPy's
+    isometry_signature(verified=False), see mrcalc/fastsig.py); info is the fastsig.ExteriorInfo of E, kept
+    by the caller for all fillings of E (optional)."""
     N = E.copy()
     N.dehn_fill(tuple(slope))
     for t in range(tries):
         if N.solution_type() == GEOMETRIC:
-            r = _signature(N, verified)
+            r = _signature(N, verified, info, slope)
             if r:
                 return r
         N.randomize()
@@ -110,7 +133,15 @@ _HARD = {'interval_bits_precs': [53, 212, 1000],
          'exact_bits_prec_and_degrees': [(212, 10), (1000, 20), (2000, 20), (4000, 40)]}
 
 
-def _signature(N, verified):
+def _signature(N, verified, info=None, slope=None):
+    if not verified:
+        try:
+            return {'sig': fastsig.unverified_signature(N, info, slope), 'verified': False,
+                    'volume': float(N.volume())}
+        except BaseException as e:            # cysignals' SignalError is a BaseException
+            if isinstance(e, (KeyboardInterrupt, SystemExit)):
+                raise
+            return None
     try:
         if not N.verify_hyperbolicity()[0]:
             return None
@@ -118,9 +149,9 @@ def _signature(N, verified):
         if isinstance(e, (KeyboardInterrupt, SystemExit)):
             raise
         return None
-    for kw in (({}, _HARD) if verified else ({},)):
+    for kw in ({}, _HARD):
         try:
-            return {'sig': N.isometry_signature(verified=verified, **kw), 'verified': True,
+            return {'sig': N.isometry_signature(verified=True, **kw), 'verified': True,
                     'volume': float(N.volume())}
         except BaseException as e:
             if isinstance(e, (KeyboardInterrupt, SystemExit)):

@@ -1,6 +1,6 @@
 """Surgery coincidences (section 6): S1 certificates from the filling records.
 
- (a) hyperbolic: fillings with equal |p| and volume (within 2e-7) are candidates; for each
+ (a) hyperbolic: fillings with equal |p| and volume (within VOL_TOL = 1e-8; tol=<x> changes it) are candidates; for each
      candidate the hyperbolic structure is verified (verify_hyperbolicity) and the verified
      isometry signature (orientation ignored) is computed; equal signatures certify an
      isometry (a filling whose signature cannot be computed is compared with the other fillings of its
@@ -30,6 +30,7 @@ import hashlib
 import json
 import multiprocessing as mp
 import os
+import signal
 import sys
 import time
 from collections import defaultdict
@@ -44,16 +45,23 @@ SIG_CACHE = os.path.join(DATA, 'filling_signatures.jsonl')
 _ext = {}
 
 
+def _exterior(node):
+    """(exterior, per-exterior data of the unverified signatures) of a node; a worker keeps them for the last
+    nodes it has seen."""
+    if node not in _ext:
+        if len(_ext) > 40:
+            _ext.clear()
+        E = S.exterior(nodeset.diagram(node))
+        _ext[node] = (E, S.exterior_info(E))
+    return _ext[node]
+
+
 def sig_task(keys):
     """Verified isometry signatures of a list of (node, p, q) fillings."""
     out = []
     for node, p, q in keys:
         try:
-            if node not in _ext:
-                if len(_ext) > 40:
-                    _ext.clear()
-                _ext[node] = S.exterior(nodeset.diagram(node))
-            r = _twice(_ext[node], (p, q), True)
+            r = _twice(_exterior(node)[0], (p, q), True)
         except BaseException as e:           # cysignals' SignalError is a BaseException
             if isinstance(e, (KeyboardInterrupt, SystemExit)):
                 raise
@@ -62,18 +70,33 @@ def sig_task(keys):
     return out
 
 
-def _twice(E, slope, verified):
+def _twice(E, slope, verified, info=None):
     """The signature with the usual effort, then (hard attempt) with 40 randomisations."""
     try:
-        r = S.hyperbolic_signature(E, slope, verified=verified, tries=10)
+        r = S.hyperbolic_signature(E, slope, verified=verified, tries=10, info=info)
     except BaseException as e:
         if isinstance(e, (KeyboardInterrupt, SystemExit)):
             raise
         r = None
-    return r or S.hyperbolic_signature(E, slope, verified=verified, tries=40)
+    return r or S.hyperbolic_signature(E, slope, verified=verified, tries=40, info=info)
 
 
 USIG_CACHE = os.path.join(DATA, 'filling_usig.jsonl')
+# Volumes are recorded to 9 decimals; two descriptions of one filling gave volumes within 1e-13 of each other
+# (5e-10 after rounding) in every check made, so 1e-8 keeps all of them together.  Up to 2026-11-13 the
+# tolerance was 2e-7; the smaller one removes 80% of the fillings of the accidental clusters and changes no
+# cluster that contains a coincidence and no cluster of one mutation class.
+VOL_TOL = 1e-8
+USIG_LIMIT = 300                     # seconds per filling for the unverified signature (no key: the
+#                                      verified step decides for that filling's cluster)
+
+
+class _Timeout(Exception):
+    pass
+
+
+def _alarm(signum, frame):
+    raise _Timeout()
 
 
 def sig_hash(sig):
@@ -86,11 +109,13 @@ def usig_task(keys):
     out = []
     for node, p, q in keys:
         try:
-            if node not in _ext:
-                if len(_ext) > 40:
-                    _ext.clear()
-                _ext[node] = S.exterior(nodeset.diagram(node))
-            r = _twice(_ext[node], (p, q), False)
+            E, info = _exterior(node)
+            signal.signal(signal.SIGALRM, _alarm)
+            signal.alarm(USIG_LIMIT)         # the tiling of the length spectrum can run away on a triangulation
+            try:
+                r = _twice(E, (p, q), False, info)
+            finally:
+                signal.alarm(0)
         except BaseException as e:           # cysignals' SignalError is a BaseException
             if isinstance(e, (KeyboardInterrupt, SystemExit)):
                 raise
@@ -213,6 +238,7 @@ def main():
             if 'r_2' in k['pins'] or 'r_0' in k['pins']:
                 prio.add(k['node'])
     which = kv.get('which', 'all')
+    vol_tol = float(kv.get('tol', VOL_TOL))
     mclass = mutation_classes()
     clusters = []                              # (rank, |p|, keys); rank 0: pinned r_2/r_0 node, 2: one mutation class
     for p, lst in by_p.items():
@@ -220,7 +246,7 @@ def main():
         i = 0
         while i < len(lst):
             j = i
-            while j + 1 < len(lst) and lst[j + 1]['vol'] - lst[j]['vol'] < 2e-7:
+            while j + 1 < len(lst) and lst[j + 1]['vol'] - lst[j]['vol'] < vol_tol:
                 j += 1
             if j > i:
                 keys = sorted({(r['node'], r['p'], r['q']) for r in lst[i:j + 1]})
@@ -243,7 +269,10 @@ def main():
     if os.path.exists(SIG_CACHE):
         with open(SIG_CACHE) as f:
             for line in f:
-                r = json.loads(line)
+                try:
+                    r = json.loads(line)
+                except ValueError:                           # a line cut off by a restart of the machine
+                    continue
                 if r.get('sig') or r.get('hard'):          # an earlier failure without the hard attempt: again
                     sigs[(r['node'], r['p'], r['q'])] = r
                 else:
@@ -255,7 +284,10 @@ def main():
         if os.path.exists(usig_cache):
             with open(usig_cache) as f:
                 for line in f:
-                    r = json.loads(line)
+                    try:
+                        r = json.loads(line)
+                    except ValueError:
+                        continue
                     if r.get('h') or r.get('hard'):
                         usig[(r['node'], r['p'], r['q'])] = r
                     else:
