@@ -29,9 +29,14 @@ Nodes without a table diagram (census and 'H:' nodes): the diagram is the result
 produced the node (mrcalc/node_pd.py).  systematic=<n>: clusters whose nodes share at least n clusters also get
 rank 2 (an order of the search for nodes the mu pass does not cover; on the table knots it marks exactly the
 mutation-class clusters).
+Scale: with which=nonmutant the rank-2 clusters are counted but not built as Python objects (only their
+fillings that already have a verified signature are kept, so that what the caches certify is still written).
+The cache of unverified signatures is a set of files data/filling_usig.jsonl, data/filling_usig.<n>.jsonl, each
+below 45 MB; all are read, the last one is appended to.  Amphichiral nodes: table knots by the table, other
+nodes by the flag of the last export (identification certificate); only their positive slopes are candidates.
 usage: find_coincidences.py [budget=<seconds, 0: none>] [procs=4] [prefilter=1] [compute=1] [which=all|nonmutant]
                             [usig=<cache of unverified signatures>] [out=<path>] [spill=<directory>]
-                            [systematic=<n, 0: off>]
+                            [systematic=<n, 0: off>] [tol=<volume tolerance>] [fill=<directory of filling shards>]
        compute=0: no new signatures, only the caches are used.
 """
 import hashlib
@@ -135,36 +140,68 @@ def usig_task(keys):
 
 
 def run_pool(task, tasks, cache_path, store, procs, budget, t0, what):
-    """Runs the tasks, appends the results to the cache file and to store.  Returns (number of
-    results, False if stopped by the budget or a worker timeout)."""
+    """Runs the tasks, appends the results to the cache (its last file; a new one is started at CACHE_PART
+    bytes) and to store.  Returns (number of results, False if stopped by the budget or a worker timeout)."""
     ndone = 0
     if not tasks:
         return 0, True
-    with mp.Pool(procs, maxtasksperchild=25) as pool, open(cache_path, 'a') as f:
-        it = pool.imap_unordered(task, tasks)
-        while True:
-            try:
-                out = it.next(timeout=1800)
-            except StopIteration:
-                return ndone, True
-            except mp.TimeoutError:
-                print('timeout waiting for a worker (a worker died?); continuing with the %s computed '
-                      'so far (rerun to resume)' % what, flush=True)
-                pool.terminate()
-                return ndone, False
-            for r in out:
-                store[(r['node'], r['p'], r['q'])] = r
-                f.write(json.dumps(r, separators=(',', ':')) + '\n')
-            f.flush()
-            n0 = ndone
-            ndone += len(out)
-            if ndone // 5000 > n0 // 5000:
-                print('  %s: %d in %.0fs' % (what, ndone, time.time() - t0), flush=True)
-            if budget and time.time() - t0 > budget:
-                print('budget reached after %d %s (priority order); the rest is left for a later run' % (
-                    ndone, what), flush=True)
-                pool.terminate()
-                return ndone, False
+    cache_path = cache_parts(cache_path)[-1]
+    f = open(cache_path, 'a')
+    try:
+        with mp.Pool(procs, maxtasksperchild=25) as pool:
+            it = pool.imap_unordered(task, tasks)
+            while True:
+                try:
+                    out = it.next(timeout=1800)
+                except StopIteration:
+                    return ndone, True
+                except mp.TimeoutError:
+                    print('timeout waiting for a worker (a worker died?); continuing with the %s computed '
+                          'so far (rerun to resume)' % what, flush=True)
+                    pool.terminate()
+                    return ndone, False
+                if f.tell() > CACHE_PART:        # next file (no file above 50 MB in the repository)
+                    f.close()
+                    cache_path = next_part(cache_path)
+                    f = open(cache_path, 'a')
+                for r in out:
+                    store[(r['node'], r['p'], r['q'])] = r
+                    f.write(json.dumps(r, separators=(',', ':')) + '\n')
+                f.flush()
+                n0 = ndone
+                ndone += len(out)
+                if ndone // 5000 > n0 // 5000:
+                    print('  %s: %d in %.0fs' % (what, ndone, time.time() - t0), flush=True)
+                if budget and time.time() - t0 > budget:
+                    print('budget reached after %d %s (priority order); the rest is left for a later run' % (
+                        ndone, what), flush=True)
+                    pool.terminate()
+                    return ndone, False
+    finally:
+        f.close()
+
+
+CACHE_PART = 45 * 1000 * 1000
+
+
+def cache_parts(path):
+    """The files of a cache: path, then path with .1, .2, ... before the extension (those that exist; at least
+    [path])."""
+    root, ext = os.path.splitext(path)
+    out, i = [path], 1
+    while os.path.exists('%s.%d%s' % (root, i, ext)):
+        out.append('%s.%d%s' % (root, i, ext))
+        i += 1
+    return out
+
+
+def next_part(path):
+    """The cache file after `path` (a member of cache_parts())."""
+    root, ext = os.path.splitext(path)
+    base, _, n = root.rpartition('.')
+    if base and n.isdigit():
+        return '%s.%d%s' % (base, int(n) + 1, ext)
+    return '%s.1%s' % (root, ext)
 
 
 def chunks(keys, n=24):
@@ -222,17 +259,8 @@ def main():
     # positive slopes of amphichiral table knots are kept as candidates (budget choice, nothing is lost).
     from mrcalc import knotinfo
     amph = {n for n, r in knotinfo.by_name().items() if r['amphichiral']}
-    recs = []                                  # the records that are not 'geo' (read by parts (b), (c) below)
-    stats = {}
-    parts, fnodes = CAND.load_parts(F.FILL_DIR, amph, spill=kv.get('spill'), keep_other=recs, stats=stats)
-    print('fillings:', stats.get('records', 0), flush=True)
-    budget = float(kv.get('budget', 0))        # time budget for the signature steps (seconds); 0: none
-    procs = int(kv.get('procs', 4))
-    prefilter = kv.get('prefilter', '1') != '0'
-    compute = kv.get('compute', '1') != '0'
-    usig_cache = kv.get('usig', USIG_CACHE)    # a long run appends to a copy outside the repository
-    out_path = kv.get('out', os.path.join(DATA, 'coincidences.jsonl'))
-    # priority: clusters containing a node whose r_2 or r_0 is pinned in the last export
+    # priority: clusters containing a node whose r_2 or r_0 is pinned in the last export; the export also flags
+    # the amphichiral nodes that are not table knots (certificate of their identification)
     prio = set()
     kpath = os.path.join(os.path.dirname(DATA), 'export', 'knots.jsonl')
     if os.path.exists(kpath + '.gz'):
@@ -245,25 +273,24 @@ def main():
             k = json.loads(line)
             if 'r_2' in k['pins'] or 'r_0' in k['pins']:
                 prio.add(k['node'])
+            if k.get('amphichiral'):
+                amph.add(k['node'])
+    recs = []                                  # the records that are not 'geo' (read by parts (b), (c) below)
+    stats = {}
+    parts, fnodes = CAND.load_parts(kv.get('fill', F.FILL_DIR), amph, spill=kv.get('spill'), keep_other=recs,
+                                    stats=stats)
+    print('fillings:', stats.get('records', 0), flush=True)
+    budget = float(kv.get('budget', 0))        # time budget for the signature steps (seconds); 0: none
+    procs = int(kv.get('procs', 4))
+    prefilter = kv.get('prefilter', '1') != '0'
+    compute = kv.get('compute', '1') != '0'
+    usig_cache = kv.get('usig', USIG_CACHE)    # a long run appends to a copy outside the repository
+    out_path = kv.get('out', os.path.join(DATA, 'coincidences.jsonl'))
     which = kv.get('which', 'all')
     vol_tol = float(kv.get('tol', VOL_TOL))
     mclass = mutation_classes()
     # (rank, |p|, keys) in the order (rank, |p|, keys); rank 0: pinned r_2/r_0 node, 2: one mutation class.
     # Same clusters as sorting each |p| by volume and chaining gaps below vol_tol (mrcalc/candidates.py).
-    clusters = CAND.cluster_ranked(parts, fnodes, CAND.class_ids(fnodes, mclass), CAND.prio_flags(fnodes, prio),
-                                   int(kv.get('systematic', 0)), vol_tol).as_tuples()
-    del parts, fnodes                          # nothing large is left for the worker processes to inherit
-    cand = set(k for _, _, keys in clusters for k in keys)
-    odd = {k[0] for k in cand if names.kind(k[0]) in ('census', 'hyp')}
-    if odd:                                    # diagrams of nodes that nodeset.diagram() does not cover
-        index = node_pd.build_index()
-        _SRC.update({n: index[n]['source'] for n in odd if n in index})
-        del index
-    print('volume-coincidence candidates: %d fillings in %d clusters (%d clusters with a pinned r_2/r_0 node, '
-          '%d others, %d within one mutation class)' % (
-              len(cand), len(clusters), sum(1 for x in clusters if x[0] == 0), sum(1 for x in clusters if x[0] == 1),
-              sum(1 for x in clusters if x[0] == 2)), flush=True)
-    work = [x for x in clusters if which == 'all' or x[0] < 2]        # the clusters this run computes
     sigs = {}
     if os.path.exists(SIG_CACHE):
         with open(SIG_CACHE) as f:
@@ -276,12 +303,38 @@ def main():
                     sigs[(r['node'], r['p'], r['q'])] = r
                 else:
                     sigs.pop((r['node'], r['p'], r['q']), None)
+    T = CAND.cluster_ranked(parts, fnodes, CAND.class_ids(fnodes, mclass), CAND.prio_flags(fnodes, prio),
+                            int(kv.get('systematic', 0)), vol_tol)
+    del parts, fnodes                          # nothing large is left for the worker processes to inherit
+    ncand, nrank = T.n_candidates(), [int((T.rank == i).sum()) for i in (0, 1, 2)]
+    # The clusters as Python objects: all of them, or (which=nonmutant) those of rank 0 and 1, and of the
+    # others the fillings that have a verified signature already (what the caches certify is always written).
+    clusters = []
+    for c in T.iter_clusters():
+        if which != 'all' and c[0] == 2:
+            keys = [k for k in c[2] if k in sigs]
+            if not keys:
+                continue
+            c = (c[0], c[1], keys)
+        clusters.append(c)
+    del T
+    cand = set(k for _, _, keys in clusters for k in keys)
+    odd = {k[0] for k in cand if names.kind(k[0]) in ('census', 'hyp')}
+    if odd:                                    # diagrams of nodes that nodeset.diagram() does not cover
+        index = node_pd.build_index()
+        _SRC.update({n: index[n]['source'] for n in odd if n in index})
+        del index
+    print('volume-coincidence candidates: %d fillings in %d clusters (%d clusters with a pinned r_2/r_0 node, '
+          '%d others, %d within one mutation class)' % (ncand, sum(nrank), nrank[0], nrank[1], nrank[2]), flush=True)
+    work = [x for x in clusters if which == 'all' or x[0] < 2]        # the clusters this run computes
     t0 = time.time()
     need = None                       # fillings that need a verified signature (None: all candidates)
     if prefilter:
         usig = {}
-        if os.path.exists(usig_cache):
-            with open(usig_cache) as f:
+        for part in cache_parts(usig_cache):
+            if not os.path.exists(part):
+                continue
+            with open(part) as f:
                 for line in f:
                     try:
                         r = json.loads(line)
