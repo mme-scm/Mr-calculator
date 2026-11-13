@@ -1,7 +1,7 @@
 # STATE
 
-Updated 2026-11-13 19:51 UTC.
-Pin counts below are from a re-solve on all pass data synced so far (not exported and not checked; the last checked checkpoint is in checkpoints/, the last full export in export/ and REPORT.md).
+Updated 2026-11-13 22:30 UTC.
+Pin counts below are those of the checkpoint `target1`: solved with chains and verified by the independent checker (checkpoints/target1/: knots.xlsx, pins_by_tier.json, summary.json, check.log, tests.txt). Checkpoints carry no ablation and no packed export; export/ and REPORT.md are the last full export.
 
 
 ## Pinned values per invariant
@@ -23,8 +23,8 @@ Pin counts below are from a re-solve on all pass data synced so far (not exporte
 | 14 | 10 | 10 | 0 | 2 | 0 | 10 | 10 |
 | 15 | 20 | 20 | 0 | 8 | 0 | 20 | 20 |
 | constructions | 2328 | 30 | 30 | 124 | 124 | 68 | 150 |
-| peripheral | 494368 | 246344 | 98 | 12184 | 70 | 290116 | 418328 |
-| total | 524066 | 272448 | 375 | 31444 | 430 | 315618 | 444612 |
+| peripheral | 494566 | 246368 | 98 | 12602 | 70 | 293424 | 435562 |
+| total | 524264 | 272472 | 375 | 31862 | 430 | 318926 | 461846 |
 
 ## Pass progress (shards done out of 360; by tier)
 
@@ -36,7 +36,7 @@ Pin counts below are from a re-solve on all pass data synced so far (not exporte
 - `tw2`: 334 shards {3: 1, 4: 1, 5: 1, 6: 2, 7: 2, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 250}
 - `tw3`: 332 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 250}
 - `tw3x`: 332 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 250}
-- `tw4`: 116 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 34}
+- `tw4`: 124 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 42}
 - `tw4x`: 332 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 250}
 - `tw5`: 27 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14}
 - `tw5x`: 27 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14}
@@ -74,6 +74,7 @@ Taper = a notable decrease in new pins on knots with at most 13 crossings (prime
 | 2026-11-13 15:44 | g2cc +74, g2tw +1, tw4 +37, twB +14 | 24972 | 197 | 19084 | 212 | 25182 | 26104 | +400 / +10 / +110 / +2 / +140 / +0 |
 | 2026-11-13 19:10 | g2cc +20, tw4 +21, twB +168 | 25834 | 247 | 19126 | 236 | 25404 | 26104 | +862 / +50 / +42 / +24 / +222 / +0 |
 | 2026-11-13 19:51 | tw4 +3, twB +108 | 26044 | 247 | 19126 | 236 | 25404 | 26104 | +210 / +0 / +0 / +0 / +0 / +0 |
+| 2026-11-13 22:30 | tw4 +8 | 26044 | 247 | 19126 | 236 | 25404 | 26104 | +0 / +0 / +0 / +0 / +0 / +0 |
 
 ## Notes
 
