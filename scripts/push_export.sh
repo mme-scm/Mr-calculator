@@ -13,19 +13,26 @@ ROOT=/home/user/Mr-calculator
 [ -d $DST/.git ] || { echo "push_export: no clone at $DST"; exit 1; }
 BR=export/$LABEL
 SHA=$(git -C $ROOT rev-parse HEAD)
-push() {     # $1 branch
+push() {     # $1 branch; success is read from the remote itself (a push can succeed and still print notices)
   for w in 0 5 20 60; do
     sleep $w
-    git -C $DST -c push.negotiate=true push -q -u origin $1 2>&1 | grep -v "push negotiation failed" | tail -2
-    [ "$(git -C $DST rev-parse $1 2>/dev/null)" = "$(git -C $DST rev-parse origin/$1 2>/dev/null)" ] && return 0
+    git -C $DST -c push.negotiate=true push -q -u origin $1 2>&1 | grep -v "push negotiation failed\|repository moved\|new location\|Mr-export.git" | tail -2
+    [ "$(git -C $DST rev-parse $1 2>/dev/null)" = "$(git -C $DST ls-remote origin refs/heads/$1 2>/dev/null | cut -f1)" ] && return 0
   done
   echo "push_export: push of $1 failed"; return 1
 }
 cd $DST || exit 1
 git config user.name > /dev/null || git config user.name "$(git -C $ROOT config user.name)"
 git config user.email > /dev/null || git config user.email "$(git -C $ROOT config user.email)"
-git checkout -q --orphan $BR 2>/dev/null || { echo "push_export: branch $BR exists already"; exit 1; }
-git rm -rq --cached . 2>/dev/null; find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+if git rev-parse -q --verify refs/heads/$BR > /dev/null; then
+  # an interrupted publication of this export: continue it (files already committed are skipped)
+  [ -f $DST/.git/push_export_done_$LABEL ] && { echo "push_export: branch $BR is complete already"; exit 1; }
+  git checkout -q $BR || exit 1
+  echo "push_export: continuing $BR"
+else
+  git checkout -q --orphan $BR || exit 1
+  git rm -rq --cached . 2>/dev/null; find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+fi
 MSGTAIL="
 Co-Authored-By: Claude Fable 5.2 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_01GfGHdHRq15nAGeNaZqJMAq"
@@ -48,14 +55,18 @@ for f in parameters.json pins_by_tier.json summary.json solve.log check.log knot
   echo
   [ -f PINS.md ] && sed -n '3,$p' PINS.md
 } > README.md
-git add -A && git commit -q -m "Export $LABEL: description, parameters, tables$MSGTAIL" && push $BR || exit 1
+git add -A
+git diff --cached --quiet || git commit -q -m "Export $LABEL: description, parameters, tables$MSGTAIL" || exit 1
+push $BR || exit 1
 # --- the large files, in groups
 group() {    # $1 name, rest: files relative to $SRC
   name=$1; shift
   n=0
   for f in "$@"; do [ -e "$SRC/$f" ] || continue; mkdir -p "$(dirname "$f")"; cp -r "$SRC/$f" "$f"; n=$((n+1)); done
   [ $n -eq 0 ] && return 0
-  git add -A && git commit -q -m "Export $LABEL: $name$MSGTAIL" && push $BR
+  git add -A
+  git diff --cached --quiet && return 0          # committed by an earlier, interrupted run
+  git commit -q -m "Export $LABEL: $name$MSGTAIL" && push $BR
 }
 cd $DST
 group "nodes" knots.jsonl.gz $(cd $SRC && ls knots*.csv 2>/dev/null) || exit 1
@@ -77,11 +88,13 @@ rm -f /tmp/push_export_chains.$$
 # --- main: the list of export branches
 git checkout -q main 2>/dev/null || git checkout -q --orphan main
 git rm -rq --cached . 2>/dev/null; find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
-git show origin/main:README.md > README.md 2>/dev/null || {
+git fetch -q origin main 2>/dev/null
+git show FETCH_HEAD:README.md > README.md 2>/dev/null || {
   echo "# Mr-export"; echo
   echo "Full exports of the run in mme-scm/Mr-calculator, one branch per export (\`export/<label>\`), each without"
   echo "earlier history. The format is described in FORMAT.md on every branch; README.md on a branch says what it holds."
   echo; echo "| branch | built (UTC) | Mr-calculator commit | pins (all nodes) |"; echo "|---|---|---|---|"; } > README.md
 echo "| \`$BR\` | $(date -u '+%Y-%m-%d %H:%M') | $(echo $SHA | cut -c1-10) | $(git show $BR:solve.log | grep -E '^pins:' | head -1 | cut -c7-160) |" >> README.md
 git add -A && git commit -q -m "Export $LABEL listed$MSGTAIL" && push main || exit 1
+touch $DST/.git/push_export_done_$LABEL
 echo "push_export: $BR published ($(du -sh $SRC | cut -f1))"
