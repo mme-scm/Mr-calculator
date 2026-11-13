@@ -1,6 +1,12 @@
 """Surgery pass over shards (resumable).
 usage: run_fillings.py <tier-lo> <tier-hi> [procs=4] [p=30] [q=4] [time_limit=2] [budget=sec]
        run_fillings.py <tier-lo> <tier-hi> extend=1 outdir=<dir> [geo_tries=40] [...]
+       run_fillings.py 0 0 nodes=peripheral|<index file> [chunk=1000] [...]
+nodes=...: fillings of the nodes that have no table diagram (census and 'H:' nodes), one per mirror pair, from
+the result diagram of the move that produced them (mrcalc/node_pd.py); nodes that already have a shard are
+skipped; the new shards hold chunk nodes each.
+journal=0 switches the journal off (logs/partial/fillings/<shard>.jsonl: the records of every finished node of
+an unfinished shard, so that a restart loses only the nodes that were being computed).
 extend=1: for the table shards already in data/fillings, the slopes of the slope set that are missing are
 filled and the fillings recorded as 'unknown' (no geometric solution, not recognised) are tried again for a
 geometric solution with more randomisations; the completed shards are written to outdir (same file names;
@@ -47,7 +53,16 @@ def main():
     done = F.done_shards()
     extend = kv.get('extend') == '1'
     outdir = kv.get('outdir')
-    if extend:
+    by_index = kv.get('nodes')
+    if by_index:
+        from mrcalc import node_pd
+        index = node_pd.build_index() if by_index == 'peripheral' else node_pd.load_index(by_index)
+        pshards = F.node_shards(index, F.done_nodes(), int(kv.get('chunk', 1000)))
+        todo = [(s, ns, opt) for s, ns in pshards.items() if s not in done]
+        print('fillings: %d shards of %d nodes without a table diagram, %d generic slopes' % (
+            len(todo), sum(len(ns) for _, ns, _ in todo), len(opt['slopes_G'])), flush=True)
+        tasks = [(s, n, dict(opt, torus_like={}, source=index[n]['source'])) for s, ns, _ in todo for n in ns]
+    elif extend:
         assert outdir, 'extend=1 needs outdir=<dir>'
         opt['geo_tries'] = int(kv.get('geo_tries', 40))
         have = set(fn[:-9] for fn in os.listdir(outdir) if fn.endswith('.jsonl.gz')) if os.path.isdir(outdir) else set()
@@ -84,10 +99,14 @@ def main():
     n = 0
     crashed = []
 
-    def finish(shard, node, rs):
+    jfiles = {}                              # shard -> journal file
+
+    def finish(shard, node, rs, from_journal=False):
         nonlocal n
         recs[shard][node] = rs
         pending[shard].discard(node)
+        if shard in jfiles and not from_journal:
+            F.journal_add(jfiles[shard], node, rs)
         if not pending[shard]:
             if extend:                         # old records (a retried 'unknown' is replaced), then the new ones
                 old = {}                       # node order of the file (it may hold nodes that are not tasks)
@@ -101,12 +120,27 @@ def main():
                     out += [x for x in new if x.get('how') != 'retry']
                 F.write_shard(shard, out, out_dir=outdir)
             else:
-                F.write_shard(shard, [x for nd in order[shard] for x in recs[shard].get(nd, [])])
+                F.write_shard(shard, [x for nd in order[shard] for x in recs[shard].get(nd, [])],
+                              nodes=order[shard] if by_index else None)
             del recs[shard]
+            if shard in jfiles:
+                F.journal_close(shard, jfiles.pop(shard))
             n += 1
             if n % 5 == 0 or n == len(todo):
                 print('  %d/%d shards %.0fs' % (n, len(todo), time.time() - t0), flush=True)
 
+    if kv.get('journal', '1') != '0':          # nodes finished before a restart are not computed again
+        jkey = F.journal_key(opt, extend)
+        nrec = 0
+        for s, ns, _ in todo:
+            have, jfiles[s] = F.journal_open(s, jkey)
+            for nd in ns:
+                if nd in have:
+                    nrec += 1
+                    finish(s, nd, have[nd], from_journal=True)
+        tasks = [t for t in tasks if t[0] in pending and t[1] in pending[t[0]]]
+        if nrec:
+            print('journal: %d nodes recovered, %d left' % (nrec, len(tasks)), flush=True)
     # Own scheduler: every worker announces the node it starts; if a worker dies in a native library
     # (hard crash), only that node is lost: it is recorded as an error and a new worker is started.
     ctx = mp.get_context('fork')

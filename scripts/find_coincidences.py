@@ -22,8 +22,16 @@ are almost all of the candidates (55,669 of 56,152 clusters on 2026-11-12); in t
 then no two signatures agreed, while 103 of the 359 other clusters tested had equal signatures.  Clusters whose
 knots lie in one mutation class (classes of the mu pass) are therefore tested last; which=nonmutant leaves
 them out of a run (signatures already in the caches are used in any case).
+Memory: the filling records are streamed shard by shard into arrays (mrcalc/candidates.py: 16 bytes per
+hyperbolic filling instead of a Python dict of about 500); only the records that are not 'geo' (names) are kept
+as dicts.  spill=<directory> keeps the arrays in files, one per |p|.
+Nodes without a table diagram (census and 'H:' nodes): the diagram is the result diagram of the move that
+produced the node (mrcalc/node_pd.py).  systematic=<n>: clusters whose nodes share at least n clusters also get
+rank 2 (an order of the search for nodes the mu pass does not cover; on the table knots it marks exactly the
+mutation-class clusters).
 usage: find_coincidences.py [budget=<seconds, 0: none>] [procs=4] [prefilter=1] [compute=1] [which=all|nonmutant]
-                            [usig=<cache of unverified signatures>] [out=<path>]
+                            [usig=<cache of unverified signatures>] [out=<path>] [spill=<directory>]
+                            [systematic=<n, 0: off>]
        compute=0: no new signatures, only the caches are used.
 """
 import hashlib
@@ -36,13 +44,15 @@ import time
 from collections import defaultdict
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from mrcalc import fillings as F, names, nodeset, surgery as S  # noqa: E402
+from mrcalc import candidates as CAND, fillings as F, names, node_pd, nodeset, surgery as S  # noqa: E402
 from mrcalc.config import DATA  # noqa: E402
 
 SIG_CACHE = os.path.join(DATA, 'filling_signatures.jsonl')
 
 
 _ext = {}
+_SRC = {}       # node -> the move that produced it, for candidate nodes without a table diagram (filled in main()
+                # before the worker processes start)
 
 
 def _exterior(node):
@@ -51,7 +61,7 @@ def _exterior(node):
     if node not in _ext:
         if len(_ext) > 40:
             _ext.clear()
-        E = S.exterior(nodeset.diagram(node))
+        E = S.exterior(node_pd.diagram(node, _SRC.get(node)))
         _ext[node] = (E, S.exterior_info(E))
     return _ext[node]
 
@@ -170,7 +180,7 @@ def isometric(a, b):
     try:
         Ms = []
         for node, p, q in (a, b):
-            M = S.verified_filling(S.exterior(nodeset.diagram(node)), (p, q))
+            M = S.verified_filling(S.exterior(node_pd.diagram(node, _SRC.get(node))), (p, q))
             if M is None:
                 return None
             Ms.append(M)
@@ -205,19 +215,17 @@ def mutation_classes():
 
 
 def main():
-    recs = list(F.iter_fillings())
-    print('fillings:', len(recs), flush=True)
+    kv = dict(x.split('=', 1) for x in sys.argv[1:] if '=' in x)
     # ---- (a) hyperbolic candidates
     # For an amphichiral node the fillings p/q and -p/q are the same manifold up to orientation; the
     # resulting S1 equations E(K; p/q) = E(K; -p/q) are implied by M = 0 (F5) and nu = 0 (C5), so only the
     # positive slopes of amphichiral table knots are kept as candidates (budget choice, nothing is lost).
     from mrcalc import knotinfo
     amph = {n for n, r in knotinfo.by_name().items() if r['amphichiral']}
-    by_p = defaultdict(list)
-    for r in recs:
-        if r['kind'] == 'geo' and not (r['node'] in amph and r['p'] < 0):
-            by_p[abs(r['p'])].append(r)
-    kv = dict(x.split('=', 1) for x in sys.argv[1:] if '=' in x)
+    recs = []                                  # the records that are not 'geo' (read by parts (b), (c) below)
+    stats = {}
+    parts, fnodes = CAND.load_parts(F.FILL_DIR, amph, spill=kv.get('spill'), keep_other=recs, stats=stats)
+    print('fillings:', stats.get('records', 0), flush=True)
     budget = float(kv.get('budget', 0))        # time budget for the signature steps (seconds); 0: none
     procs = int(kv.get('procs', 4))
     prefilter = kv.get('prefilter', '1') != '0'
@@ -240,26 +248,17 @@ def main():
     which = kv.get('which', 'all')
     vol_tol = float(kv.get('tol', VOL_TOL))
     mclass = mutation_classes()
-    clusters = []                              # (rank, |p|, keys); rank 0: pinned r_2/r_0 node, 2: one mutation class
-    for p, lst in by_p.items():
-        lst.sort(key=lambda r: r['vol'])
-        i = 0
-        while i < len(lst):
-            j = i
-            while j + 1 < len(lst) and lst[j + 1]['vol'] - lst[j]['vol'] < vol_tol:
-                j += 1
-            if j > i:
-                keys = sorted({(r['node'], r['p'], r['q']) for r in lst[i:j + 1]})
-                if len(keys) > 1:
-                    nodes = {k[0] for k in keys}
-                    if len(nodes) > 1 and len({mclass(n) for n in nodes}) == 1:
-                        rank = 2
-                    else:
-                        rank = 0 if any(k[0] in prio for k in keys) else 1
-                    clusters.append((rank, p, keys))
-            i = j + 1
-    clusters.sort(key=lambda x: (x[0], x[1], x[2]))
+    # (rank, |p|, keys) in the order (rank, |p|, keys); rank 0: pinned r_2/r_0 node, 2: one mutation class.
+    # Same clusters as sorting each |p| by volume and chaining gaps below vol_tol (mrcalc/candidates.py).
+    clusters = CAND.cluster_ranked(parts, fnodes, CAND.class_ids(fnodes, mclass), CAND.prio_flags(fnodes, prio),
+                                   int(kv.get('systematic', 0)), vol_tol).as_tuples()
+    del parts, fnodes                          # nothing large is left for the worker processes to inherit
     cand = set(k for _, _, keys in clusters for k in keys)
+    odd = {k[0] for k in cand if names.kind(k[0]) in ('census', 'hyp')}
+    if odd:                                    # diagrams of nodes that nodeset.diagram() does not cover
+        index = node_pd.build_index()
+        _SRC.update({n: index[n]['source'] for n in odd if n in index})
+        del index
     print('volume-coincidence candidates: %d fillings in %d clusters (%d clusters with a pinned r_2/r_0 node, '
           '%d others, %d within one mutation class)' % (
               len(cand), len(clusters), sum(1 for x in clusters if x[0] == 0), sum(1 for x in clusters if x[0] == 1),

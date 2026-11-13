@@ -8,13 +8,16 @@ step for the fillings whose (|p|, volume) agrees with a filling of another node,
 budget choice: fillings with no volume partner cannot enter an S1(a) certificate.
 """
 import gzip
+import hashlib
 import json
 import os
 
-from . import names, nodeset, passes, surgery as S
+from . import names, node_pd, nodeset, passes, surgery as S
 from .config import DATA
 
 FILL_DIR = os.path.join(DATA, 'fillings')
+# progress of unfinished shards, one line per node (never inside FILL_DIR: its .jsonl files are all read as shards)
+JOURNAL_DIR = os.path.join(passes.PARTIAL_DIR, 'fillings')
 
 
 def _fatal(e):
@@ -89,7 +92,7 @@ def node_task(args):
     'retry': slopes} only the missing slopes are filled and the 'unknown' ones are retried."""
     shard, n, opt = args
     try:
-        pd = nodeset.diagram(n)
+        pd = node_pd.diagram(n, opt.get('source'))     # source: the move that produced a node without a table diagram
         ext = opt.get('extend')
         if ext is not None:
             rs = node_fillings(n, pd, [tuple(x) for x in ext['missing']], opt.get('time_limit', 2.0)) \
@@ -121,9 +124,10 @@ def worker_loop(task_q, res_q):
         res_q.put(('done', pid, shard, node, rs, err))
 
 
-def write_shard(shard, recs, out_dir=None):
+def write_shard(shard, recs, out_dir=None, nodes=None):
     """Writes a shard to data/fillings and marks it done; with out_dir, writes it there instead
-    (atomically, done.txt untouched)."""
+    (atomically, done.txt untouched).  nodes: the node list of a shard that is not one of
+    passes.shard_nodes() (recorded in shard_nodes.txt, see done_nodes)."""
     d = out_dir or FILL_DIR
     os.makedirs(d, exist_ok=True)
     path = os.path.join(d, '%s.jsonl.gz' % shard)
@@ -131,9 +135,92 @@ def write_shard(shard, recs, out_dir=None):
         for r in recs:
             f.write(json.dumps(r, separators=(',', ':')) + '\n')
     os.replace(path + '.tmp', path)
+    if nodes is not None:
+        with open(os.path.join(d, 'shard_nodes.txt'), 'a') as f:
+            f.write('%s\t%s\n' % (shard, json.dumps(list(nodes), separators=(',', ':'))))
     if out_dir is None:
         with open(os.path.join(FILL_DIR, 'done.txt'), 'a') as f:
             f.write(shard + '\n')
+
+
+def done_nodes(out_dir=None):
+    """Nodes of the shards written with a node list (shards of nodes given by an index, not by tier)."""
+    p = os.path.join(out_dir or FILL_DIR, 'shard_nodes.txt')
+    out = set()
+    if os.path.exists(p):
+        with open(p) as f:
+            for line in f:
+                if line.endswith('\n') and '\t' in line:
+                    out.update(json.loads(line.split('\t', 1)[1]))
+    return out
+
+
+def node_shards(index, have, chunk=1000):
+    """Shards for the nodes of an index (node -> {'source': move}) that are not in have: ordered by the diagram
+    shard of the source move (a worker then reads one diagram shard after the other), chunk nodes per shard.
+    The shard id contains a hash of the node list, so a name always means the same nodes."""
+    todo = sorted((n for n in index if n not in have), key=lambda n: (index[n]['source']['shard'], n))
+    out = {}
+    for j in range(0, len(todo), chunk):
+        ns = todo[j:j + chunk]
+        h = hashlib.sha256(json.dumps(ns).encode()).hexdigest()[:10]
+        out['p-%s-%s' % (index[ns[0]]['source']['shard'], h)] = ns
+    return out
+
+
+# ----------------------------------------------------------------------
+# journal of unfinished shards: a restart loses only the nodes that were being computed
+# ----------------------------------------------------------------------
+def journal_key(opt, extend=False):
+    """What the records of a node depend on (a journal of another setting is not used)."""
+    x = [opt['slopes_G'], opt['slopes_T'], opt.get('time_limit'), opt.get('time_limit_torus'), bool(extend),
+         opt.get('geo_tries')]
+    return hashlib.sha256(json.dumps(x).encode()).hexdigest()[:16]
+
+
+def journal_path(shard):
+    return os.path.join(JOURNAL_DIR, '%s.jsonl' % shard)
+
+
+def journal_open(shard, key):
+    """({node: records} recovered from the journal of the shard, file open for appending).  The journal is
+    rewritten without a line cut off by the restart."""
+    path = journal_path(shard)
+    have = {}
+    if os.path.exists(path):
+        with open(path) as f:
+            lines = f.read().split('\n')
+        try:
+            ok = json.loads(lines[0]).get('key') == key
+        except Exception:
+            ok = False
+        for line in lines[1:] if ok else []:
+            try:
+                e = json.loads(line)
+                have[e['node']] = e['recs']
+            except Exception:
+                continue
+    os.makedirs(JOURNAL_DIR, exist_ok=True)
+    with open(path + '.tmp', 'w') as f:
+        f.write(json.dumps({'key': key}) + '\n')
+        for n, rs in have.items():
+            f.write(json.dumps({'node': n, 'recs': rs}, separators=(',', ':')) + '\n')
+    os.replace(path + '.tmp', path)
+    return have, open(path, 'a')
+
+
+def journal_add(f, node, recs):
+    f.write(json.dumps({'node': node, 'recs': recs}, separators=(',', ':')) + '\n')
+    f.flush()
+    os.fsync(f.fileno())
+
+
+def journal_close(shard, f):
+    f.close()
+    try:
+        os.remove(journal_path(shard))
+    except OSError:
+        pass
 
 
 def read_shard(shard):
