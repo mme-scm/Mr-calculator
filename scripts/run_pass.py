@@ -85,6 +85,7 @@ def main():
                 pool.terminate()
                 break
             passes.write_shard(pn, shard, recs, errors)
+            passes.remove_partial(pn, shard)
             if new_census:
                 with open(I.REF_CENSUS, 'a') as f:
                     for r in new_census:

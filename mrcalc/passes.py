@@ -21,6 +21,8 @@ from .config import DATA, k_max_for
 
 _STAGE = os.environ.get('MRCALC_STAGE')
 PASS_DIR = os.path.join(_STAGE, 'passes') if _STAGE else os.path.join(DATA, 'passes')
+# progress of unfinished shards, one line per diagram (never inside PASS_DIR: its files are all read as shards)
+PARTIAL_DIR = os.path.join(_STAGE, 'partial') if _STAGE else os.path.join(os.path.dirname(DATA), 'logs', 'partial')
 DIAG_DIR = os.path.join(DATA, 'diagrams')
 
 _idr = None
@@ -235,29 +237,92 @@ def shard_task(args):
     options: kinds (diagram kinds to move), kmin/kmax (twists), params."""
     pname, shard, opt = args
     params = opt['params']
-    recs, errors = [], []
+    recs, errors, new_census = [], [], []
+    idr = identifier()
+    idr.new_census = []
+    # Progress file: the records of every finished diagram, so that a shard that takes hours resumes after a
+    # restart of the machine (run_pass.py removes the file when the shard is written).
+    key = _opt_key(pname, opt)
+    ppath = partial_path(pname, shard)
+    have = {}
+    if os.path.exists(ppath):
+        with open(ppath) as f:
+            lines = f.read().split('\n')
+        try:
+            ok = json.loads(lines[0]).get('key') == key
+        except Exception:
+            ok = False
+        for line in lines[1:] if ok else []:
+            try:
+                e = json.loads(line)
+                have[e['d']] = e
+            except Exception:
+                continue                    # a line cut off by the restart
+    os.makedirs(os.path.dirname(ppath), exist_ok=True)
+    with open(ppath, 'w') as f:             # rewritten without a cut-off line
+        f.write(json.dumps({'key': key}) + '\n')
+        for e in have.values():
+            f.write(json.dumps(e, separators=(',', ':')) + '\n')
     for d in load_diagrams(shard):
         if not any(d['kind'] == k or d['kind'].startswith(k) for k in opt['kinds']):
             continue
         if opt.get('only_nodes') is not None and d['node'] not in opt['only_nodes']:
             continue
+        if d['id'] in have:
+            e = have[d['id']]
+            recs.extend(e['recs'])
+            errors.extend(e['errors'])
+            new_census.extend(e['census'])
+            for r in e['census']:
+                idr._add_census(r)
+            continue
+        drecs, derrs = [], []
         try:
             if opt['move'] == 'cc':
-                recs.extend(cc_records(d))
+                drecs = cc_records(d)
             elif opt['move'] == 'tw':
                 kmax = min(opt['kmax'], k_max_for(d['n'], params))
-                recs.extend(twist_records(d, list(range(opt.get('kmin', 2), kmax + 1)),
-                                          opt.get('imb_max', params['max_imbalance']), opt.get('imb_min', 0)))
+                drecs = twist_records(d, list(range(opt.get('kmin', 2), kmax + 1)),
+                                      opt.get('imb_max', params['max_imbalance']), opt.get('imb_min', 0))
             elif opt['move'] == 'mu':
-                recs.extend(mutation_records(d))
+                drecs = mutation_records(d)
         except BaseException as e:      # cysignals' SignalError is a BaseException
             if isinstance(e, (KeyboardInterrupt, SystemExit)):
                 raise
-            errors.append({'diagram': d['id'], 'error': repr(e)})
-    idr = identifier()
-    new_census = getattr(idr, 'new_census', [])
-    idr.new_census = []
+            drecs = []
+            derrs.append({'diagram': d['id'], 'error': repr(e)})
+        dcensus = getattr(idr, 'new_census', [])
+        idr.new_census = []
+        recs.extend(drecs)
+        errors.extend(derrs)
+        new_census.extend(dcensus)
+        with open(ppath, 'a') as f:
+            f.write(json.dumps({'d': d['id'], 'recs': drecs, 'errors': derrs, 'census': dcensus},
+                               separators=(',', ':')) + '\n')
+            f.flush()
+            os.fsync(f.fileno())
     return pname, shard, recs, new_census, errors
+
+
+def _opt_key(pname, opt):
+    """What the records of a pass on a shard depend on (a progress file of another setting is not used)."""
+    import hashlib
+    only = opt.get('only_nodes')
+    x = [pname, opt['move'], sorted(opt['kinds']), opt.get('kmin'), opt.get('kmax'), opt.get('imb_min'),
+         opt.get('imb_max', 'default'), sorted(only) if only is not None else None,
+         sorted((k, repr(v)) for k, v in opt['params'].items())]
+    return hashlib.sha256(json.dumps(x).encode()).hexdigest()[:16]
+
+
+def partial_path(pname, shard):
+    return os.path.join(PARTIAL_DIR, pname, '%s.jsonl' % shard)
+
+
+def remove_partial(pname, shard):
+    try:
+        os.remove(partial_path(pname, shard))
+    except OSError:
+        pass
 
 
 def shard_path(pname, shard):
