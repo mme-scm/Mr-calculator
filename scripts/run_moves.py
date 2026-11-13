@@ -19,7 +19,7 @@ done = passes.done_shards(pname)
 todo = [(pname, s, opt) for s in shards if s not in done]
 print('%s: %d shards to do' % (pname, len(todo)), flush=True)
 t0 = time.time(); nrec = 0
-with mp.Pool(int(kv.get('procs', 2)), maxtasksperchild=6) as pool:
+with mp.Pool(int(kv.get('procs', 2)), maxtasksperchild=int(kv.get('maxtasks', 2))) as pool:
     for pn, shard, recs, new_census, errors in pool.imap_unordered(passes.shard_task, todo):
         passes.write_shard(pn, shard, recs, errors)
         passes.remove_partial(pn, shard)

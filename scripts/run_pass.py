@@ -73,7 +73,9 @@ def main():
     print('%s: %d shards to do' % (pname, len(todo)), flush=True)
     n = 0
     nrec = 0
-    with mp.Pool(procs, maxtasksperchild=6) as pool:
+    # a worker is replaced after `maxtasks` shards (default 6); 1 keeps its memory from growing over a long pass
+    # (the stage 7 workers reached 1.9 GB each after several 13-crossing shards)
+    with mp.Pool(procs, maxtasksperchild=int(kv.get('maxtasks', 6))) as pool:
         it = pool.imap_unordered(passes.shard_task, todo)
         while True:
             try:

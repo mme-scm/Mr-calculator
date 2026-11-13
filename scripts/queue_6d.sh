@@ -7,7 +7,7 @@ export MRCALC_STAGE=/home/user/mrcalc_stage
 PY="/home/user/venv_sage/bin/python -W ignore"
 cd /home/user/Mr-calculator
 while pgrep -f "scripts/run_pass.py" > /dev/null; do sleep 5; done
-run() { echo "START $1 $(date -u +%H:%M)"; shift; $PY scripts/run_pass.py "$@" procs=4 nocomposite=1 skip_conventions=1 shard_timeout=604800; }
+run() { echo "START $1 $(date -u +%H:%M)"; shift; $PY scripts/run_pass.py "$@" procs=4 nocomposite=1 skip_conventions=1 shard_timeout=604800 maxtasks=1; }
 run tw3x-le13 tw3x tw 3 13 kinds=pd kmin=3 kmax=3 imb_min=3 imb_max=none
 run tw4x-le13 tw4x tw 3 13 kinds=pd kmin=4 kmax=4 imb_min=3 imb_max=none
 run tw5x-le11 tw5x tw 3 11 kinds=pd kmin=5 kmax=5 imb_min=3 imb_max=none
