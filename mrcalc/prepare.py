@@ -514,7 +514,7 @@ class Problem:
                 if kind == 'lens':
                     self.lens.append((node, m, n, {'S2': [p, q, m, n], 'name': nm, 'cert': 'S2'}))
         from . import fillings as FL
-        for r in FL.iter_fillings():
+        for r in FL.iter_fillings(only='lens'):
             if r.get('kind') == 'lens' and r.get('name') not in (None, 'S3', 'S2xS1'):
                 self.lens.append((self.canon(r['node']), r['p'], r['q'],
                                   {'filling': [r['node'], r['p'], r['q']], 'name': r['name'],

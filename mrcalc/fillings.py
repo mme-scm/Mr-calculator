@@ -251,8 +251,9 @@ def shard_task(args):
     return shard, len(recs), errors
 
 
-def iter_fillings():
-    """All filling records."""
+def iter_fillings(only=None):
+    """All filling records; with only=<kind>, the records of that kind (lines that do not contain the word
+    are skipped before they are parsed: almost all records are 'geo')."""
     if not os.path.isdir(FILL_DIR):
         return
     for fn in sorted(os.listdir(FILL_DIR)):
@@ -264,7 +265,12 @@ def iter_fillings():
             continue
         with f:
             for line in f:
-                yield json.loads(line)
+                if only is None:
+                    yield json.loads(line)
+                elif only in line:
+                    r = json.loads(line)
+                    if r.get('kind') == only:
+                        yield r
 
 
 def done_shards():
