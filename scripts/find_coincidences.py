@@ -18,10 +18,11 @@ slopes of both signs), and the equations of the mirror nodes follow from F3/C3. 
 are not written: the same knot under two names at the same slope, and p/q against -p/q on an
 amphichiral knot.
 Order (budget choice): the fillings of mutant knots at corresponding slopes have equal volume, and such pairs
-are almost all of the candidates (55,669 of 56,152 clusters on 2026-11-12); in the 36,128 of them tested by
-then no two signatures agreed, while 103 of the 359 other clusters tested had equal signatures.  Clusters whose
-knots lie in one mutation class (classes of the mu pass) are therefore tested last; which=nonmutant leaves
-them out of a run (signatures already in the caches are used in any case).
+are almost all of the candidates (138,378 of 138,752 clusters on the slope set |p| <= 30, q <= 4 of the prime
+knots up to 13 crossings); all of them were tested by 2026-11-13 and in none did two signatures agree, while
+most of the 374 other clusters contain a coincidence.  Clusters whose knots lie in one mutation class (classes
+of the mu pass) are therefore tested last; which=nonmutant leaves them out of a run (signatures already in the
+caches are used in any case).
 Memory: the filling records are streamed shard by shard into arrays (mrcalc/candidates.py: 16 bytes per
 hyperbolic filling instead of a Python dict of about 500); only the records that are not 'geo' (names) are kept
 as dicts.  spill=<directory> keeps the arrays in files, one per |p|.
