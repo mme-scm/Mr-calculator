@@ -91,12 +91,47 @@ def _det_int(M):
     return sign * M[n - 1][n - 1]
 
 
-def alexander_from_seifert(V):
-    """Coefficients of det(V - t V^T), normalised: symmetric list c_0..c_{2g} with leading
-    coefficient positive, trailing zeros stripped."""
+_PLAIN_N = 24           # up to this size the plain routine below is used (well under a second)
+
+
+def _coeffs_charpoly(V):
+    """Coefficients c_0..c_n of det(V - t V^T) by exact integer arithmetic of Sage (FLINT), or None when Sage
+    is not available or A = V - V^T is not unimodular (it is for a Seifert matrix of a knot).
+    With B = A^-1 V (an integer matrix): V - t V^T = (1-t)V + tA = A(tI - (t-1)B), and
+    det(tI - (t-1)B) = sum_k chi_k t^k (t-1)^(n-k), chi the characteristic polynomial of B.
+    Speed only: the result is the same polynomial as the evaluation and interpolation below
+    (tests/test_alg.py compares the two).  SnapPy's Seifert matrices come from a braid word and can be large
+    (304 x 304 for a 40-crossing twist result of 10_130, about an hour with the plain routine, 4 s here)."""
+    try:
+        from sage.all import matrix, ZZ, PolynomialRing
+    except Exception:
+        return None
     n = len(V)
-    if n == 0:
-        return [1]
+    Vm = matrix(ZZ, V)
+    A = Vm - Vm.transpose()
+    dA = A.det()
+    if dA not in (1, -1):
+        return None
+    B = A.solve_right(Vm).change_ring(ZZ)
+    if A * B != Vm:
+        raise AssertionError('A^-1 V is not exact')
+    chi = B.charpoly()
+    R = PolynomialRing(ZZ, 't')
+    t = R.gen()
+    pw = [R(1)]
+    for _ in range(n):
+        pw.append(pw[-1] * (t - 1))
+    f, tk = R(0), R(1)
+    for k in range(n + 1):
+        f += int(chi[k]) * tk * pw[n - k]
+        tk *= t
+    f *= int(dA)
+    return [int(f[k]) for k in range(n + 1)]
+
+
+def _coeffs_plain(V):
+    """Coefficients c_0..c_n of det(V - t V^T): Bareiss determinants at t = 0..n, Lagrange interpolation."""
+    n = len(V)
     pts = list(range(n + 1))
     vals = [_det_int([[V[i][j] - t * V[j][i] for j in range(n)] for i in range(n)]) for t in pts]
     # Lagrange interpolation with Fractions
@@ -115,6 +150,24 @@ def alexander_from_seifert(V):
             coeffs[k] += vals[i] * num[k] / den
     c = [int(x) for x in coeffs]
     assert all(Fraction(a) == b for a, b in zip(c, coeffs))
+    return c
+
+
+def alexander_from_seifert(V, route=None):
+    """Coefficients of det(V - t V^T), normalised: symmetric list c_0..c_{2g} with leading
+    coefficient positive, trailing zeros stripped.  route: 'plain' or 'charpoly' forces one of the two
+    computations (tests); by default small matrices take the plain one and larger ones the fast one when
+    it applies."""
+    n = len(V)
+    if n == 0:
+        return [1]
+    c = None
+    if route == 'charpoly' or (route is None and n > _PLAIN_N):
+        c = _coeffs_charpoly(V)
+        if c is None and route == 'charpoly':
+            raise ValueError('the charpoly route does not apply')
+    if c is None:
+        c = _coeffs_plain(V)
     while c and c[-1] == 0:
         c.pop()
     while c and c[0] == 0:
