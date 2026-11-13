@@ -30,7 +30,11 @@ def main():
         conventions.assert_all(verbose=False)
         print('convention tests passed', flush=True)
     P = config.load_params()
-    pm, qm = int(kv.get('p', P['slope_p'])), int(kv.get('q', P['slope_q']))
+    # table knots: the filling slope set (it may be wider than the slope set of X1 / X3); nodes outside the
+    # table (nodes=...): the specification's slope set unless p=, q= say otherwise
+    wide = 'nodes' not in kv
+    pm = int(kv.get('p', P['filling_slope_p'] if wide else P['slope_p']))
+    qm = int(kv.get('q', P['filling_slope_q'] if wide else P['slope_q']))
     opt = {'slopes_G': S.slope_set(pm, qm), 'slopes_T': S.slope_set(pm, qm, P['torus_integer_p']),
            'time_limit': float(kv.get('time_limit', 2.0)),
            'time_limit_torus': float(kv.get('time_limit_torus', 0.5))}

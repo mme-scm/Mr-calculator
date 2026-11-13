@@ -37,6 +37,10 @@ SPEC = {
     'k_max': {'<=10': 6, '11': 5, '12-20': 4, '>20': 0},
     'max_imbalance': 2,
     'slope_p': 30, 'slope_q': 4, 'torus_integer_p': 60,
+    # slope set on which the fillings of the table knots are built for S1 / F10 (section 6).  The
+    # specification has one slope set; X1 / X3 keep slope_p, slope_q, and data/parameters.json may widen this
+    # one (the search for coincidences), which the rules allow: S1 and F10 hold at any slope.
+    'filling_slope_p': 30, 'filling_slope_q': 4,
     'recognition_time_limit_s': 60,
     'rediagrams': 3,
     'max_cable_companion_crossings': 8,
