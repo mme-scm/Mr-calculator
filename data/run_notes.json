@@ -61,5 +61,17 @@
    "Memory. With the calculator inputs of the peripheral nodes the problem outgrew the machine (16 GB): the solver needed 6.4 GB, the checker 9.6 GB, and a check-in solve was killed. Constraints, events and move edges are now stored as columns (objects are built when one is read), the node tables are written row by row, the ablation runs are separate processes started after the export, and the checker reads events.jsonl front to back with the constraints in a temporary file. The reworked code was run on a frozen copy of the input of the committed export: all 20 files of the solve and export are byte-identical, the 16 ablation runs give the same counts, and the reworked checker prints the same summary. Peak memory: solve and export 2.2 GB, checker 2.4 GB.",
    "The rework does not touch operators, rule instantiation or the order of propagation: the work list is processed in the same order as before (fresh constraints in order, then re-queued ones first in, first out)."
   ]
- }
+ },
+ "incidents": [
+  {
+   "date": "2026-11-13",
+   "what": "convention run of the stage 6c checkpoint reported a failure that was not acted on",
+   "detail": "The convention run at 00:50 UTC listed \"cable surgery identity (sanity)\" as failed: 8 homology agreements, 0 signature agreements. The test compared the signature of a cable filling with that of the companion filling whenever one random closed triangulation of the cable filling was positively oriented, and asked for at least 1 of 8; usually 1 or 2 were, in that run none (no two signatures disagreed). The orchestrator did not stop: its check searched the log for a word that a Python traceback of the command also contains. Both are corrected (the test retriangulates and uses the drilled redescription, 5 to 7 signatures of 8 in four runs, all equal; the check uses the exit status, from the first check-in after the stage 6c checkpoint). The test was re-run before the checkpoint results were used: it passes. All other convention tests passed in the 00:50 run. Earlier convention runs by the orchestrator could have missed a failure in the same way; the convention tests are also part of the test suite run at every full checkpoint, which passed each time."
+  },
+  {
+   "date": "2026-11-13",
+   "what": "machine restarted at about 00:15 UTC",
+   "detail": "All running jobs were lost: three shards of the k = 6 pass on 10 crossings after about 9 hours of work each (restarted from zero), the low-priority signature run (resumed from its cache) and a solve. Move passes now keep per-diagram progress of unfinished shards (mrcalc/passes.py, progress files outside the pass directory)."
+  }
+ ]
 }
