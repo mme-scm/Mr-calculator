@@ -162,7 +162,8 @@ while true; do
     lab=${rq##*request_checkpoint_}; desc=$(cat "$rq"); rm -f "$rq"
     full "$lab" "$desc"
   done
-  if [ $(( $(date +%s) - $(cat $FLAGS/last_sync) )) -gt 10800 ]; then
+  if [ -f $FLAGS/request_light ] || [ $(( $(date +%s) - $(cat $FLAGS/last_sync) )) -gt 10800 ]; then
+    rm -f $FLAGS/request_light              # a light check-in asked for by a queue (targets of the next round)
     light "$(date -u +%d-%H%M)"
   fi
   sleep 30
