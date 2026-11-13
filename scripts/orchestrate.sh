@@ -7,6 +7,8 @@
 #     checkpoint, which therefore waits for A7C_DONE instead of A7_DONE;
 #   * a light check-in (sync, commit of the pass data, re-solve without export, STATE.md) at the other
 #     stage ends and every 3 hours, so that pass data are never more than 3 hours from being pushed.
+# 2026-11-13: an extra full checkpoint (A6C_DONE, written by hand) after stage 6c and the repair of the surgery
+# coincidences, because stage 6b lost 9 hours to a restart of the machine.
 # An empty domain or a failed convention test stops this script (section 0): the minimal event/edge set is
 # copied to export/contradiction, a flag file is written, nothing else is exported.
 cd /home/user/Mr-calculator
@@ -109,6 +111,7 @@ handle() {   # marker name
     A4_DONE) light stage4 ;;
     A5_DONE) full stage5 "end of stages 4 and 5 (k=4 on 9-11 crossings; braid-closure crossing changes, composites)" ;;
     A6_DONE) full stage6a "end of stage 6a (k=5 twists up to 11 crossings)" ;;
+    A6C_DONE) full stage6c "end of stage 6c (twists with |a-b| > 2, k = 3..6); surgery coincidences repaired (full slope set, drilled redescriptions)" ;;
     A7C_DONE) full stage6b "end of stages 6b and 6c (k=6 twists up to 10 crossings; k=5, 6 twists with |a-b| > 2)" ;;
     A8_DONE) full stage7 "end of stage 7 (k=4 twists on 12-13 crossings)" ;;
   esac
@@ -117,7 +120,7 @@ handle() {   # marker name
 [ -f $FLAGS/last_sync ] || date +%s > $FLAGS/last_sync
 say "orchestrator started"
 while true; do
-  for m in A2_DONE A3_DONE A4_DONE A5_DONE A6_DONE A7C_DONE A8_DONE; do
+  for m in A2_DONE A3_DONE A4_DONE A5_DONE A6_DONE A6C_DONE A7C_DONE A8_DONE; do
     if grep -q "^$m" logs/queue_A.log && [ ! -f $FLAGS/seen_$m ]; then
       touch $FLAGS/seen_$m
       handle $m
