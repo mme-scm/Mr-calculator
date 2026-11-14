@@ -6,8 +6,15 @@
       'g2' with id '<node>|g2'.  The diagram is certified as a diagram of that node by the identification
       certificate of the move.  Nodes that already have a g2 diagram are skipped.
   re <open.txt> <shard prefix> [n=3] [chunk=40]
-      Seeded re-diagrams (Reidemeister moves, passes.diagrams_for) of the listed table knots that have none
-      (12-13 crossings were built with 0 re-diagrams), kinds 're1'..'re<n>', ids '<knot>|re<j>'.
+      Seeded re-diagrams (Reidemeister moves, passes.diagrams_for) of the listed table knots, kinds
+      're1'..'re<n>', ids '<knot>|re<j>'; those that exist already are skipped (12-13 crossings were built with
+      0 re-diagrams; a larger n adds further ones).
+  bv <open.txt> <shard prefix> [maxlen=32] [chunk=120]
+      A second braid-closure diagram of the listed table knots: the braid word that spherogram derives from the
+      KnotInfo PD diagram (Vogel's algorithm), kind 'braidv0', id '<knot>|braidv0', with the fields 'word' and
+      'strands' of a braid diagram (C9).  The closure is identified by the pipeline's identifier and kept only
+      if it is the listed knot with its chirality (the word's sign convention is fixed by that check); words
+      longer than maxlen are skipped.
 Shards are written to data/diagrams/<prefix>-NNNN.jsonl.gz, numbered after the existing ones of the prefix."""
 import collections
 import gzip
@@ -69,16 +76,54 @@ def main():
                 miss += 1
         nsh = write(prefix, out, int(kv.get('chunk', 200)))
     elif mode == 're':
+        from mrcalc import names
         nre = int(kv.get('n', 3))
         for line in open(src):
             name = line.strip()
-            if not name or '%s|re1' % name in have:
+            if not name or names.kind(name) != 'table' or '%s|re%d' % (name, nre) in have:
                 continue
             try:
-                out.extend(d for d in passes.diagrams_for(name, rediagrams=nre) if d['kind'].startswith('re'))
+                out.extend(d for d in passes.diagrams_for(name, rediagrams=nre)
+                           if d['kind'].startswith('re') and d['id'] not in have)
             except Exception:
                 miss += 1
-        nsh = write(prefix, out, int(kv.get('chunk', 40)) * nre)
+        nsh = write(prefix, out, int(kv.get('chunk', 40)) * 3)
+    elif mode == 'bv':
+        import snappy  # noqa: F401
+        import spherogram
+        from mrcalc import names, nodeset
+        maxlen = int(kv.get('maxlen', 32))
+        idr = passes.identifier()
+        skipped = collections.Counter()
+        for line in open(src):
+            name = line.strip()
+            if not name or names.kind(name) != 'table' or '%s|braidv0' % name in have:
+                continue
+            try:
+                base = nodeset.diagram(name)
+                w = [int(g) for g in spherogram.Link([list(c) for c in base]).braid_word()]
+                if len(w) > maxlen:
+                    skipped['longer than maxlen'] += 1
+                    continue
+                rec = None
+                for word in (w, [-g for g in w]):
+                    pd = P.braid_closure(word)
+                    r = idr.identify(pd)
+                    if r['name'] == name:
+                        D = P.Diagram.from_pd(pd)
+                        rec = {'id': '%s|braidv0' % name, 'node': name, 'kind': 'braidv0', 'pd': pd, 'word': word,
+                               'strands': max(abs(g) for g in word) + 1,
+                               'cert': {'type': 'vogel-braid', 'from': '%s|pd' % name, 'identified': r['cert']},
+                               'writhe': D.writhe(), 'homogeneous': D.is_homogeneous(), 'n': D.n}
+                        break
+                if rec is None:
+                    skipped['closure not identified as the knot'] += 1
+                else:
+                    out.append(rec)
+            except Exception:
+                miss += 1
+        nsh = write(prefix, out, int(kv.get('chunk', 120)))
+        print('bv skipped:', dict(skipped), flush=True)
     else:
         raise SystemExit(__doc__)
     print('%s diagrams: %d records in %d new shards (%d nodes without a diagram); crossings: %s' % (
