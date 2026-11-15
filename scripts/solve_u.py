@@ -176,6 +176,31 @@ def main():
             tot.update(c)
         f.write('| all | ' + ' | '.join(str(tot.get(k, 0)) for k in cols) + ' |\n')
     say(open(os.path.join(OUT, 'U_PINS.md')).read())
+    # ---- the same with rule N4, or rule N1q, withheld (counts only)
+    abl = {}
+    for label, opt in (('without band moves (N4)', {'qa': qa, 'bands': False}),
+                       ('without the tabulated quasi-alternating knots (N1q)', {'qa': [], 'bands': True})):
+        if label.endswith('(N1q)') and not qa:
+            continue
+        U2 = usolve.UProblem(P, **opt)
+        cnt = collections.Counter()
+        for tag, integer in (('Z', True), ('R', False)):
+            S2 = usolve.USolver(U2, integer).run()
+            for n in core:
+                i = U2.ix[n]
+                if S2.lo[i] is not None and S2.lo[i] == S2.hi[i]:
+                    cnt[tag] += 1
+        abl[label] = dict(cnt)
+        say('%s: determined u_Z %d, u_R %d of %d core nodes' % (label, cnt['Z'], cnt['R'], len(core)))
+    with open(os.path.join(OUT, 'u_summary.json')) as f:
+        sm = json.load(f)
+    sm['withheld'] = abl
+    with open(os.path.join(OUT, 'u_summary.json'), 'w') as f:
+        json.dump(sm, f, indent=1, sort_keys=True)
+    with open(os.path.join(OUT, 'U_PINS.md'), 'a') as f:
+        f.write('\nDetermined (u_Z, u_R) of %d nodes when a rule is withheld:\n' % len(core))
+        for label, c in abl.items():
+            f.write('- %s: %d, %d\n' % (label, c.get('Z', 0), c.get('R', 0)))
     # ---- events behind the core bounds, and the constraints they cite
     cons = set()
     for tag, S in solvers.items():

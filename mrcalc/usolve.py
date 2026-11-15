@@ -76,7 +76,7 @@ class UProblem:
          ('b', file, line)     band-move record (rule N4)
        and is turned into its record by sources()."""
 
-    def __init__(self, P, qa=None, log=None):
+    def __init__(self, P, qa=None, log=None, bands=True):
         self.P = P
         self.log = log or (lambda *a: None)
         self.names = []
@@ -93,7 +93,7 @@ class UProblem:
         self._main_nodes()
         self._anchors()
         self._main_edges()
-        self.band_files = [f for f in passes.pass_files(bands=True) if f[0] not in self._skip]
+        self.band_files = [f for f in passes.pass_files(bands=True) if f[0] not in self._skip] if bands else []
         self._bands()
         self._structure()
 
