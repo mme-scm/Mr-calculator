@@ -367,7 +367,9 @@ class Problem:
         """Deduplicate pass records into edges; collect homogeneous-diagram and braid evidence.
 
         Two readings of the pass shards.  The first one only decides which results that are not core
-        nodes become peripheral nodes (reached from two distinct nodes, or with a homogeneous diagram);
+        nodes become peripheral nodes (reached from two distinct nodes, or with a homogeneous diagram, or
+        the result of a mutation of a node: added 2026-11-15 with the mutation pass on the neighbours of
+        the knots with u_Z open);
         it keeps one 64-bit key per candidate.  The second one builds the edges between nodes."""
         self.homog = {}        # node -> reference (diagram id or move), as JSON text
         self.braids = defaultdict(dict)   # node -> {(n, w): ref}
@@ -384,7 +386,7 @@ class Problem:
         nodes = self.nodes
         intern = {}
         # ---- first reading: peripheral candidates
-        first, multi, hom = {}, set(), set()
+        first, multi, hom, mut = {}, set(), set(), set()
         nrec = 0
         for loc, r in self._records():
             nrec += 1
@@ -402,6 +404,8 @@ class Problem:
                 hom.add(h)
             if src == dst:
                 continue
+            if r['t'] == 'mu' and src != self._mirror_free(dst):
+                mut.add(h)                    # a mutant of a node is a node (rule F6 ties it to that node)
             f = first.get(h)
             if f is None:
                 first[h] = intern.setdefault(src, src)
@@ -409,8 +413,9 @@ class Problem:
                 multi.add(h)
         self.stats['pass records'] = nrec
         self.stats['peripheral candidates'] = len(first)
-        included = {h for h in first if h in multi or h in hom}
-        del first, multi, hom, intern
+        included = {h for h in first if h in multi or h in hom or h in mut}
+        self.stats['peripheral candidates that are mutants of a node'] = len(mut & set(first))
+        del first, multi, hom, mut, intern
         # ---- second reading: edges between nodes, evidence for nodes
         R = self._raw_edges = EdgeTable()     # every deduplicated edge, in reading order (ids come later)
         cc, tw, mu = {}, {}, {}               # key as a number -> row of R

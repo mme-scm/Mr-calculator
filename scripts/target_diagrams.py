@@ -5,6 +5,10 @@
       result diagram of the move that first produced the node (mrcalc/node_pd.py), as a diagram record of kind
       'g2' with id '<node>|g2'.  The diagram is certified as a diagram of that node by the identification
       certificate of the move.  Nodes that already have a g2 diagram are skipped.
+  mut <mutation pass> <shard prefix> [chunk=200]
+      The mutants found by a mutation pass on g2 diagrams (census and 'H:' results that are another knot than
+      the source): the result diagram of the mutation, kind 'g2', id '<mutant>|g2', one per mirror pair; also
+      writes data/targets/<prefix>_fill_index.jsonl for scripts/run_fillings.py nodes=.
   re <open.txt> <shard prefix> [n=3] [chunk=40]
       Seeded re-diagrams (Reidemeister moves, passes.diagrams_for) of the listed table knots, kinds
       're1'..'re<n>', ids '<knot>|re<j>'; those that exist already are skipped (12-13 crossings were built with
@@ -75,6 +79,38 @@ def main():
             except Exception:
                 miss += 1
         nsh = write(prefix, out, int(kv.get('chunk', 200)))
+    elif mode == 'mut':
+        # src = a mutation pass: the result diagram of the first record that produced each mutant
+        from mrcalc import names
+        seen = set()
+        diags, cur = {}, None
+        for r in passes.iter_pass_records(src):
+            dst = r.get('dst')
+            if dst is None or names.kind(dst) not in ('census', 'hyp'):
+                continue
+            base = dst[:-1] if dst.endswith('*') else dst
+            if base == (r['src'][:-1] if r['src'].endswith('*') else r['src']) or base in seen:
+                continue
+            if '%s|g2' % base in have or '%s*|g2' % base in have:
+                seen.add(base)
+                continue
+            if r['shard'] != cur:
+                diags, cur = {d['id']: d for d in passes.load_diagrams(r['shard'])}, r['shard']
+            source = {k: r[k] for k in ('pass', 'shard', 'd', 'e', 'axis')}
+            try:
+                pd = P.normalise(passes.result_pd(diags[r['d']]['pd'], r))
+                D = P.Diagram.from_pd(pd)
+                out.append({'id': '%s|g2' % dst, 'node': dst, 'kind': 'g2', 'pd': pd,
+                            'cert': {'type': 'move-result', 'source': source},
+                            'writhe': D.writhe(), 'homogeneous': D.is_homogeneous(), 'n': D.n})
+                seen.add(base)
+            except Exception:
+                miss += 1
+        nsh = write(prefix, out, int(kv.get('chunk', 200)))
+        with open(os.path.join(passes.DIAG_DIR, '..', 'targets', prefix + '_fill_index.jsonl'), 'w') as f:
+            for d in out:
+                f.write(json.dumps({'node': d['node'], 'crossings': d['n'], 'source': d['cert']['source']},
+                                   separators=(',', ':')) + '\n')
     elif mode == 're':
         from mrcalc import names
         nre = int(kv.get('n', 3))
