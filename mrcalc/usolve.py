@@ -14,6 +14,8 @@ The rules were supplied by the user on 2026-11-15 and are used exactly as stated
   N4   D1 = the smoothing of a crossing c of a diagram D0 of K0 that is a diagram of a knot K1,
        e = sign(c) - (writhe(D1) - writhe(D0)):   (e-2)/4 <= u(K1) - u(K0) <= (e+2)/4
   N5   u_Z is an integer (bounds of u_Z are rounded inwards); u_R is real.
+  N6   u_M only (user, 2026-11-15: u_M satisfies the rules of u_Z and is mutation invariant):
+       K, K' mutants  =>  u_M(K) = u_M(K')   (the mutation edges of the main problem, rule F6's instances)
 
 A domain is an interval [lo, hi] with exact rational ends (None: unbounded).  Only bounds are propagated, so
 the result is the range the instantiated rules leave, not a set of values.  Every narrowing is an event
@@ -42,6 +44,9 @@ def n3_bounds(a, b, h):
 def n4_bounds(e):
     """Bounds of u(K1) - u(K0) for a band move with the number e."""
     return Fraction(e - 2, 4), Fraction(e + 2, 4)
+
+
+RULE_OF = {'e': 'N3', 'b': 'N4', 'm': 'N6'}      # rule of a constraint source
 
 
 def _num(x):
@@ -76,7 +81,7 @@ class UProblem:
          ('b', file, line)     band-move record (rule N4)
        and is turned into its record by sources()."""
 
-    def __init__(self, P, qa=None, log=None, bands=True):
+    def __init__(self, P, qa=None, log=None, bands=True, mutation=False):
         self.P = P
         self.log = log or (lambda *a: None)
         self.names = []
@@ -90,6 +95,7 @@ class UProblem:
         self.stats = defaultdict(int)
         self._skip = set(filter(None, os.environ.get('MRCALC_SKIP_PASSES', '').split(',')))
         self.qa = set(qa or ())
+        self.mutation = mutation
         self._main_nodes()
         self._anchors()
         self._main_edges()
@@ -197,6 +203,10 @@ class UProblem:
                 lo, hi = n3_bounds(1, 1, 1)
             elif t == 1:                           # key (source, result, a, b, h)
                 lo, hi = n3_bounds(E.a[i], E.b[i], E.h[i])
+            elif self.mutation:                    # key: the sorted pair of mutants (rule N6, u_M only)
+                self._constraint(ix[nm[E.k0[i]]], ix[nm[E.k1[i]]], 0, 0, ('m', i))
+                self.stats['N6 instances'] += 1
+                continue
             else:
                 continue
             self._constraint(ix[nm[E.k0[i]]], ix[nm[E.k1[i]]], lo, hi, ('e', i))
@@ -254,12 +264,13 @@ class UProblem:
         """{source: record} for constraint sources (the representative pass records are read again)."""
         out = {}
         P = self.P
-        es = sorted({s[1] for s in srcs if s[0] == 'e'})
+        es = sorted({s[1] for s in srcs if s[0] in ('e', 'm')})
+        tag = {s[1]: s[0] for s in srcs if s[0] in ('e', 'm')}
         if es:
             for e, r in P.edge_records([P.edges[i] for i in es]):
                 keep = {k: r[k] for k in ('pass', 'shard', 't', 'd', 'src', 'dst', 'i', 's', 'e', 'dirs', 'h', 'a', 'b',
-                                           'w0', 'w1', 'cert', 'n') if k in r}
-                out[('e', int(e.id[1:]))] = dict(keep, edge=e.id, key=list(e.key))
+                                           'w0', 'w1', 'cert', 'n', 'axis') if k in r}
+                out[(tag[int(e.id[1:])], int(e.id[1:]))] = dict(keep, edge=e.id, key=list(e.key))
         bs = sorted(s for s in srcs if s[0] == 'b')
         by_file = defaultdict(set)
         for _, fi, li in bs:
@@ -363,8 +374,8 @@ class USolver:
                 self._set(n, 0, 0, 'N2m', ('amphichiral', n), ())
                 self._set(n, 1, 0, 'N2m', ('amphichiral', n), ())
         for n, s in U.selfc.items():
-            self._set(n, 0, s[0], 'N2m+' + ('N4' if s[2][0] == 'b' else 'N3'), ('self', n, 0), ())
-            self._set(n, 1, s[1], 'N2m+' + ('N4' if s[3][0] == 'b' else 'N3'), ('self', n, 1), ())
+            self._set(n, 0, s[0], 'N2m+' + RULE_OF[s[2][0]], ('self', n, 0), ())
+            self._set(n, 1, s[1], 'N2m+' + RULE_OF[s[3][0]], ('self', n, 1), ())
         lo, hi, lo_ev, hi_ev = self.lo, self.hi, self.lo_ev, self.hi_ev
         queue, queued, adj, mirror = self.queue, self.queued, self.adj, U.mirror
         steps = 0
@@ -381,14 +392,14 @@ class USolver:
             for kind, x, d in adj[n]:
                 if kind == 0:               # x(x) - x(n) in [d0, d1]
                     if lo[n] is not None:
-                        self._set(x, 0, lo[n] + d[0], 'N4' if d[2][0] == 'b' else 'N3', ('diff', n, x, 0), (lo_ev[n],))
+                        self._set(x, 0, lo[n] + d[0], RULE_OF[d[2][0]], ('diff', n, x, 0), (lo_ev[n],))
                     if hi[n] is not None:
-                        self._set(x, 1, hi[n] + d[1], 'N4' if d[3][0] == 'b' else 'N3', ('diff', n, x, 1), (hi_ev[n],))
+                        self._set(x, 1, hi[n] + d[1], RULE_OF[d[3][0]], ('diff', n, x, 1), (hi_ev[n],))
                 elif kind == 1:             # x(n) - x(x) in [d0, d1]:  x(x) in [x(n) - d1, x(n) - d0]
                     if lo[n] is not None:
-                        self._set(x, 0, lo[n] - d[1], 'N4' if d[3][0] == 'b' else 'N3', ('diff', x, n, 1), (lo_ev[n],))
+                        self._set(x, 0, lo[n] - d[1], RULE_OF[d[3][0]], ('diff', x, n, 1), (lo_ev[n],))
                     if hi[n] is not None:
-                        self._set(x, 1, hi[n] - d[0], 'N4' if d[2][0] == 'b' else 'N3', ('diff', x, n, 0), (hi_ev[n],))
+                        self._set(x, 1, hi[n] - d[0], RULE_OF[d[2][0]], ('diff', x, n, 0), (hi_ev[n],))
                 else:
                     self._sum(x)
         self.steps = steps

@@ -58,6 +58,8 @@ def con_id(U, con):
 def instance(U, src, rec):
     """The rule instance behind a constraint source: rule, from, to, parameters (u(to) - u(from))."""
     P = U.P
+    if src[0] == 'm':
+        return {'rule': 'N6', 'from': rec['key'][0], 'to': rec['key'][1], 'par': {}, 'record': rec}
     if src[0] == 'e':
         key = rec['key']
         if len(key) == 2:
@@ -120,14 +122,21 @@ def main():
                 for v in U.violations[:20]], 'count': len(U.violations)}, f, indent=1)
         sys.exit(2)
     solvers = {}
-    for tag, integer in (('Z', True), ('R', False)):
-        S = usolve.USolver(U, integer)
+    UM = usolve.UProblem(P, qa=qa, mutation=True)          # u_M: the rules of u_Z and rule N6
+    say('u_M problem: %d mutation instances (N6), %d node pairs with a difference constraint'
+        % (UM.stats['N6 instances'], len(UM.diff)))
+    if UM.violations:
+        say('CONTRADICTION (u_M): a constraint between a node and itself does not hold: %r' % (UM.violations[:3],))
+        sys.exit(2)
+    for tag, integer in (('Z', True), ('R', False), ('M', True)):
+        S = usolve.USolver(UM if tag == 'M' else U, integer)
         try:
             S.run()
         except usolve.Contradiction as e:
             say('CONTRADICTION (u_%s): %s' % (tag, e))
             ids = S.closure(e.events)
             cons = {S.events[i][4] for i in ids}
+            U = S.U
             recs = U.sources({S.source_of(c) for c in cons} - {None})
             with open(os.path.join(OUT, 'u_contradiction.json'), 'w') as f:
                 json.dump({'kind': 'empty interval', 'invariant': 'u_' + tag, 'node': e.node,
@@ -144,16 +153,18 @@ def main():
     anchor = {}
     for n, v, rule, par in U.unary:
         anchor.setdefault(n, rule)
-    Z, Rr = solvers['Z'], solvers['R']
+    Z, Rr, Mm = solvers['Z'], solvers['R'], solvers['M']
     tiers = collections.defaultdict(lambda: collections.Counter())
     with open(os.path.join(OUT, 'u_knots.csv'), 'w', newline='') as f:
         w = csv.writer(f)
-        w.writerow(['node', 'kind', 'crossings', 'anchor', 'uZ_lo', 'uZ_hi', 'uR_lo', 'uR_hi'])
+        w.writerow(['node', 'kind', 'crossings', 'anchor', 'uZ_lo', 'uZ_hi', 'uR_lo', 'uR_hi', 'uM_lo', 'uM_hi'])
         for n in core:
             i = U.ix[n]
             info = P.nodes[n]
+            j = UM.ix[n]
             w.writerow([n, info['kind'], info['tier'], anchor.get(i, ''), num_json(Z.lo[i]), num_json(Z.hi[i]),
-                        num_json(Rr.lo[i]), num_json(Rr.hi[i])])
+                        num_json(Rr.lo[i]), num_json(Rr.hi[i]), num_json(Mm.lo[j]), num_json(Mm.hi[j])])
+            t['M ' + width_class(Mm.lo[j], Mm.hi[j])] += 1
             t = tiers[info['tier']]
             t['nodes'] += 1
             t['anchored'] += 1 if i in anchor or U.mirror[i] in anchor or U.mirror[i] == i else 0
@@ -164,9 +175,9 @@ def main():
         json.dump({'tiers': summary, 'stats': dict(U.stats), 'band_passes': sorted({b[0] for b in U.band_files}),
                    'quasi_alternating_used': len(qa)}, f, indent=1, sort_keys=True)
     cols = ['nodes', 'anchored', 'Z 0', 'Z <=1', 'Z <=2', 'Z >2', 'Z unbounded', 'R 0', 'R <=1', 'R <=2', 'R >2',
-            'R unbounded']
+            'R unbounded', 'M 0', 'M <=1', 'M <=2', 'M >2', 'M unbounded']
     with open(os.path.join(OUT, 'U_PINS.md'), 'w') as f:
-        f.write('Ranges of u_Z and u_R by crossing number (a knot and its mirror count separately; composites by '
+        f.write('Ranges of u_Z, u_R and u_M (u_Z with mutation invariance) by crossing number (a knot and its mirror count separately; composites by '
                 'crossing sum).\n"anchored": value given by rule N1 or N2 alone.  "Z 0" / "R 0": determined; the '
                 'other columns: width of the range.\n\n')
         f.write('| cr | ' + ' | '.join(cols) + ' |\n|' + '---|' * (len(cols) + 1) + '\n')
@@ -241,26 +252,29 @@ def main():
             f.write('- %s: %d, %d\n' % (label, c.get('Z', 0), c.get('R', 0)))
     # ---- events behind the core bounds, and the constraints they cite
     cons = set()
+    cons_m = set()
     for tag, S in solvers.items():
+        U_ = S.U
         roots = []
         for n in core:
-            i = U.ix[n]
+            i = U_.ix[n]
             roots += [S.lo_ev[i], S.hi_ev[i]]
         ids = S.closure(roots)
         with gzip.open(os.path.join(OUT, 'u_events_%s.jsonl.gz' % tag), 'wt') as f:
             for k in ids:
                 n, side, v, rule, con, ins = S.events[k]
-                cons.add(con)
-                f.write(json.dumps({'id': k, 'node': U.names[n], 'side': ('lo', 'hi')[side], 'value': num_json(v),
-                                    'rule': rule, 'con': con_id(U, con), 'ins': list(ins)},
+                (cons_m if tag == 'M' else cons).add(con)
+                f.write(json.dumps({'id': k, 'node': U_.names[n], 'side': ('lo', 'hi')[side], 'value': num_json(v),
+                                    'rule': rule, 'con': con_id(U_, con), 'ins': list(ins)},
                                    separators=(',', ':')) + '\n')
         say('u_%s: %d events behind the bounds of the %d core nodes' % (tag, len(ids), len(core)))
-    S = solvers['Z']
-    recs = U.sources({S.source_of(c) for c in cons} - {None})
-    with gzip.open(os.path.join(OUT, 'u_constraints.jsonl.gz'), 'wt') as f:
-        for c in sorted(cons, key=lambda c: con_id(U, c)):
-            f.write(json.dumps(con_json(U, S, c, recs), separators=(',', ':')) + '\n')
-    say('%d constraints written (%.0fs)' % (len(cons), time.time() - T0))
+    for S, cs, fn in ((solvers['Z'], cons, 'u_constraints.jsonl.gz'), (solvers['M'], cons_m, 'u_constraints_M.jsonl.gz')):
+        U_ = S.U
+        recs = U_.sources({S.source_of(c) for c in cs} - {None})
+        with gzip.open(os.path.join(OUT, fn), 'wt') as f:
+            for c in sorted(cs, key=lambda c: con_id(U_, c)):
+                f.write(json.dumps(con_json(U_, S, c, recs), separators=(',', ':')) + '\n')
+        say('%d constraints written to %s (%.0fs)' % (len(cs), fn, time.time() - T0))
 
 
 main()

@@ -126,6 +126,10 @@ class Check:
             if rec.get('s') not in (1, -1) or rec['e'] % 2:
                 self.bad('%s: band record with a bad sign or parity' % c['id'])
             lo, hi = n4(par['e'])
+        elif ins['rule'] == 'N6':
+            if rec.get('t') != 'mu':
+                self.bad('%s: N6 instance without a mutation record' % c['id'])
+            lo = hi = Fraction(0)
         else:
             self.bad('%s: unknown rule %r' % (c['id'], ins['rule']))
             return None
@@ -215,7 +219,7 @@ class Check:
 
     # ---- 2. events
     def check_events(self, tag, cons):
-        integer = tag == 'Z'
+        integer = tag in ('Z', 'M')
         ev = {}
         best = {}
         path = os.path.join(self.out, 'u_events_%s.jsonl.gz' % tag)
@@ -304,15 +308,28 @@ class Check:
                 cons[c['id']] = c
                 self.check_constraint(c)
         best = {tag: self.check_events(tag, cons) for tag in ('Z', 'R')}
+        tags = ['Z', 'R']
+        if os.path.exists(os.path.join(self.out, 'u_constraints_M.jsonl.gz')):      # u_M: rule N6 as well
+            cons_m = {}
+            with gzip.open(os.path.join(self.out, 'u_constraints_M.jsonl.gz'), 'rt') as f:
+                for line in f:
+                    c = json.loads(line)
+                    cons_m[c['id']] = c
+                    self.check_constraint(c)
+            best['M'] = self.check_events('M', cons_m)
+            tags.append('M')
+        for c in cons.values():
+            if c['type'] in ('diff', 'self') and c['instance']['rule'] == 'N6':
+                self.bad('%s: rule N6 used for u_Z or u_R' % c['id'])
         with open(os.path.join(self.out, 'u_knots.csv')) as f:
             for row in csv.DictReader(f):
-                for tag in ('Z', 'R'):
+                for tag in tags:
                     b = best[tag].get(row['node'], [None, None])
                     if [num(row['u%s_lo' % tag]), num(row['u%s_hi' % tag])] != b:
                         self.bad('%s: u_%s range %s..%s is not that of the events %s' % (
                             row['node'], tag, row['u%s_lo' % tag], row['u%s_hi' % tag], b))
-                    if tag == 'Z' and any(x is not None and x.denominator != 1 for x in b):
-                        self.bad('%s: u_Z bound is not an integer' % row['node'])
+                    if tag in ('Z', 'M') and any(x is not None and x.denominator != 1 for x in b):
+                        self.bad('%s: u_%s bound is not an integer' % (row['node'], tag))
                 self.tick('core nodes')
         return self
 
