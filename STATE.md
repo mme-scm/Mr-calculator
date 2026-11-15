@@ -1,6 +1,6 @@
 # STATE
 
-Updated 2026-11-15 19:10 UTC.
+Updated 2026-11-15 22:57 UTC.
 Pin counts below are from a re-solve on all pass data synced so far (not exported and not checked; the last checked checkpoint is in checkpoints/, the last full export in export/ and REPORT.md).
 
 
@@ -19,12 +19,12 @@ Pin counts below are from a re-solve on all pass data synced so far (not exporte
 | 10 | 363 | 357 | 42 | 285 | 38 | 355 | 357 |
 | 11 | 1226 | 1202 | 38 | 872 | 34 | 1188 | 1204 |
 | 12 | 4607 | 4461 | 55 | 3307 | 49 | 4409 | 4411 |
-| 13 | 20950 | 20094 | 54 | 14586 | 60 | 19344 | 19938 |
+| 13 | 20950 | 20096 | 54 | 14586 | 60 | 19344 | 19938 |
 | 14 | 10 | 10 | 0 | 2 | 0 | 10 | 10 |
 | 15 | 20 | 20 | 0 | 8 | 0 | 20 | 20 |
 | constructions | 2328 | 30 | 30 | 124 | 124 | 70 | 150 |
-| peripheral | 532500 | 274906 | 104 | 14082 | 72 | 307506 | 458846 |
-| total | 562198 | 301272 | 383 | 33420 | 438 | 333096 | 485130 |
+| peripheral | 546057 | 276577 | 106 | 14137 | 72 | 308427 | 459621 |
+| total | 575755 | 302945 | 385 | 33475 | 438 | 334017 | 485905 |
 
 ## Pass progress (shards done out of 360; by tier)
 
@@ -35,8 +35,9 @@ Pin counts below are from a re-solve on all pass data synced so far (not exporte
 - `cc`: 358 shards {3: 1, 4: 1, 5: 1, 6: 2, 7: 2, 8: 2, 9: 3, 10: 6, 11: 16, 12: 60, 13: 263, 99: 1}
 - `ccR`: 80 shards {99: 80}
 - `ccb`: 305 shards {12: 55, 13: 250}
-- `g2cc`: 131 shards {99: 131}
-- `g2tw`: 1 shards {99: 1}
+- `g2cc`: 137 shards {99: 137}
+- `g2mu`: 118 shards {99: 118}
+- `g2tw`: 24 shards {99: 24}
 - `mu`: 357 shards {3: 1, 4: 1, 5: 1, 6: 2, 7: 2, 8: 2, 9: 3, 10: 6, 11: 16, 12: 60, 13: 263}
 - `tw2`: 334 shards {3: 1, 4: 1, 5: 1, 6: 2, 7: 2, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 250}
 - `tw3`: 332 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 250}
@@ -47,7 +48,7 @@ Pin counts below are from a re-solve on all pass data synced so far (not exporte
 - `tw5x`: 27 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14}
 - `tw6`: 13 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5}
 - `tw6x`: 13 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5}
-- `twB`: 367 shards {9: 1, 10: 3, 11: 10, 12: 45, 13: 231, 99: 77}
+- `twB`: 369 shards {9: 1, 10: 3, 11: 10, 12: 45, 13: 231, 99: 79}
 - `twL`: 25 shards {99: 25}
 - `fillings`: 334 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 250, 99: 2}
 
@@ -94,10 +95,11 @@ Taper = a notable decrease in new pins on knots with at most 13 crossings (prime
 | 2026-11-15 13:34 | tw4 +7, twB +5 | 26276 | 249 | 19204 | 242 | 25490 | 26104 | +10 / +0 / +0 / +0 / +0 / +0 |
 | 2026-11-15 18:18 | bm1 +332, bm2 +332, bm3 +77, tw4 +13, twL +11 | 26286 | 249 | 19204 | 242 | 25490 | 26104 | +10 / +0 / +0 / +0 / +0 / +0 |
 | 2026-11-15 19:10 | bm3 +3, bm4 +1, ccR +3, twL +14 | 26306 | 249 | 19204 | 242 | 25490 | 26104 | +20 / +0 / +0 / +0 / +0 / +0 |
+| 2026-11-15 22:57 | g2cc +6, g2mu +118, g2tw +23, twB +2 | 26308 | 249 | 19204 | 242 | 25490 | 26104 | +2 / +0 / +0 / +0 / +0 / +0 |
 
 ## Notes
 
-- status: 2026-11-13: stages 1-6 are complete. Stage 7 (k = 4 on 12-13 crossings, KnotInfo PD diagrams) is running. The targeted search (see scope: targeted search) has finished its pilot and round 1; round 2 (targets for M, tau and upsilon; crossing changes and k = 2, 3 twists on three re-diagrams of every open knot with 12-13 crossings; crossing changes at the newly adjacent nodes) is running. Surgery coincidences cover the wider slope set on the table knots and the nodes outside the table. Light check-ins (pass data, re-solve, this file) every 3 hours and when a queue asks for one
+- status: 2026-11-15 21:40 UTC: stage 7 checkpoint done (checkpoints/stage7; M 26,286 of 27,340, checker OK, 109 tests). The user redirected the work to u_Z / u_R (scope: u_Z and u_R, band moves) and then to M at the knots with u_Z open (scope: M at the knots with u_Z open); round 4 of the targeted search is paused. Calculator defect found and repaired (incidents, 2026-11-15); the chirality re-verification of the older passes is at 369,258 of about 454,000 records with no wrong record; the node inputs are verified. scripts/chain_M46.sh then applies the corrections, integrates the new coincidences, asks for a light check-in and re-solves u (scratch u2, then u3 after the twists from the neighbours).
 - taper: definition given by the user (2026-11-11): a notable decrease in new pins on knots with at most 13 crossings; tracked per re-solve in the table above. Not reached so far
 - memory: after the storage rework of 2026-11-11 (constraints, events and edges as columns; checker reads events front to back and keeps constraints on disk): solve and export 2.2 GB, independent checker 2.4 GB for 363,427 nodes, 5,548,197 constraints, 3,920,313 events (before: 6.4 GB and 9.6 GB; same output files, compared byte for byte). Container limit 16 GB; the pass workers use about 2.5 GB
 - checkpoints: from 2026-11-13 (user's decision): a checkpoint is a solve with chains verified by the independent checker, the tests, and the commit of small tables in checkpoints/<label>/ (knots.xlsx with the nodes that are not peripheral, pins_by_tier.json, summary.json, parameters.json, solve.log, check.log, tests.txt). No ablation is run at a checkpoint (run on request with scripts/solve.py; the final export has one) and the packed export is not committed (it added 1.1 GB to the repository at each of the five checkpoints up to stage 6c); export/ and REPORT.md stay those of the stage 6c checkpoint until the final export. The stage 6b checkpoint was finished this way: its ablation was stopped after 9 of 22 runs
