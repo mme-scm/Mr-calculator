@@ -7,16 +7,15 @@
 #   g2cc  crossing changes,
 #   g2tw  k = 2, 3 twists with every |a-b|, no limit on the diagram's crossings.
 # The surgery fillings of the same nodes are computed separately (scratch; data/targets/m46_fill_index.jsonl).
-# Starts after the chirality re-verification (scripts/verify_chirality.py) has finished.  Every step resumes.
+# Every step resumes.
 export MRCALC_STAGE=/home/user/mrcalc_stage
 PY="/home/user/venv_sage/bin/python -W ignore"
 cd /home/user/Mr-calculator
-until grep -q "^CHECK_DONE" /home/user/mrcalc_scratch/repair/chir_main.log 2>/dev/null; do sleep 60; done
 echo "START M46 $(date -u +%H:%M)"
 A=data/targets/m46_adjacent.txt
 ls data/diagrams | grep -q "^g2m-" || $PY scripts/target_diagrams.py g2 data/targets/m46_adjacent.jsonl g2m chunk=250
-$PY scripts/run_moves.py g2mu mu g2 kinds=g2 only=$A procs=3 maxtasks=4
+$PY scripts/run_moves.py g2mu mu g2 kinds=g2 only=$A procs=2 maxtasks=4
 echo "M46 mutations done $(date -u +%H:%M)"
-$PY scripts/run_moves.py g2cc cc g2m kinds=g2 procs=3 maxtasks=4
-$PY scripts/run_moves.py g2tw tw g2 kinds=g2 kmin=2 kmax=3 imb_max=none kbig=3 only=$A procs=3 maxtasks=1
+$PY scripts/run_moves.py g2cc cc g2m kinds=g2 procs=2 maxtasks=4
+$PY scripts/run_moves.py g2tw tw g2 kinds=g2 kmin=2 kmax=3 imb_max=none kbig=3 only=$A procs=2 maxtasks=1
 echo M46_MOVES_DONE
