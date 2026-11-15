@@ -234,7 +234,8 @@ def load_diagrams(shard):
 
 def shard_task(args):
     """Run one pass on one shard: args = (pass name, shard id, options).
-    options: kinds (diagram kinds to move), kmin/kmax (twists), params."""
+    options: kinds (diagram kinds to move), kmin/kmax (twists), params; only_nodes (set of node names) and
+    n_min (least crossing number of a diagram) restrict the diagrams."""
     pname, shard, opt = args
     params = opt['params']
     recs, errors, new_census = [], [], []
@@ -267,6 +268,8 @@ def shard_task(args):
         if not any(d['kind'] == k or d['kind'].startswith(k) for k in opt['kinds']):
             continue
         if opt.get('only_nodes') is not None and d['node'] not in opt['only_nodes']:
+            continue
+        if opt.get('n_min') is not None and d['n'] < opt['n_min']:
             continue
         if d['id'] in have:
             e = have[d['id']]
@@ -311,6 +314,8 @@ def _opt_key(pname, opt):
     x = [pname, opt['move'], sorted(opt['kinds']), opt.get('kmin'), opt.get('kmax'), opt.get('imb_min'),
          opt.get('imb_max', 'default'), sorted(only) if only is not None else None,
          sorted((k, repr(v)) for k, v in opt['params'].items())]
+    if opt.get('n_min') is not None:        # appended only when set: older progress files keep their key
+        x.append(['n_min', opt['n_min']])
     return hashlib.sha256(json.dumps(x).encode()).hexdigest()[:16]
 
 
