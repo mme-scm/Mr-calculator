@@ -176,6 +176,44 @@ def main():
             tot.update(c)
         f.write('| all | ' + ' | '.join(str(tot.get(k, 0)) for k in cols) + ' |\n')
     say(open(os.path.join(OUT, 'U_PINS.md')).read())
+    # ---- where further moves could decide an open core node (search planning; no rule is applied):
+    # a node N joined to an open core node K by an instance of N3 or N4 such that some integer still possible
+    # for u_Z(N) would leave one integer for u_Z(K)
+    from math import ceil, floor
+    open_set = {U.ix[n] for n in core if Z.lo[U.ix[n]] != Z.hi[U.ix[n]]}
+    adj = {}
+    for (a, b), d in U.diff.items():
+        for K, N, l_, h_ in ((a, b, -d[1], -d[0]), (b, a, d[0], d[1])):       # l_ <= x(K) - x(N) <= h_
+            if K not in open_set or (Z.lo[N] is not None and Z.lo[N] == Z.hi[N]):
+                continue
+            klo, khi = Z.lo[K], Z.hi[K]
+            if klo is None or khi is None:
+                continue
+            vlo, vhi = ceil(klo - h_), floor(khi - l_)
+            if Z.lo[N] is not None:
+                vlo = max(vlo, Z.lo[N])
+            if Z.hi[N] is not None:
+                vhi = min(vhi, Z.hi[N])
+            dec = []
+            for v in range(vlo, vhi + 1):
+                x, y = max(klo, ceil(v + l_)), min(khi, floor(v + h_))
+                if x == y:
+                    dec.append([v, x])
+            if dec:
+                adj.setdefault(N, {})[U.names[K]] = dec
+    with open(os.path.join(OUT, 'u_adjacent.jsonl'), 'w') as f:
+        for N in sorted(adj, key=lambda n: (-len(adj[n]), U.names[n])):
+            info = P.nodes.get(U.names[N])
+            f.write(json.dumps({'node': U.names[N], 'kind': info['kind'] if info else 'band-only',
+                                'tier': info['tier'] if info else None, 'uZ': [num_json(Z.lo[N]), num_json(Z.hi[N])],
+                                'decides': adj[N]}, separators=(',', ':')) + '\n')
+    with open(os.path.join(OUT, 'u_open.txt'), 'w') as f:
+        for n in core:
+            if U.ix[n] in open_set and not n.endswith('*'):
+                f.write(n + '\n')
+    say('%d open core nodes; %d nodes joined to one of them whose value could decide it (%s)'
+        % (len(open_set), len(adj), json.dumps(collections.Counter(
+            (P.nodes[U.names[N]]['kind'] if U.names[N] in P.nodes else 'band-only') for N in adj))))
     # ---- the same with rule N4, or rule N1q, withheld (counts only)
     abl = {}
     for label, opt in (('without band moves (N4)', {'qa': qa, 'bands': False}),
