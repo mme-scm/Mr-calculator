@@ -1,7 +1,7 @@
 # STATE
 
-Updated 2026-11-15 18:18 UTC.
-Pin counts below are those of the checkpoint `stage7`: solved with chains and verified by the independent checker (checkpoints/stage7/: knots.xlsx, pins_by_tier.json, summary.json, check.log, tests.txt). Checkpoints carry no ablation and no packed export; export/ and REPORT.md are the last full export.
+Updated 2026-11-15 19:10 UTC.
+Pin counts below are from a re-solve on all pass data synced so far (not exported and not checked; the last checked checkpoint is in checkpoints/, the last full export in export/ and REPORT.md).
 
 
 ## Pinned values per invariant
@@ -18,21 +18,22 @@ Pin counts below are those of the checkpoint `stage7`: solved with chains and ve
 | 9 | 116 | 114 | 18 | 86 | 18 | 116 | 116 |
 | 10 | 363 | 357 | 42 | 285 | 38 | 355 | 357 |
 | 11 | 1226 | 1202 | 38 | 872 | 34 | 1188 | 1204 |
-| 12 | 4607 | 4459 | 55 | 3307 | 49 | 4409 | 4411 |
-| 13 | 20950 | 20076 | 54 | 14586 | 60 | 19344 | 19938 |
+| 12 | 4607 | 4461 | 55 | 3307 | 49 | 4409 | 4411 |
+| 13 | 20950 | 20094 | 54 | 14586 | 60 | 19344 | 19938 |
 | 14 | 10 | 10 | 0 | 2 | 0 | 10 | 10 |
 | 15 | 20 | 20 | 0 | 8 | 0 | 20 | 20 |
-| constructions | 2328 | 30 | 30 | 124 | 124 | 68 | 150 |
-| peripheral | 531998 | 274026 | 104 | 14080 | 72 | 307500 | 458826 |
-| total | 561696 | 300372 | 383 | 33418 | 438 | 333088 | 485110 |
+| constructions | 2328 | 30 | 30 | 124 | 124 | 70 | 150 |
+| peripheral | 532500 | 274906 | 104 | 14082 | 72 | 307506 | 458846 |
+| total | 562198 | 301272 | 383 | 33420 | 438 | 333096 | 485130 |
 
 ## Pass progress (shards done out of 360; by tier)
 
 - `bm1`: 332 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 250}
 - `bm2`: 332 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 250}
-- `bm3`: 77 shards {99: 77}
+- `bm3`: 80 shards {99: 80}
+- `bm4`: 1 shards {99: 1}
 - `cc`: 358 shards {3: 1, 4: 1, 5: 1, 6: 2, 7: 2, 8: 2, 9: 3, 10: 6, 11: 16, 12: 60, 13: 263, 99: 1}
-- `ccR`: 77 shards {99: 77}
+- `ccR`: 80 shards {99: 80}
 - `ccb`: 305 shards {12: 55, 13: 250}
 - `g2cc`: 131 shards {99: 131}
 - `g2tw`: 1 shards {99: 1}
@@ -47,7 +48,7 @@ Pin counts below are those of the checkpoint `stage7`: solved with chains and ve
 - `tw6`: 13 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5}
 - `tw6x`: 13 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5}
 - `twB`: 367 shards {9: 1, 10: 3, 11: 10, 12: 45, 13: 231, 99: 77}
-- `twL`: 11 shards {99: 11}
+- `twL`: 25 shards {99: 25}
 - `fillings`: 334 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 250, 99: 2}
 
 ## Taper tracking: pins on knots with at most 13 crossings
@@ -92,6 +93,7 @@ Taper = a notable decrease in new pins on knots with at most 13 crossings (prime
 | 2026-11-15 11:46 | ccR +13, tw4 +17, twB +9 | 26266 | 249 | 19204 | 242 | 25490 | 26104 | +58 / +0 / +0 / +0 / +0 / +0 |
 | 2026-11-15 13:34 | tw4 +7, twB +5 | 26276 | 249 | 19204 | 242 | 25490 | 26104 | +10 / +0 / +0 / +0 / +0 / +0 |
 | 2026-11-15 18:18 | bm1 +332, bm2 +332, bm3 +77, tw4 +13, twL +11 | 26286 | 249 | 19204 | 242 | 25490 | 26104 | +10 / +0 / +0 / +0 / +0 / +0 |
+| 2026-11-15 19:10 | bm3 +3, bm4 +1, ccR +3, twL +14 | 26306 | 249 | 19204 | 242 | 25490 | 26104 | +20 / +0 / +0 / +0 / +0 / +0 |
 
 ## Notes
 
