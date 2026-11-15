@@ -10,6 +10,10 @@ def pd_key(pd):
     return hashlib.sha1(json.dumps([list(c) for c in pd], separators=(',', ':')).encode()).hexdigest()[:20]
 
 
+MAX_TRIES = 8
+STATS = {'calls': 0, 'rejected': 0}      # calculator calls of this process, and outputs rejected by the check
+
+
 UNKNOT = {'tau': 0, 'nu': 0, 'epsilon': 0, 'genus': 0, 'fibered': True, 'lspace': True, 'total_rank': 1,
           'ranks': [[0, 0, 1]], 'note': 'diagram reduces to the round circle by Reidemeister 1 moves'}
 
@@ -24,13 +28,29 @@ def _run(pd, want_complex):
             out['generators'] = [[0, 0, 0]]
             out['differentials'] = []
         return out
-    r = kfh.pd_to_hfk([tuple(c) for c in pd], complex=want_complex)
+    # The calculator is not deterministic and sometimes returns the homology of something else (found
+    # 2026-11-15: on one 14-crossing diagram of 3_1#5_1*, 9 of 40 calls gave total rank 55 instead of 15 and the
+    # wrong sign of tau).  Every output is therefore compared with the Alexander polynomial of the diagram,
+    # computed from a Seifert matrix; a call that fails is repeated.
+    from . import alg
+    want = alg.alexander_from_seifert(alg.seifert_matrix(pd))
+    for attempt in range(MAX_TRIES):
+        r = kfh.pd_to_hfk([tuple(c) for c in pd], complex=want_complex)
+        got = alg.alexander_from_hfk_ranks({(int(a), int(m)): int(v) for (a, m), v in r['ranks'].items()})
+        STATS['calls'] += 1
+        if got == want:
+            break
+        STATS['rejected'] += 1
+    else:
+        raise RuntimeError('calculator output fails the Alexander polynomial check %d times' % MAX_TRIES)
     out = {
         'tau': int(r['tau']), 'nu': int(r['nu']), 'epsilon': int(r['epsilon']),
         'genus': int(r['seifert_genus']), 'fibered': bool(r['fibered']),
         'lspace': bool(r['L_space_knot']), 'total_rank': int(r['total_rank']),
         'ranks': sorted([int(a), int(m), int(v)] for (a, m), v in r['ranks'].items()),
     }
+    if attempt:
+        out['rejected_outputs'] = attempt
     if want_complex:
         gens = r['generators']
         out['generators'] = [[int(g), int(gens[g][0]), int(gens[g][1])] for g in sorted(gens)]
