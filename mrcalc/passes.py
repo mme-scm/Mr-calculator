@@ -104,6 +104,25 @@ def cc_records(diag):
     return out
 
 
+def band_records(diag):
+    """Band moves of rule N4: at every crossing of a diagram record, the smoothing that gives a knot.
+    e = sign(c) - (writhe(D1) - writhe(D0))."""
+    out = []
+    n = len(diag['pd'])
+    for i in range(n):
+        new, s, w0, w1 = P.band_smoothing(diag['pd'], i)
+        rec = {'t': 'bm', 'd': diag['id'], 'src': diag['node'], 'i': i, 's': s, 'w0': w0, 'w1': w1,
+               'e': s - (w1 - w0)}
+        if rec['e'] % 2:
+            raise AssertionError('parity check failed on band move')
+        if new:
+            rec.update(_result(new, diag))
+        else:
+            rec.update({'dst': '0_1', 'kind': 'unknot', 'cert': {'type': 'no crossing left'}, 'n': 0, 'hg': True})
+        out.append(rec)
+    return out
+
+
 def twist_records(diag, ks, max_imbalance=2, min_imbalance=0):
     """Full twists along the dual paths crossing k edges with min_imbalance <= |a - b| <= max_imbalance
     (max_imbalance None: no upper limit)."""
@@ -289,6 +308,10 @@ def shard_task(args):
                                       opt.get('imb_max', params['max_imbalance']), opt.get('imb_min', 0))
             elif opt['move'] == 'mu':
                 drecs = mutation_records(d)
+            elif opt['move'] == 'bm':
+                drecs = band_records(d)
+            else:
+                raise ValueError('unknown move %r' % (opt['move'],))
         except BaseException as e:      # cysignals' SignalError is a BaseException
             if isinstance(e, (KeyboardInterrupt, SystemExit)):
                 raise
@@ -358,13 +381,19 @@ def write_shard(pname, shard, recs, errors):
         f.write(shard + '\n')
 
 
-def pass_files(pname=None):
-    """[(pass name, shard, path)] of the pass shards, in reading order."""
+BAND_PREFIX = 'bm'      # passes of band moves (rule N4); read only by the solver of u_Z and u_R
+
+
+def pass_files(pname=None, bands=False):
+    """[(pass name, shard, path)] of the pass shards, in reading order.  Without a pass name: the passes of
+    crossing changes, twists and mutations (bands=False) or the band-move passes (bands=True)."""
     out = []
     if not os.path.isdir(PASS_DIR):
         return out
     for pn in sorted(os.listdir(PASS_DIR)):
         if pname is not None and pn != pname:
+            continue
+        if pname is None and pn.startswith(BAND_PREFIX) != bands:
             continue
         d = os.path.join(PASS_DIR, pn)
         if not os.path.isdir(d):

@@ -931,3 +931,41 @@ def remove_kinks(pd):
             return []
         start = next((ren(d) for d in D.order if d[0] != c), None)
         pd = Diagram(D.n - 1, adj, start=start).pd()
+
+
+# ----------------------------------------------------------------------
+# band moves (rule N4): the smoothing of a crossing that gives a knot
+# ----------------------------------------------------------------------
+def band_smoothing(pd, idx):
+    """Smooth crossing number idx of a knot diagram the way that gives a knot diagram (the smoothing that
+    joins the two incoming ends, and the two outgoing ends, of the crossing; the other smoothing follows
+    the orientation and gives a two-component link).
+
+    Returns (new_pd, sign, w0, w1): the PD code of the smoothed diagram D1 (crossing order preserved, crossing
+    idx removed; [] if no crossing is left), the sign of the smoothed crossing, the writhe of the given
+    diagram and the writhe of D1 (the writhe of a knot diagram does not depend on its orientation)."""
+    D = Diagram.from_pd(pd)
+    if not 0 <= idx < D.n:
+        raise DiagramError('no crossing %r' % (idx,))
+    p, q = D.under_in[idx], D.over_in[idx]          # the two incoming darts of the crossing
+    port = {p: ('v', 0), q: ('v', 0), (p + 2) % 4: ('v', 1), (q + 2) % 4: ('v', 1)}
+
+    def new(d):
+        c, i = d
+        if c == idx:
+            return port[i]
+        return (c - 1 if c > idx else c, i)
+
+    sign, w0 = D.sign[idx], D.writhe()
+    if D.n == 1:
+        return [], sign, w0, 0
+    b = Builder(D.n - 1)
+    seen = set()
+    for d, e in D.adj.items():
+        if d in seen:
+            continue
+        seen.add(d)
+        seen.add(e)
+        b.connect(new(d), new(e))
+    D1 = b.diagram()                                # raises DiagramError unless D1 is a planar knot diagram
+    return D1.pd(), sign, w0, D1.writhe()

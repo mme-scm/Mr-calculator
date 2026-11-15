@@ -455,6 +455,8 @@ class Problem:
                 if not (0 <= b <= a < 32768 and -32768 <= h < 32768):
                     raise ValueError('twist parameters out of range: %r' % (r,))
                 key, tgt, t = ((k0 << 32 | k1) << 48) | (a << 32) | (b << 16) | (h & 0xffff), tw, 1
+            elif r['t'] != 'mu':              # band moves are kept in passes of their own (passes.BAND_PREFIX)
+                raise ValueError('pass record of type %r in pass %s' % (r['t'], r.get('pass')))
             else:                             # key: the sorted pair
                 swap = 1 if src > dst else 0
                 k0, k1 = (di, si) if swap else (si, di)
