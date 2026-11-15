@@ -1,6 +1,6 @@
 # STATE
 
-Updated 2026-11-14 17:36 UTC.
+Updated 2026-11-15 05:42 UTC.
 Pin counts below are from a re-solve on all pass data synced so far (not exported and not checked; the last checked checkpoint is in checkpoints/, the last full export in export/ and REPORT.md).
 
 
@@ -23,8 +23,8 @@ Pin counts below are from a re-solve on all pass data synced so far (not exporte
 | 14 | 10 | 10 | 0 | 2 | 0 | 10 | 10 |
 | 15 | 20 | 20 | 0 | 8 | 0 | 20 | 20 |
 | constructions | 2328 | 30 | 30 | 124 | 124 | 68 | 150 |
-| peripheral | 523602 | 270972 | 104 | 13640 | 72 | 305290 | 441436 |
-| total | 553300 | 297240 | 383 | 32964 | 438 | 330864 | 467720 |
+| peripheral | 523874 | 270984 | 104 | 13640 | 72 | 305290 | 441436 |
+| total | 553572 | 297252 | 383 | 32964 | 438 | 330864 | 467720 |
 
 ## Pass progress (shards done out of 360; by tier)
 
@@ -37,7 +37,7 @@ Pin counts below are from a re-solve on all pass data synced so far (not exporte
 - `tw2`: 334 shards {3: 1, 4: 1, 5: 1, 6: 2, 7: 2, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 250}
 - `tw3`: 332 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 250}
 - `tw3x`: 332 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 250}
-- `tw4`: 277 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 195}
+- `tw4`: 282 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 200}
 - `tw4x`: 332 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 250}
 - `tw5`: 27 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14}
 - `tw5x`: 27 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14}
@@ -82,6 +82,7 @@ Taper = a notable decrease in new pins on knots with at most 13 crossings (prime
 | 2026-11-14 10:16 | tw4 +27, twB +9 | 26200 | 249 | 19190 | 242 | 25476 | 26104 | +10 / +0 / +0 / +0 / +0 / +0 |
 | 2026-11-14 13:57 | tw4 +18, twB +6 | 26204 | 249 | 19190 | 242 | 25476 | 26104 | +4 / +0 / +0 / +0 / +0 / +0 |
 | 2026-11-14 17:36 | tw4 +21, twB +9 | 26208 | 249 | 19190 | 242 | 25476 | 26104 | +4 / +0 / +0 / +0 / +0 / +0 |
+| 2026-11-15 05:42 | tw4 +5 | 26208 | 249 | 19190 | 242 | 25476 | 26104 | +0 / +0 / +0 / +0 / +0 / +0 |
 
 ## Notes
 
