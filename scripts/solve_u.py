@@ -164,12 +164,12 @@ def main():
             j = UM.ix[n]
             w.writerow([n, info['kind'], info['tier'], anchor.get(i, ''), num_json(Z.lo[i]), num_json(Z.hi[i]),
                         num_json(Rr.lo[i]), num_json(Rr.hi[i]), num_json(Mm.lo[j]), num_json(Mm.hi[j])])
-            t['M ' + width_class(Mm.lo[j], Mm.hi[j])] += 1
             t = tiers[info['tier']]
             t['nodes'] += 1
             t['anchored'] += 1 if i in anchor or U.mirror[i] in anchor or U.mirror[i] == i else 0
             t['Z ' + width_class(Z.lo[i], Z.hi[i])] += 1
             t['R ' + width_class(Rr.lo[i], Rr.hi[i])] += 1
+            t['M ' + width_class(Mm.lo[j], Mm.hi[j])] += 1
     summary = {str(t): dict(c) for t, c in sorted(tiers.items())}
     with open(os.path.join(OUT, 'u_summary.json'), 'w') as f:
         json.dump({'tiers': summary, 'stats': dict(U.stats), 'band_passes': sorted({b[0] for b in U.band_files}),
