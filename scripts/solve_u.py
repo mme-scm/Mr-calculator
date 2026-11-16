@@ -1,7 +1,9 @@
 """Ranges of u_Z and u_R (rules N1-N5 of RULES_U.md) by bound propagation.
 
-usage: solve_u.py out=<dir> [noqa]
-  noqa   withholds rule N1q (the tabulated quasi-alternating knots that are not alternating)
+usage: solve_u.py out=<dir> [noqa] [withheld]
+  noqa       withholds rule N1q (the tabulated quasi-alternating knots that are not alternating)
+  withheld   also counts what is determined without rule N4 and without rule N1q (two more problems in memory;
+             without it the run needs about 3 GB less: do not run it next to a solve of the main problem)
 MRCALC_SKIP_PASSES=a,b withholds passes (main passes and band-move passes alike).
 
 Writes to <dir>:
@@ -128,6 +130,11 @@ def main():
     if UM.violations:
         say('CONTRADICTION (u_M): a constraint between a node and itself does not hold: %r' % (UM.violations[:3],))
         sys.exit(2)
+    withheld_runs = 'withheld' in args
+    if not withheld_runs:                  # the rule table of the main problem (several GB) is no longer needed
+        import gc
+        P.cons = None
+        gc.collect()
     for tag, integer in (('Z', True), ('R', False), ('M', True)):
         S = usolve.USolver(UM if tag == 'M' else U, integer)
         try:
@@ -229,7 +236,7 @@ def main():
     abl = {}
     for label, opt in (('without band moves (N4)', {'qa': qa, 'bands': False}),
                        ('without the tabulated quasi-alternating knots (N1q)', {'qa': [], 'bands': True})):
-        if label.endswith('(N1q)') and not qa:
+        if not withheld_runs or (label.endswith('(N1q)') and not qa):
             continue
         U2 = usolve.UProblem(P, **opt)
         cnt = collections.Counter()
