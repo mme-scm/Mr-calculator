@@ -99,7 +99,7 @@ class Check:
             if rec.get('t') == 'cc' and rec.get('s') == -1:
                 want = (rec['dst'], rec['src'])
             if set(want) == {ins['from'], ins['to']} and want[0] != want[1]:
-                if want != (ins['from'], ins['to']):
+                if want != (ins['from'], ins['to']) and ins['rule'] != 'N6':       # N6 is symmetric
                     self.bad('%s: the record runs the other way' % c['id'])
                 self.tick('record directions checked')
             else:
