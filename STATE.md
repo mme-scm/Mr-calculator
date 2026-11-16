@@ -1,7 +1,7 @@
 # STATE
 
-Updated 2026-11-16 10:38 UTC.
-Pin counts below are those of the checkpoint `m46a`: solved with chains and verified by the independent checker (checkpoints/m46a/: knots.xlsx, pins_by_tier.json, summary.json, check.log, tests.txt). Checkpoints carry no ablation and no packed export; export/ and REPORT.md are the last full export.
+Updated 2026-11-16 15:03 UTC.
+Pin counts below are those of the checkpoint `final`: solved with chains and verified by the independent checker (checkpoints/final/: knots.xlsx, pins_by_tier.json, summary.json, check.log, tests.txt). Checkpoints carry no ablation and no packed export; export/ and REPORT.md are the last full export.
 
 
 ## Pinned values per invariant
@@ -17,14 +17,14 @@ Pin counts below are those of the checkpoint `m46a`: solved with chains and veri
 | 8 | 46 | 46 | 21 | 40 | 21 | 46 | 46 |
 | 9 | 116 | 114 | 18 | 86 | 18 | 116 | 116 |
 | 10 | 363 | 357 | 42 | 285 | 38 | 355 | 357 |
-| 11 | 1226 | 1202 | 38 | 872 | 34 | 1188 | 1204 |
+| 11 | 1226 | 1202 | 38 | 872 | 34 | 1190 | 1204 |
 | 12 | 4607 | 4461 | 55 | 3307 | 49 | 4409 | 4411 |
 | 13 | 20950 | 20098 | 54 | 14586 | 60 | 19344 | 19938 |
 | 14 | 10 | 10 | 0 | 2 | 0 | 10 | 10 |
 | 15 | 20 | 20 | 0 | 8 | 0 | 20 | 20 |
 | constructions | 2328 | 32 | 32 | 124 | 124 | 70 | 150 |
-| peripheral | 592663 | 279493 | 106 | 16445 | 72 | 346209 | 495601 |
-| total | 622361 | 305865 | 387 | 35783 | 438 | 371799 | 521885 |
+| peripheral | 637070 | 282380 | 106 | 18264 | 72 | 370836 | 520730 |
+| total | 666768 | 308752 | 387 | 37602 | 438 | 396428 | 547014 |
 
 ## Pass progress (shards done out of 360; by tier)
 
@@ -33,14 +33,16 @@ Pin counts below are those of the checkpoint `m46a`: solved with chains and veri
 - `bm3`: 81 shards {99: 81}
 - `bm4`: 1 shards {99: 1}
 - `bm5`: 119 shards {99: 119}
+- `bm6`: 82 shards {11: 1, 12: 4, 13: 34, 99: 43}
 - `cc`: 358 shards {3: 1, 4: 1, 5: 1, 6: 2, 7: 2, 8: 2, 9: 3, 10: 6, 11: 16, 12: 60, 13: 263, 99: 1}
 - `ccR`: 81 shards {99: 81}
 - `ccb`: 305 shards {12: 55, 13: 250}
 - `g2cc`: 139 shards {99: 139}
 - `g2mu`: 118 shards {99: 118}
 - `g2mv`: 47 shards {99: 47}
-- `g2tw`: 79 shards {99: 79}
+- `g2tw`: 109 shards {99: 109}
 - `mu`: 357 shards {3: 1, 4: 1, 5: 1, 6: 2, 7: 2, 8: 2, 9: 3, 10: 6, 11: 16, 12: 60, 13: 263}
+- `muR`: 82 shards {11: 1, 12: 4, 13: 34, 99: 43}
 - `tw2`: 334 shards {3: 1, 4: 1, 5: 1, 6: 2, 7: 2, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 250}
 - `tw3`: 332 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 250}
 - `tw3x`: 332 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 250}
@@ -101,11 +103,12 @@ Taper = a notable decrease in new pins on knots with at most 13 crossings (prime
 | 2026-11-16 04:10 | bm3 +1, bm5 +119, ccR +1, g2cc +2, g2mv +47, g2tw +39, twB +2 | 26310 | 249 | 19204 | 242 | 25490 | 26104 | +2 / +0 / +0 / +0 / +0 / +0 |
 | 2026-11-16 04:56 | g2tw +10 | 26310 | 249 | 19204 | 242 | 25490 | 26104 | +0 / +0 / +0 / +0 / +0 / +0 |
 | 2026-11-16 10:38 | g2tw +6 | 26310 | 249 | 19204 | 242 | 25490 | 26104 | +0 / +0 / +0 / +0 / +0 / +0 |
+| 2026-11-16 15:03 | bm6 +82, g2tw +30, muR +82 | 26310 | 249 | 19204 | 242 | 25492 | 26104 | +0 / +0 / +0 / +0 / +2 / +0 |
 
 ## Notes
 
-- status: 2026-11-16 09:45 UTC: full checkpoint m46a in its test phase (solve done 08:10 UTC: pins M 305,865, tau 371,799, upsilon 521,885 over all nodes). u_Z, u_R, u_M: 46 knots open (checkpoints/u3, with the alternating census anchors). Running: face bands on the further diagrams of the 46 knots (queue_FB, pass bm6), the neighbour twist pass (queue_M46, g2tw); scripts/chain_M46.sh then asks for a light check-in and re-solves u. Round 4 of the targeted search is paused (flag pause_T4).
-- taper: definition given by the user (2026-11-11): a notable decrease in new pins on knots with at most 13 crossings; tracked per re-solve in the table above. Not reached so far
+- status: 2026-11-16 11:30 UTC: WIND-DOWN at the user's decision. All passes are stopped. scripts/wind_down.sh runs the final sequence: final checkpoint `final` (solve with chains, independent check, tests; full export published to mme-scm/Mr-export, branch export/final), the ablation runs after the fact (22 runs: rule families, single rules, pass groups), the final solve of u_Z, u_R, u_M (checkpoints/u_final) and REPORT.md. Markers in logs/wind_down.log.
+- taper: definition given by the user (2026-11-11): a notable decrease in new pins on knots with at most 13 crossings; tracked per re-solve in the table above. Reached by the user's judgement of 2026-11-16 ('a taper by any definition'): between the stage 7 checkpoint (2026-11-15) and the checkpoint m46a (2026-11-16) the targeted passes added 24 pins of M and none of the other invariants on knots with at most 13 crossings, and the 46 knots with u open did not change under 99,427 further anchors and 366,904 further band moves.
 - memory: after the storage rework of 2026-11-11 (constraints, events and edges as columns; checker reads events front to back and keeps constraints on disk): solve and export 2.2 GB, independent checker 2.4 GB for 363,427 nodes, 5,548,197 constraints, 3,920,313 events (before: 6.4 GB and 9.6 GB; same output files, compared byte for byte). Container limit 16 GB; the pass workers use about 2.5 GB
-- checkpoints: from 2026-11-13 (user's decision): a checkpoint is a solve with chains verified by the independent checker, the tests, and the commit of small tables in checkpoints/<label>/ (knots.xlsx with the nodes that are not peripheral, pins_by_tier.json, summary.json, parameters.json, solve.log, check.log, tests.txt). No ablation is run at a checkpoint (run on request with scripts/solve.py; the final export has one) and the packed export is not committed (it added 1.1 GB to the repository at each of the five checkpoints up to stage 6c); export/ and REPORT.md stay those of the stage 6c checkpoint until the final export. The stage 6b checkpoint was finished this way: its ablation was stopped after 9 of 22 runs
+- checkpoints: from 2026-11-13 (user's decision): a checkpoint is a solve with chains verified by the independent checker, the tests, and the commit of small tables in checkpoints/<label>/ (knots.xlsx with the nodes that are not peripheral, pins_by_tier.json, summary.json, parameters.json, solve.log, check.log, tests.txt). No ablation is run at a checkpoint (run on request with scripts/solve.py; the final export has one) and the packed export is not committed (it added 1.1 GB to the repository at each of the five checkpoints up to stage 6c); export/ in this repository stays the export of the stage 6c checkpoint; the final export is in mme-scm/Mr-export (branch export/final) and REPORT.md is generated from it. The stage 6b checkpoint was finished this way: its ablation was stopped after 9 of 22 runs
 - exports: full exports are published to the repository mme-scm/Mr-export at significant events only (user, 2026-11-13), one branch export/<label> per export without earlier history (scripts/push_export.sh; a checkpoint publishes when the flag file push_export exists). Published so far: export/target1 (2026-11-13, checkpoint target1: 524,264 nodes, 1.39 GB, independent check OK, no ablation). export/ in this repository is still the stage 6c export
