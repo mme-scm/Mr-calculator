@@ -217,6 +217,16 @@ def main():
             with open(opath) as f:
                 R += ['', 'Knots with u open (KnotInfo chirality; the same range for u_Z, u_R and u_M), with the '
                       'values left for M:', ''] + ['- ' + x.strip() for x in f if x.strip()]
+        mpath = os.path.join(ROOT, 'checkpoints', 'final', 'm_vs_u.txt')
+        if os.path.exists(mpath):
+            with open(mpath) as f:
+                R += ['', '### M pinned and u_M not determined, all nodes', '',
+                      'A join of the final solve and the u solve written for every node (`solve_u.py allnodes`, '
+                      '`checkpoints/u_final/u_nodes.csv.gz`; the independent u checker covers the knots up to 13 '
+                      'crossings only), by `scripts/m_vs_u.py`. Columns: width of the u_M range. "M not pinned '
+                      'without coincidences": the nodes of `checkpoints/final/ablate_all_coincidence.json.gz` '
+                      '(re-solve with S1-S4, F10 withheld). A knot and its mirror image count separately.']
+                R += [x.rstrip('\n') for x in f]
         R.append('')
     R += ['## Ablation', '']
     if abl:

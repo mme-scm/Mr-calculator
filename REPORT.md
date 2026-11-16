@@ -1,6 +1,6 @@
 # REPORT
 
-Final report. Generated 2026-11-16 18:23 UTC from the export `final` (repository mme-scm/Mr-export, branch export/final; small tables in checkpoints/final/).
+Final report. Generated 2026-11-16 23:52 UTC from the export `final` (repository mme-scm/Mr-export, branch export/final; small tables in checkpoints/final/).
 
 ## Nodes by kind
 
@@ -121,6 +121,41 @@ Knots with u open (KnotInfo chirality; the same range for u_Z, u_R and u_M), wit
 - 13n_4858: u in [0, 1]; M in {-4, 0}
 - 13n_4876: u in [-4, -3]; M in {12, 16}
 - 13n_5016: u in [-4, -3]; M in {12, 16}
+
+### M pinned and u_M not determined, all nodes
+
+A join of the final solve and the u solve written for every node (`solve_u.py allnodes`, `checkpoints/u_final/u_nodes.csv.gz`; the independent u checker covers the knots up to 13 crossings only), by `scripts/m_vs_u.py`. Columns: width of the u_M range. "M not pinned without coincidences": the nodes of `checkpoints/final/ablate_all_coincidence.json.gz` (re-solve with S1-S4, F10 withheld). A knot and its mirror image count separately.
+
+all nodes with M pinned
+
+| nodes | M pinned | u_M determined | width 1 | width 2 | width > 2 | one end | unbounded |
+|---|---|---|---|---|---|---|---|
+| knots <= 13 crossings | 26310 | 26306 | 4 | 0 | 0 | 0 | 0 |
+| other (14-15 crossings, cables, torus) | 62 | 52 | 2 | 0 | 4 | 0 | 4 |
+| peripheral | 282380 | 282322 | 58 | 0 | 0 | 0 | 0 |
+| all | 308752 | 308680 | 64 | 0 | 4 | 0 | 4 |
+
+chain of M uses a coincidence rule
+
+| nodes | M pinned | u_M determined | width 1 | width 2 | width > 2 | one end | unbounded |
+|---|---|---|---|---|---|---|---|
+| knots <= 13 crossings | 1094 | 1090 | 4 | 0 | 0 | 0 | 0 |
+| other (14-15 crossings, cables, torus) | 11 | 1 | 2 | 0 | 4 | 0 | 4 |
+| peripheral | 28418 | 28360 | 58 | 0 | 0 | 0 | 0 |
+| all | 29523 | 29451 | 64 | 0 | 4 | 0 | 4 |
+
+M not pinned without coincidences
+
+| nodes | M pinned | u_M determined | width 1 | width 2 | width > 2 | one end | unbounded |
+|---|---|---|---|---|---|---|---|
+| knots <= 13 crossings | 174 | 170 | 4 | 0 | 0 | 0 | 0 |
+| other (14-15 crossings, cables, torus) | 10 | 0 | 2 | 0 | 4 | 0 | 4 |
+| peripheral | 4072 | 4014 | 58 | 0 | 0 | 0 | 0 |
+| all | 4256 | 4184 | 64 | 0 | 4 | 0 | 4 |
+
+u_Z determined / u_M determined among the nodes with M pinned: both 308566, u_M only 114, u_Z only 0, neither 72
+
+checkpoints/final/m_known_u_open.csv.gz: 72 nodes with M pinned and u_M not determined
 
 ## Ablation
 
