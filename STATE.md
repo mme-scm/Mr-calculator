@@ -1,8 +1,6 @@
 # STATE
 
-Updated 2026-11-16 15:03 UTC.
-Pin counts below are those of the checkpoint `final`: solved with chains and verified by the independent checker (checkpoints/final/: knots.xlsx, pins_by_tier.json, summary.json, check.log, tests.txt). Checkpoints carry no ablation and no packed export; export/ and REPORT.md are the last full export.
-
+Updated 2026-11-16 18:20 UTC.
 
 ## Pinned values per invariant
 
