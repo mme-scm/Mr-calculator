@@ -29,6 +29,12 @@ citing the ID. The statements below are the user's; the notes say how each is in
 | N3 | twist inequality (3) | every crossing-change edge (a = b = 1: K+ -> K- is a right-handed full twist on two oppositely oriented strands) and every twist edge of the main problem, with its a, b and handedness |
 | N4 | band inequality (4) | the band-move passes (`data/passes/bm*`): `mrcalc/pd.py band_smoothing` at every crossing of a diagram |
 | N5 | u_Z is an integer | the bounds of u_Z are rounded inwards after every step; those of u_R are not |
+| N6 | u_M only: mutants have equal u_M | every mutation edge of the main problem (certified mutant pairs, the instances of rule F6); u_M also uses N1-N5 |
+
+u_M was supplied on 2026-11-16:
+
+> I also have an invariant u_M which satisfies all the same rules as u_Z but is also known to be mutation
+> invariant.
 
 Reading of (3). The right-hand side is typeset with an unbalanced bracket; it is read as
 m - floor((|l|-1)²/4). The other reading, m - (|l|-1)²/4, would give -1/4 as the upper bound for two
