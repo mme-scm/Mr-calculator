@@ -237,6 +237,20 @@ def main():
               'the same value (must be 0).']
     else:
         R.append('Not run yet.')
+    # ---- single nodes with a family withheld (scripts/ablate_nodes.py)
+    npath = os.path.join(ROOT, 'checkpoints', 'final', 'ablate_nodes_coincidence.json')
+    if os.path.exists(npath):
+        with open(npath) as f:
+            an = json.load(f)
+        rows = [r for r in an['rows'] if 'M' in r.get('full_pins', {})]
+        R += ['', 'M at the %d knots of `data/targets/u1_open.txt` (u_Z open on 2026-11-15) with the coincidence '
+              'family (%s) withheld (scripts/ablate_nodes.py, `checkpoints/final/ablate_nodes_coincidence.json`); '
+              'the knots with M pinned in the full run:' % (len(an['rows']), ', '.join(an['rules'])), '',
+              '| knot | M, full run | M, coincidences withheld |', '|---|---|---|']
+        for r in rows:
+            R.append('| %s | %s | %s |' % (r['node'], r['full_pins']['M'],
+                                           ', '.join(str(x) for x in r['withheld'].get('M', ['?']))))
+        R += ['', 'The other %d knots have two values of M in both runs.' % (len(an['rows']) - len(rows))]
     R += ['', '## Check set (section 2.6)', '']
     cs = check_set(knots)
     if cs is None:
