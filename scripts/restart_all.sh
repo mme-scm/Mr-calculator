@@ -1,4 +1,13 @@
 #!/bin/sh
+# Wind-down (2026-11-16): no pass is restarted any more; only the final sequence is resumed.
+if [ -f /home/user/mrcalc_scratch/flags/WIND_DOWN ]; then
+  cd /home/user/Mr-calculator
+  if ! grep -q WIND_DOWN_DONE logs/wind_down.log 2>/dev/null && ! pgrep -f scripts/wind_down.sh > /dev/null; then
+    nohup setsid sh scripts/wind_down.sh >> logs/wind_down.log 2>&1 &
+    echo "wind_down.sh restarted"
+  fi
+  exit 0
+fi
 # Starts whatever of the unattended jobs is not running (after a restart of the machine): the stage 7 queue,
 # the orchestrator, the targeted-search queue and the memory log.  Safe to run at any time.
 # Round 4 of the targeted search (queue_T4) is paused while the flag pause_T4 exists (2026-11-15, user: the

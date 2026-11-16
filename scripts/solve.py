@@ -1,6 +1,6 @@
 """Re-solve and export.
 usage: solve.py [upsilon] [ablation] [nochains] [plain] [out=<dir>] [runs=<name,name>] [ablation-base=<dir>]
-       solve.py ablate [upsilon] [out=<dir>] [runs=..] [procs=1]   second phase of `ablation` (started by the first,
+       solve.py ablate [upsilon] [out=<dir>] [runs=..] [procs=1] [resume]   second phase of `ablation` (started by the first,
                                                          or by hand on the directory given as ablation-base=)
        solve.py ablate-run=<name> [upsilon] [out=<dir>]  one ablation run; prints its counts as one JSON line
 
@@ -245,7 +245,7 @@ def pass_ablation_run(name, skipped, out_dir, include_upsilon):
                 seconds=round(time.time() - t0, 1))
 
 
-def ablation_driver(out_dir, include_upsilon, only=None, procs=1):
+def ablation_driver(out_dir, include_upsilon, only=None, procs=1, resume=False):
     """Second phase of `solve.py ablation`: the full run has exported and left the process; every ablation
     run is a process of its own, so that the memory in use is that of one problem per process.  `procs` runs
     at a time (default 1); a file <out_dir>/procs with a number changes it while the driver runs.
@@ -255,7 +255,11 @@ def ablation_driver(out_dir, include_upsilon, only=None, procs=1):
     runs += [(name, {'rules': [], 'passes': ps}) for name, ps in pass_ablation_runs()]
     runs = [r for r in runs if only is None or r[0] in only]
     results, died = {}, 0
-    todo, running = list(runs), {}
+    if resume and os.path.exists(os.path.join(out_dir, 'ablation.json')):
+        # runs finished before an interruption of this driver (same base, same data) are kept
+        with open(os.path.join(out_dir, 'ablation.json')) as f:
+            results = {r['withheld']: r for r in json.load(f) if not r.get('error')}
+    todo, running = [r for r in runs if r[0] not in results], {}
 
     def nprocs():
         try:
@@ -316,7 +320,7 @@ def main():
         return
     if 'ablate' in args:
         sys.exit(ablation_driver(out_dir, upsilon, kv['runs'].split(',') if 'runs' in kv else None,
-                                 int(kv.get('procs', 1))))
+                                 int(kv.get('procs', 1)), 'resume' in args))
     t0 = time.time()
     problem = prepare.Problem(include_upsilon=upsilon)
     print('problem: %d nodes, %d constraints, %d edges (%.0fs)' % (

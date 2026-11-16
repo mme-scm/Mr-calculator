@@ -50,7 +50,7 @@ ABPID=
 if [ ! -f $ABL/ABLATION_DONE ]; then
   [ -f $ABL/ablation_base.pkl ] || fail "no ablation base (the final solve did not finish)"
   say "final solve exported; ablation runs start"
-  $PY scripts/solve.py ablate upsilon out=$ABL procs=1 > logs/ablation_final.log 2>&1 &
+  $PY scripts/solve.py ablate upsilon out=$ABL procs=1 resume >> logs/ablation_final.log 2>&1 &
   ABPID=$!
 fi
 [ -n "$CKPID" ] && wait $CKPID
