@@ -92,6 +92,13 @@
    "cause": "the knot Floer calculator (knot_floer_homology 1.2.2, pd_to_hfk) is not deterministic: on the 14-crossing result diagram 9 of 40 identical calls returned total rank 55 instead of 15, an asymmetric Euler characteristic and tau = +1. identify._chirality decided the chirality of every non-hyperbolic result (matched up to mirror by a Regina isomorphism signature) from the sign of tau of one unchecked call",
    "repair": "mrcalc/hfk.py compares every calculator output with the Alexander polynomial of the diagram (Seifert matrix) and repeats a call that fails. scripts/verify_chirality.py re-decides the chirality of all 473,522 such pass records without the calculator where the reference has a non-zero signature (exact signature of the recomputed result diagram), with the checked calculator otherwise; wrong records are rewritten and listed in data/corrections/chirality.jsonl. Band-move passes: 19,400 records, 1 wrong (the one found), corrected. Older passes: see state.status for the outcome. scripts/verify_node_inputs.py: the stored knot Floer ranks of all 346,185 nodes outside the table have the Alexander polynomial of the node's diagram (0 failures); tau and epsilon of the upsilon run agree with the node inputs on all 98,565 comparable nodes",
    "effect": "the stage 7 checkpoint (and every earlier export) was computed before the re-verification; it stands if the older passes show no wrong record"
+  },
+  {
+   "date": "2026-11-16",
+   "what": "machine restarts at about 23:43 UTC (Nov 15), 02:19 and 03:25 UTC",
+   "cause": "the container is stopped a few minutes after the session goes idle with no tracked background task pending, and started again by the next event (a user message, a scheduled wake-up). The unattended jobs die with it. The earlier restarts and the eleven-hour outage of Nov 14-15 fit the same pattern; the long watcher tasks of earlier days had kept the machine alive",
+   "effect": "about three and a half hours of the neighbour twist pass and two check-ins lost; nothing written was lost (all passes resume)",
+   "rule": "never end a turn without a tracked background watcher running (at most two hours each; start the next one when it reports), and run `sh scripts/restart_all.sh` plus `scripts/chain_M46.sh` first thing after any restart"
   }
  ]
 }
