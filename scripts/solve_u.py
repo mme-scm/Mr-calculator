@@ -1,6 +1,8 @@
 """Ranges of u_Z and u_R (rules N1-N5 of RULES_U.md) by bound propagation.
 
-usage: solve_u.py out=<dir> [noqa] [noalt] [withheld]
+usage: solve_u.py out=<dir> [noqa] [noalt] [withheld] [allnodes]
+  allnodes   also writes u_nodes.csv.gz: the ranges of every node of the main problem (peripheral nodes, cables
+             and torus knots included), same columns as u_knots.csv
   noqa       withholds rule N1q (the tabulated quasi-alternating knots that are not alternating)
   noalt      withholds rule N1a outside the KnotInfo table (data/alt_anchors.jsonl.gz: census-alternating knots and
              knots with an alternating diagram, signature computed)
@@ -188,6 +190,15 @@ def main():
             t['Z ' + width_class(Z.lo[i], Z.hi[i])] += 1
             t['R ' + width_class(Rr.lo[i], Rr.hi[i])] += 1
             t['M ' + width_class(Mm.lo[j], Mm.hi[j])] += 1
+    if 'allnodes' in args:
+        with gzip.open(os.path.join(OUT, 'u_nodes.csv.gz'), 'wt', newline='') as f:
+            w = csv.writer(f)
+            w.writerow(['node', 'kind', 'crossings', 'anchor', 'uZ_lo', 'uZ_hi', 'uR_lo', 'uR_hi', 'uM_lo', 'uM_hi'])
+            for n, info in P.nodes.items():
+                i, j = U.ix[n], UM.ix[n]
+                w.writerow([n, info['kind'], info['tier'], anchor.get(i, ''), num_json(Z.lo[i]), num_json(Z.hi[i]),
+                            num_json(Rr.lo[i]), num_json(Rr.hi[i]), num_json(Mm.lo[j]), num_json(Mm.hi[j])])
+        say('u_nodes.csv.gz: %d nodes' % len(P.nodes))
     summary = {str(t): dict(c) for t, c in sorted(tiers.items())}
     with open(os.path.join(OUT, 'u_summary.json'), 'w') as f:
         json.dump({'tiers': summary, 'stats': dict(U.stats), 'band_passes': sorted({b[0] for b in U.band_files}),

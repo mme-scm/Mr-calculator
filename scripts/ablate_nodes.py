@@ -4,8 +4,10 @@ The problem is built as in the full run and solved without the rules of one fami
 or without the rules named; for every node asked for, the M candidates that remain are printed next to the
 pins of the full run (from the ablation base of the full run, if given).  Nothing is exported.
 
-usage: ablate_nodes.py withheld=<family | rule,rule,...> nodes=<name,name,... | @file> [upsilon]
-                       [base=<ablation_base.pkl>] [out=<file.json>]
+usage: ablate_nodes.py withheld=<family | rule,rule,...> nodes=<name,name,... | @file | all> [upsilon]
+                       [base=<ablation_base.pkl>] [out=<file.json>] [lost]
+  nodes=all  every node with M pinned in the full run (needs base=)
+  lost       only the nodes whose M is pinned in the full run and not here are written and printed
 """
 import json
 import os
@@ -45,6 +47,9 @@ def main():
     if 'base' in kv:
         with open(kv['base'], 'rb') as f:
             base = pickle.load(f)
+    if nodes == ['all']:
+        nodes = [n for n, p in base['pins'].items() if 'M' in p]
+    only_lost = 'lost' in sys.argv[1:]
     t0 = time.time()
     problem = prepare.Problem(include_upsilon='upsilon' in sys.argv[1:])
     if base is not None and (len(problem.nodes), len(problem.cons)) != (base['nodes'], base['constraints']):
@@ -59,6 +64,8 @@ def main():
         row = {'node': n, 'withheld': m_candidates(S.state.get((n, 'F'))), 'withheld_pins': S.pins(n)}
         if base is not None:
             row['full_pins'] = base['pins'].get(n, {})
+        if only_lost and not ('M' in row.get('full_pins', {}) and 'M' not in row['withheld_pins']):
+            continue
         rows.append(row)
     out = {'withheld': w, 'rules': rules, 'nodes': len(problem.nodes), 'constraints': len(problem.cons),
            'seconds': round(time.time() - t0, 1), 'rows': rows}
@@ -69,7 +76,8 @@ def main():
         print(json.dumps(r, separators=(',', ':')), flush=True)
     lost = [r['node'] for r in rows if 'M' in r.get('full_pins', {}) and 'M' not in r.get('withheld_pins', {})]
     print('ABLATE_NODES_DONE withheld %s: %d nodes asked, M pinned in the full run and not here: %s (%.0fs)'
-          % (w, len(rows), ', '.join(lost) or 'none', time.time() - t0), flush=True)
+          % (w, len(nodes), (', '.join(lost) or 'none') if len(lost) <= 50 else '%d nodes' % len(lost),
+             time.time() - t0), flush=True)
 
 
 if __name__ == '__main__':
