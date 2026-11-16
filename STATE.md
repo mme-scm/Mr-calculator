@@ -1,6 +1,6 @@
 # STATE
 
-Updated 2026-11-16 04:10 UTC.
+Updated 2026-11-16 04:56 UTC.
 Pin counts below are from a re-solve on all pass data synced so far (not exported and not checked; the last checked checkpoint is in checkpoints/, the last full export in export/ and REPORT.md).
 
 
@@ -23,8 +23,8 @@ Pin counts below are from a re-solve on all pass data synced so far (not exporte
 | 14 | 10 | 10 | 0 | 2 | 0 | 10 | 10 |
 | 15 | 20 | 20 | 0 | 8 | 0 | 20 | 20 |
 | constructions | 2328 | 30 | 30 | 124 | 124 | 70 | 150 |
-| peripheral | 564974 | 277934 | 106 | 14150 | 72 | 308826 | 460144 |
-| total | 594672 | 304304 | 385 | 33488 | 438 | 334416 | 486428 |
+| peripheral | 570070 | 278154 | 106 | 14152 | 72 | 308828 | 460228 |
+| total | 599768 | 304524 | 385 | 33490 | 438 | 334418 | 486512 |
 
 ## Pass progress (shards done out of 360; by tier)
 
@@ -39,7 +39,7 @@ Pin counts below are from a re-solve on all pass data synced so far (not exporte
 - `g2cc`: 139 shards {99: 139}
 - `g2mu`: 118 shards {99: 118}
 - `g2mv`: 47 shards {99: 47}
-- `g2tw`: 63 shards {99: 63}
+- `g2tw`: 73 shards {99: 73}
 - `mu`: 357 shards {3: 1, 4: 1, 5: 1, 6: 2, 7: 2, 8: 2, 9: 3, 10: 6, 11: 16, 12: 60, 13: 263}
 - `tw2`: 334 shards {3: 1, 4: 1, 5: 1, 6: 2, 7: 2, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 250}
 - `tw3`: 332 shards {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 2, 10: 5, 11: 14, 12: 55, 13: 250}
@@ -99,6 +99,7 @@ Taper = a notable decrease in new pins on knots with at most 13 crossings (prime
 | 2026-11-15 19:10 | bm3 +3, bm4 +1, ccR +3, twL +14 | 26306 | 249 | 19204 | 242 | 25490 | 26104 | +20 / +0 / +0 / +0 / +0 / +0 |
 | 2026-11-15 22:57 | g2cc +6, g2mu +118, g2tw +23, twB +2 | 26308 | 249 | 19204 | 242 | 25490 | 26104 | +2 / +0 / +0 / +0 / +0 / +0 |
 | 2026-11-16 04:10 | bm3 +1, bm5 +119, ccR +1, g2cc +2, g2mv +47, g2tw +39, twB +2 | 26310 | 249 | 19204 | 242 | 25490 | 26104 | +2 / +0 / +0 / +0 / +0 / +0 |
+| 2026-11-16 04:56 | g2tw +10 | 26310 | 249 | 19204 | 242 | 25490 | 26104 | +0 / +0 / +0 / +0 / +0 / +0 |
 
 ## Notes
 
