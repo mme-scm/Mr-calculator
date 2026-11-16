@@ -1,7 +1,9 @@
 """Ranges of u_Z and u_R (rules N1-N5 of RULES_U.md) by bound propagation.
 
-usage: solve_u.py out=<dir> [noqa] [withheld]
+usage: solve_u.py out=<dir> [noqa] [noalt] [withheld]
   noqa       withholds rule N1q (the tabulated quasi-alternating knots that are not alternating)
+  noalt      withholds rule N1a outside the KnotInfo table (data/alt_anchors.jsonl.gz: census-alternating knots and
+             knots with an alternating diagram, signature computed)
   withheld   also counts what is determined without rule N4 and without rule N1q (two more problems in memory;
              without it the run needs about 3 GB less: do not run it next to a solve of the main problem)
 MRCALC_SKIP_PASSES=a,b withholds passes (main passes and band-move passes alike).
@@ -62,6 +64,14 @@ def instance(U, src, rec):
     P = U.P
     if src[0] == 'm':
         return {'rule': 'N6', 'from': rec['key'][0], 'to': rec['key'][1], 'par': {}, 'record': rec}
+    if src[0] == 'r':                       # a pass record read by the u problem itself (usolve._anchor_edges)
+        a, b = P.canon(rec['src']), P.canon(rec['dst'])
+        if rec['t'] == 'cc':
+            if rec['s'] != 1:
+                a, b = b, a
+            return {'rule': 'N3', 'from': a, 'to': b, 'par': {'a': 1, 'b': 1, 'h': 1},
+                    'note': 'crossing change K+ -> K-', 'record': rec}
+        return {'rule': 'N3', 'from': a, 'to': b, 'par': {'a': rec['a'], 'b': rec['b'], 'h': rec['h']}, 'record': rec}
     if src[0] == 'e':
         key = rec['key']
         if len(key) == 2:
@@ -110,7 +120,8 @@ def main():
     P = prepare.Problem(include_upsilon=False)
     say('main problem: %d nodes, %d edges (%.0fs)' % (len(P.nodes), len(P.edges), time.time() - T0))
     qa = [] if 'noqa' in args else usolve.load_qa()
-    U = usolve.UProblem(P, qa=qa)
+    alt = [] if 'noalt' in args else usolve.load_alt()
+    U = usolve.UProblem(P, qa=qa, alt=alt)
     say('u problem: %d nodes, %d anchors, %d node pairs with a difference constraint, %d mirror-pair constraints, '
         '%d sums (%.0fs)' % (len(U.names), len(U.unary), len(U.diff), len(U.selfc), len(U.sums), time.time() - T0))
     say('stats: %s' % json.dumps(dict(U.stats), sort_keys=True))
@@ -124,7 +135,7 @@ def main():
                 for v in U.violations[:20]], 'count': len(U.violations)}, f, indent=1)
         sys.exit(2)
     solvers = {}
-    UM = usolve.UProblem(P, qa=qa, mutation=True)          # u_M: the rules of u_Z and rule N6
+    UM = usolve.UProblem(P, qa=qa, mutation=True, alt=alt)          # u_M: the rules of u_Z and rule N6
     say('u_M problem: %d mutation instances (N6), %d node pairs with a difference constraint'
         % (UM.stats['N6 instances'], len(UM.diff)))
     if UM.violations:

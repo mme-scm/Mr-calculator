@@ -21,12 +21,12 @@ citing the ID. The statements below are the user's; the notes say how each is in
 | ID | rule | instantiated with |
 |---|---|---|
 | N1t | u(T(p,q)) = upsilon(T(p,q)) | the torus nodes of the main problem; value by the formula of rule U7 |
-| N1a | K alternating: u(K) = sigma(K)/2 | KnotInfo `alternating` = Y and the tabulated signature (section 3 sign: sigma(3_1) = -2) |
+| N1a | K alternating: u(K) = sigma(K)/2 | KnotInfo `alternating` = Y and the tabulated signature (section 3 sign: sigma(3_1) = -2). Outside the table (from 2026-11-16, `scripts/alt_anchors.py`, `data/alt_anchors.jsonl.gz`; withheld with `solve_u.py noalt`): alternating by the census name K14a.., K15a.. (as rule C8 of the main problem uses the census table) or by an alternating result diagram of a pass record; the signature is computed exactly from the Seifert matrix of a diagram of the knot (the result diagram of a pass record naming it) and must agree on up to three records |
 | N1q | K quasi-alternating: u(K) = sigma(K)/2 | KnotInfo `quasi_alternating` = Y for the 39 non-alternating knots it lists (at most 10 crossings), `data/knotinfo_qa.json`; withheld with `solve_u.py noqa` |
 | N2s | u(A # B) = u(A) + u(B) | composite nodes |
 | N2m | u(K*) = -u(K); K = K*: u(K) = 0 | mirror pairs; amphichiral nodes |
 | N2z | K slice: u(K) = 0 | tabulated smooth four-genus 0 (as rules F5, U4a); the unknot |
-| N3 | twist inequality (3) | every crossing-change edge (a = b = 1: K+ -> K- is a right-handed full twist on two oppositely oriented strands) and every twist edge of the main problem, with its a, b and handedness |
+| N3 | twist inequality (3) | every crossing-change edge (a = b = 1: K+ -> K- is a right-handed full twist on two oppositely oriented strands) and every twist edge of the main problem, with its a, b and handedness; also the crossing-change and twist records whose result is an alternating knot of N1a that is not a node of the main problem (a result reached from one node only is not a node there) |
 | N4 | band inequality (4) | the band-move passes (`data/passes/bm*`): `mrcalc/pd.py band_smoothing` at every crossing of a diagram |
 | N5 | u_Z is an integer | the bounds of u_Z are rounded inwards after every step; those of u_R are not |
 | N6 | u_M only: mutants have equal u_M | every mutation edge of the main problem (certified mutant pairs, the instances of rule F6); u_M also uses N1-N5 |

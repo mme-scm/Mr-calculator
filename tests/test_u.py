@@ -133,3 +133,51 @@ def test_torus_and_alternating_anchors_agree():
         s = T[nm]['signature']
         assert abs(s) == n - 1
         assert torus_upsilon(2, n) == -(n - 1) // 2
+
+
+def test_alternating_anchors_outside_the_table():
+    """Rule N1a for knots outside the table (scripts/alt_anchors.py rows): the knot of the row gets sigma/2,
+    its mirror image -sigma/2, a table knot is left to the table; the checker's own signature (spherogram)
+    and alternation test agree with the pipeline's on an alternating and a non-alternating diagram."""
+    import collections
+    import importlib.util
+    import os
+    from mrcalc import alg
+
+    class Stub:
+        canon = staticmethod(lambda n: n)
+
+    U = usolve.UProblem.__new__(usolve.UProblem)
+    U.P, U.unary, U.stats = Stub(), [], collections.defaultdict(int)
+    U.ix = {'K14a1': 0, 'K14a1*': 1, 'K15a7*': 2, '3_1': 3}
+    T = knotinfo.by_name()
+    pd = T['7_2']['pd']
+    rows = [{'node': 'K14a1', 'signature': -4, 'by': 'census name', 'pd': pd, 'ref': {'dst': 'K14a1'}},
+            {'node': 'K15a7', 'signature': 2, 'by': 'alternating diagram', 'pd': pd, 'ref': {'dst': 'K15a7'}},
+            {'node': '3_1', 'signature': -2, 'by': 'census name', 'pd': pd, 'ref': {'dst': '3_1'}}]
+    U._alt_anchors(rows)
+    got = {u[0]: (u[1], u[2], u[3]['mirror'], u[3]['signature']) for u in U.unary}
+    assert got == {0: (-2, 'N1a', False, -4), 1: (2, 'N1a', True, 4), 2: (-1, 'N1a', True, -2)}
+    with pytest.raises(ValueError):
+        U._alt_anchors([{'node': 'K14a2', 'signature': 3, 'by': 'census name', 'pd': pd, 'ref': {}}])
+
+    here = os.path.dirname(os.path.abspath(__file__))
+    spec = importlib.util.spec_from_file_location('check_u', os.path.join(here, '..', 'checker', 'check_u.py'))
+    cu = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cu)
+    C = cu.Check('.', os.path.join(here, '..', 'data'))
+    for nm in ('7_2', '8_19', '10_124', '12n_242', '9_42'):
+        d = T[nm]['pd']
+        assert C.alternating_pd(d) == bool(P.Diagram.from_pd(d).is_alternating_diagram())
+        s = C.signature(d)
+        assert s is None or s == alg.signature(d) == T[nm]['signature']
+    assert C.alternating_pd(T['7_2']['pd']) and not C.alternating_pd(T['8_19']['pd'])
+    # a full anchor record through the checker: good, wrong signature, non-alternating diagram
+    s = T['7_2']['signature']
+    con = {'id': 'x', 'type': 'unary', 'rule': 'N1a', 'node': 'K14a1', 'value': str(Fraction(s, 2)),
+           'par': {'signature': s, 'by': 'alternating diagram', 'mirror': False, 'pd': T['7_2']['pd'],
+                   'ref': {'dst': 'K14a1'}}}
+    C.check_constraint(con)
+    assert not C.err
+    C.check_constraint(dict(con, par=dict(con['par'], pd=T['8_19']['pd'])))
+    assert C.err

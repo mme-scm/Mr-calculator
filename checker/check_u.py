@@ -4,7 +4,8 @@ usage: check_u.py <dir of solve_u.py> [<data dir = data>]
 
 Does not import the pipeline.  Reads the tabulated data (knotinfo.jsonl, knotinfo_qa.json), the cited rule
 instances (u_constraints.jsonl.gz) and the events (u_events_Z.jsonl.gz, u_events_R.jsonl.gz) and verifies
-  1. every rule instance: the value of an anchor (N1t by the torus formula, N1a/N1q/N2z from the table), the
+  1. every rule instance: the value of an anchor (N1t by the torus formula, N1a/N1q/N2z from the table; N1a
+     outside the table: the census name or the alternating diagram, the signature recomputed with spherogram), the
      bounds of a twist (N3) and of a band move (N4) from its parameters, the record behind it (e = s - (w1-w0),
      twist parameters), mirror pairs and summands of table names;
   2. every event: its value follows from its constraint and the values of its input events, which are earlier
@@ -18,7 +19,10 @@ import json
 import os
 import sys
 from fractions import Fraction
+import re
 from math import ceil, floor
+
+_CENSUS_ALT = re.compile(r'K\d+a\d+\*?')
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 _spec = importlib.util.spec_from_file_location('main_check', os.path.join(HERE, 'check.py'))
@@ -42,6 +46,32 @@ def n4(e):
     return Fraction(e - 2, 4), Fraction(e + 2, 4)
 
 
+def sym_signature(V):
+    """Signature (positive minus negative squares) of V + V^T for a square integer matrix V, exactly: the
+    form is diagonalised by congruence over the rationals."""
+    V = [[int(x) for x in row] for row in V]          # a list of rows or a Sage matrix
+    n = len(V)
+    A = [[Fraction(V[i][j] + V[j][i]) for j in range(n)] for i in range(n)]
+    sig = 0
+    while A:
+        n = len(A)
+        p = next((k for k in range(n) if A[k][k] != 0), None)
+        if p is None:
+            q = next(((i, j) for i in range(n) for j in range(i + 1, n) if A[i][j] != 0), None)
+            if q is None:
+                break                                  # the rest of the form is zero
+            i, j = q                                   # e_i -> e_i + e_j makes the diagonal entry 2 A[i][j]
+            for k in range(n):
+                A[i][k] += A[j][k]
+            for k in range(n):
+                A[k][i] += A[k][j]
+            p = i
+        d = A[p][p]
+        sig += 1 if d > 0 else -1
+        A = [[A[r][c] - A[r][p] * A[p][c] / d for c in range(n) if c != p] for r in range(n) if r != p]
+    return sig
+
+
 class Check:
     def __init__(self, out, data):
         self.out, self.data = out, data
@@ -55,6 +85,7 @@ class Check:
         qa = os.path.join(data, 'knotinfo_qa.json')
         self.qa = set(json.load(open(qa))['names']) if os.path.exists(qa) else set()
         self.unchecked = {}
+        self._sig = None
 
     def bad(self, msg):
         if len(self.err) < 50:
@@ -135,6 +166,72 @@ class Check:
             return None
         return ins['from'], ins['to'], lo, hi
 
+    # ---- rule N1a outside the table: alternating by census name or by an alternating diagram, signature computed
+    def signature(self, pd):
+        """Signature of a PD diagram in the convention of the table, from spherogram's Seifert matrix (not the
+        pipeline's); None when spherogram cannot be imported.  The sign convention is calibrated on the table:
+        the value for the tabulated PD against the tabulated signature, knots up to 8 crossings."""
+        if self._sig is None:
+            try:
+                import spherogram
+            except Exception:
+                self._sig = False
+            else:
+                f, k = None, 0
+                for r in self.table.values():
+                    if r['crossing_number'] > 8 or not r.get('signature') or not r.get('pd'):
+                        continue
+                    t = sym_signature(spherogram.Link([list(x) for x in r['pd']]).seifert_matrix())
+                    g = 1 if t == r['signature'] else (-1 if t == -r['signature'] else None)
+                    if g is None or (f is not None and g != f):
+                        raise SystemExit('signature calibration fails on %s' % r['name'])
+                    f, k = g, k + 1
+                self._sig = (spherogram, f)
+                self.count['signature calibration: table knots with non-zero signature'] = k
+        if not self._sig:
+            return None
+        sp, f = self._sig
+        return f * sym_signature(sp.Link([list(x) for x in pd]).seifert_matrix())
+
+    @staticmethod
+    def alternating_pd(pd):
+        """Every arc of the diagram leaves one crossing on the over strand and enters the next on the under
+        strand, or the other way round: its label is once at an even and once at an odd position."""
+        pos = {}
+        for x in pd:
+            if len(x) != 4:
+                return False
+            for k, e in enumerate(x):
+                pos.setdefault(e, []).append(k % 2)
+        return bool(pd) and all(sorted(v) == [0, 1] for v in pos.values())
+
+    def check_alt_anchor(self, c, v, par, n):
+        s = par['signature']
+        if s % 2 or v != Fraction(s, 2):
+            self.bad('%s: value is not half the signature' % c['id'])
+        dst = (par.get('ref') or {}).get('dst')
+        if par.get('mirror'):
+            ok = dst is not None and dst != n and dst.rstrip('*') == n.rstrip('*')
+        else:
+            ok = dst == n
+        if not ok:
+            self.bad('%s: the record of the diagram does not give this knot' % c['id'])
+        if par['by'] == 'census name':
+            if not _CENSUS_ALT.fullmatch(n):
+                self.bad('%s: not an alternating name of the census table' % c['id'])
+            self.tick('N1a outside the table: alternating by the census name')
+        else:
+            if not self.alternating_pd(par['pd']):
+                self.bad('%s: the diagram is not alternating' % c['id'])
+            self.tick('N1a outside the table: alternating diagrams checked')
+        t = self.signature(par['pd'])
+        if t is None:
+            self.skip('signatures of alternating knots outside the table (spherogram not available)')
+        else:
+            if (-t if par.get('mirror') else t) != s:
+                self.bad('%s: signature of the diagram' % c['id'])
+            self.tick('N1a outside the table: signatures recomputed')
+
     def check_constraint(self, c):
         t = c['type']
         self.tick('constraints: ' + t)
@@ -146,7 +243,10 @@ class Check:
                     self.bad('%s: torus value' % c['id'])
             elif c['rule'] in ('N1a', 'N1q'):
                 if r is None:
-                    self.bad('%s: not a table knot' % c['id'])
+                    if c['rule'] == 'N1a' and par.get('by') in ('census name', 'alternating diagram'):
+                        self.check_alt_anchor(c, v, par, n)
+                    else:
+                        self.bad('%s: not a table knot' % c['id'])
                     return
                 if r['signature'] is None or sgn * r['signature'] != par['signature'] or v != Fraction(par['signature'], 2):
                     self.bad('%s: signature' % c['id'])

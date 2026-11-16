@@ -4,6 +4,8 @@ The rules were supplied by the user on 2026-11-15 and are used exactly as stated
 
   N1t  u(T(p,q)) = upsilon(T(p,q))                 (value: the formula of rule U7)
   N1a  K alternating        =>  u(K) = sigma(K)/2  (tabulated: KnotInfo alternating, signature)
+       outside the table (data/alt_anchors.jsonl.gz, scripts/alt_anchors.py): alternating by the census name
+       K14a.., K15a.. or by an alternating diagram; signature computed from a diagram of the knot
   N1q  K quasi-alternating  =>  u(K) = sigma(K)/2  (tabulated: KnotInfo quasi_alternating, signature)
   N2s  u(A # B) = u(A) + u(B)
   N2m  u(K*) = -u(K)                               (K = K*: u(K) = 0)
@@ -26,6 +28,7 @@ are read from the passes whose name starts with passes.BAND_PREFIX.
 """
 import json
 import os
+import re
 from collections import defaultdict, deque
 from fractions import Fraction
 from math import ceil, floor
@@ -46,7 +49,7 @@ def n4_bounds(e):
     return Fraction(e - 2, 4), Fraction(e + 2, 4)
 
 
-RULE_OF = {'e': 'N3', 'b': 'N4', 'm': 'N6'}      # rule of a constraint source
+RULE_OF = {'e': 'N3', 'b': 'N4', 'm': 'N6', 'r': 'N3'}      # rule of a constraint source
 
 
 def _num(x):
@@ -81,7 +84,7 @@ class UProblem:
          ('b', file, line)     band-move record (rule N4)
        and is turned into its record by sources()."""
 
-    def __init__(self, P, qa=None, log=None, bands=True, mutation=False):
+    def __init__(self, P, qa=None, log=None, bands=True, mutation=False, alt=None):
         self.P = P
         self.log = log or (lambda *a: None)
         self.names = []
@@ -101,6 +104,9 @@ class UProblem:
         self._main_edges()
         self.band_files = [f for f in passes.pass_files(bands=True) if f[0] not in self._skip] if bands else []
         self._bands()
+        self.main_files = []
+        self._anchor_edges(alt or ())
+        self._alt_anchors(alt or ())
         self._structure()
 
     # ------------------------------------------------------------------
@@ -131,7 +137,7 @@ class UProblem:
         j = i if m == name else self._add_extra(m)
         self.mirror[i] = j
         self.mirror[j] = i if self.mirror[j] in (-1, i) else self.mirror[j]
-        self.stats['nodes reached by band moves only'] += 1
+        self.stats['nodes outside the main problem (results of band moves, alternating results)'] += 1
         if names.kind(name) == 'composite':
             for part in name.split('#'):
                 self._add_extra(self.P.canon(part))
@@ -163,6 +169,70 @@ class UProblem:
             if s % 2:
                 raise ValueError('odd signature tabulated for %s' % n)
             self.unary.append((self.ix[n], s // 2, rule, {'signature': s}))
+
+    def _alt_anchors(self, rows):
+        """Rule N1a outside the table (rows of scripts/alt_anchors.py): the knot is alternating by its census
+        name or by an alternating diagram, and its signature is computed from a diagram of the knot.  A row
+        gives the knot of its record and, with the opposite sign, the mirror image."""
+        have = {u[0] for u in self.unary}
+        for r in rows:
+            s = r['signature']
+            if s % 2:
+                raise ValueError('odd signature computed for %s' % r['node'])
+            n0 = self.P.canon(r['node'])
+            for name, sgn in ((n0, 1), (self.P.canon(names.mirror_name(r['node'])), -1)):
+                if sgn == -1 and name == n0:
+                    continue
+                i = self.ix.get(name)
+                if i is None or i in have or names.is_table(name):
+                    continue
+                have.add(i)
+                by = 'alternating diagram' if r.get('alt_diagram') else r['by']
+                self.unary.append((i, sgn * s // 2, 'N1a', {'signature': sgn * s, 'by': by, 'mirror': sgn == -1,
+                                                           'pd': r['pd'], 'ref': r['ref']}))
+                self.stats['N1a outside the table: ' + by] += 1
+
+    def _anchor_edges(self, rows):
+        """Crossing-change and twist records from a node to an alternating knot of the rows that is not a node
+        of the main problem (there a result reached from one node only is left out).  The result becomes a
+        node of the u problem (its value comes from _alt_anchors), the record an instance of rule N3 read
+        from the pass shard: source ('r', file, line)."""
+        if not rows:
+            return
+        P = self.P
+        want = set()
+        for r in rows:
+            want.add(r['node'])
+            want.add(names.mirror_name(r['node']))
+        rx = re.compile(r'"dst":"([^"]+)"')
+        self.main_files = [f for f in passes.pass_files() if f[0] not in self._skip]
+        for fi, (pn, shard, path) in enumerate(self.main_files):
+            with passes._open(path) as f:
+                for li, line in enumerate(f):
+                    m = rx.search(line)
+                    if m is None or m.group(1) not in want:
+                        continue
+                    r = json.loads(line)
+                    if r['t'] not in ('cc', 'tw'):
+                        continue
+                    src, dst = P.canon(r['src']), P.canon(r['dst'])
+                    if dst in P.nodes or dst not in want:
+                        continue                       # an edge of the main problem already
+                    a = self.ix.get(src)
+                    if a is None:
+                        self.stats['records to an alternating knot from a diagram that is not of a node'] += 1
+                        continue
+                    b = self._add_extra(dst)
+                    if r['t'] == 'cc':                 # K+ -> K-: the record changes a positive crossing if s = 1
+                        lo, hi = n3_bounds(1, 1, 1)
+                        if r['s'] == 1:
+                            self._constraint(a, b, lo, hi, ('r', fi, li))
+                        else:
+                            self._constraint(b, a, lo, hi, ('r', fi, li))
+                    else:
+                        lo, hi = n3_bounds(r['a'], r['b'], r['h'])
+                        self._constraint(a, b, lo, hi, ('r', fi, li))
+                    self.stats['N3 instances to alternating knots outside the main problem'] += 1
 
     def _constraint(self, a, b, lo, hi, src):
         """lo <= x(b) - x(a) <= hi for node indices a, b."""
@@ -271,6 +341,16 @@ class UProblem:
                 keep = {k: r[k] for k in ('pass', 'shard', 't', 'd', 'src', 'dst', 'i', 's', 'e', 'dirs', 'h', 'a', 'b',
                                            'w0', 'w1', 'cert', 'n', 'axis') if k in r}
                 out[(tag[int(e.id[1:])], int(e.id[1:]))] = dict(keep, edge=e.id, key=list(e.key))
+        by_file = defaultdict(set)
+        for s in srcs:
+            if s[0] == 'r':
+                by_file[s[1]].add(s[2])
+        for fi, lines in by_file.items():
+            pn, shard, path = self.main_files[fi]
+            for li, r in enumerate(passes.iter_file_records(pn, shard, path)):
+                if li in lines:
+                    out[('r', fi, li)] = {k: r[k] for k in ('pass', 'shard', 't', 'd', 'src', 'dst', 'i', 's', 'e', 'h',
+                                                            'a', 'b', 'w0', 'w1', 'cert', 'n') if k in r}
         bs = sorted(s for s in srcs if s[0] == 'b')
         by_file = defaultdict(set)
         for _, fi, li in bs:
@@ -436,3 +516,14 @@ def load_qa():
         return []
     with open(p) as f:
         return json.load(f)['names']
+
+
+def load_alt():
+    """Rows of data/alt_anchors.jsonl.gz (scripts/alt_anchors.py): alternating knots outside the table."""
+    from .config import DATA
+    import gzip
+    p = os.path.join(DATA, 'alt_anchors.jsonl.gz')
+    if not os.path.exists(p):
+        return []
+    with gzip.open(p, 'rt') as f:
+        return [json.loads(line) for line in f]
