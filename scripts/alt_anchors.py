@@ -14,6 +14,8 @@ are tabulated.  Outside it they are computed here from the pass records that pro
 usage: alt_anchors.py [procs=2] [out=data/alt_anchors.jsonl]  (stored gzipped: data/alt_anchors.jsonl.gz) [check=10] [hyp]
   check=k  one knot in k gets its signature from a second record as well (default 10)
   hyp      also looks for alternating result diagrams of unnamed hyperbolic knots (slow, few)
+       alt_anchors.py certify file=<rows, .jsonl or .jsonl.gz> [procs=2]
+  rows whose record diagram is not alternating get an alternating diagram of the knot where one is found
 Output, one line per knot (the chirality of the first record):
   {"node", "signature", "by": "census name" | "alternating diagram", "pd": the diagram the signature is from,
    "alt_diagram": that diagram is alternating, "ref": the record, "agree": number of further records checked}
@@ -84,9 +86,68 @@ def compute(args):
     return out
 
 
+def alternating_diagram(row, tries=40):
+    """An alternating diagram of the knot of a row whose record diagram is not alternating: the record diagram
+    is simplified by spherogram (Reidemeister moves; random backtracking between attempts) until it is
+    alternating.  It is accepted when the identifier names it as the same knot (same chirality) and its
+    signature is the one of the record diagram.  Returns the PD code or None."""
+    import spherogram
+    L = spherogram.Link([list(x) for x in row['pd']])
+    for k in range(tries):
+        L.simplify('global')
+        pd2 = [list(x) for x in L.PD_code(min_strand_index=1)]
+        if pd2 and P.Diagram.from_pd(pd2).is_alternating_diagram():
+            if alg.signature(pd2) != row['signature']:
+                return None
+            res = passes.identifier().identify(pd2)
+            return pd2 if res['name'] == row['node'] else None
+        L.backtrack(steps=10 + 2 * k)
+    return None
+
+
+def certify_task(row):
+    try:
+        return row['node'], alternating_diagram(row)
+    except BaseException as e:                       # cysignals errors are BaseExceptions
+        if isinstance(e, (KeyboardInterrupt, SystemExit)):
+            raise
+        return row['node'], None
+
+
+def certify(path, procs):
+    """Rows that rest on the census name get an alternating diagram where one is found (fields pd, alt_diagram,
+    alt_from: the record diagram was simplified and identified again)."""
+    import gzip
+    op = gzip.open if path.endswith('.gz') else open
+    with op(path, 'rt') as f:
+        rows = [json.loads(line) for line in f]
+    todo = [r for r in rows if not r['alt_diagram']]
+    print('%d rows, %d without an alternating diagram' % (len(rows), len(todo)), flush=True)
+    t0 = time.time()
+    found = {}
+    with mp.Pool(procs, maxtasksperchild=200) as pool:
+        for k, (node, pd2) in enumerate(pool.imap_unordered(certify_task, todo, chunksize=8)):
+            if pd2 is not None:
+                found[node] = pd2
+            if (k + 1) % 500 == 0:
+                print('  %d/%d, %d found, %.0fs' % (k + 1, len(todo), len(found), time.time() - t0), flush=True)
+    for r in rows:
+        if r['node'] in found:
+            r['pd'], r['alt_diagram'] = found[r['node']], True
+            r['alt_from'] = 'the record diagram simplified by spherogram; identified as the same knot'
+    with op(path + '.tmp', 'wt') as f:
+        for r in rows:
+            f.write(json.dumps(r, separators=(',', ':')) + '\n')
+    os.replace(path + '.tmp', path)
+    print('CERTIFY_DONE %d of %d now have an alternating diagram, %.0fs' % (len(found), len(todo), time.time() - t0),
+          flush=True)
+
+
 def main():
     kv = dict(a.split('=', 1) for a in sys.argv[1:] if '=' in a)
     procs = int(kv.get('procs', 2))
+    if 'certify' in sys.argv[1:]:
+        return certify(kv['file'], procs)
     out = kv.get('out', os.path.join(DATA, 'alt_anchors.jsonl'))
     hyp = 'hyp' in sys.argv[1:]
     check = int(kv.get('check', 10))
