@@ -1,7 +1,7 @@
 """Run a move pass on diagram shards chosen by file-name prefix (shards that are not shards of core nodes:
 the 'g2' diagrams of adjacent nodes and the re-diagram shards written by scripts/target_diagrams.py).
 Same worker as scripts/run_pass.py (passes.shard_task): resumable per shard and per diagram.
-usage: run_moves.py <pass-name> <cc|tw> <diagram shard prefix> kinds=<k,k> [kmin=2] [kmax=3] [imb_max=none]
+usage: run_moves.py <pass-name> <cc|tw|mu|bm|fb> <diagram shard prefix> kinds=<k,k> [kmin=2] [kmax=3] [imb_max=none]
                     [procs=2] [maxtasks=2] [only=<file of node names>] [nmin=<crossings>] [kbig=<k>]
 only= restricts the pass to the diagrams of the listed nodes (a name or its mirror), nmin= to diagrams with at
 least that many crossings; shards without such a diagram are left out.  A shard done with a restriction stays

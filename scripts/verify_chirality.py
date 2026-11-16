@@ -27,13 +27,11 @@ from mrcalc import alg, names, passes  # noqa: E402
 from mrcalc import pd as P  # noqa: E402
 from mrcalc.config import DATA  # noqa: E402
 
-KEYS = ('t', 'd', 'i', 'e', 'h', 'axis', 'a', 'b', 's')
+KEYS = ('t', 'd', 'i', 'e', 'h', 'axis', 'a', 'b', 's', 'r2')
 
 
 def result_pd(pd0, r):
-    if r['t'] == 'bm':
-        return P.band_smoothing(pd0, r['i'])[0]
-    return passes.result_pd(pd0, r)
+    return passes.result_pd(pd0, r)          # band moves included (passes.band_pd)
 
 
 def check_shard(args):

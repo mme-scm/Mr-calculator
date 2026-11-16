@@ -181,3 +181,38 @@ def test_alternating_anchors_outside_the_table():
     assert not C.err
     C.check_constraint(dict(con, par=dict(con['par'], pd=T['8_19']['pd'])))
     assert C.err
+
+
+def test_face_bands_agree_with_alternating_values():
+    """Band moves between two arcs of a face (passes.face_band_records: rule N4 on the diagram after a
+    Reidemeister II move).  On small alternating knots every result is the unknot or an alternating table
+    knot, so both values are given by N1a / N2z and rule N4 can be tested; the record rebuilds its diagram."""
+    from mrcalc import passes
+    T = knotinfo.by_name()
+
+    def value(name):
+        if name == '0_1':
+            return 0
+        r = T.get(name.rstrip('*'))
+        if r is None or not r['alternating']:
+            return None
+        return Fraction(-r['signature'] if name.endswith('*') else r['signature'], 2)
+
+    tested = 0
+    for nm in ('3_1', '4_1', '5_2'):
+        d = {'id': nm + '|pd', 'node': nm, 'pd': T[nm]['pd'], 'kind': 'pd'}
+        recs = passes.face_band_records(d)
+        assert len(recs) > 4 * len(d['pd'])
+        for r in recs:
+            n = len(d['pd'])
+            assert r['t'] == 'bm' and r['i'] in (n, n + 1) and r['e'] == r['s'] - (r['w1'] - r['w0'])
+            assert r['w0'] == P.writhe(d['pd'])                     # a Reidemeister II move keeps the writhe
+            new = P.band_smoothing(P.r2(d['pd'], r['r2'][0], r['r2'][1], r['r2'][2], bool(r['r2'][3])), r['i'])[0]
+            assert passes.result_pd(d['pd'], r) == new and len(new) == r['n']
+            u1 = value(r['dst']) if r['dst'] else None
+            if u1 is None:
+                continue
+            lo, hi = usolve.n4_bounds(r['e'])
+            assert lo <= u1 - value(nm) <= hi, (nm, r)
+            tested += 1
+    assert tested > 100

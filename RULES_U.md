@@ -27,7 +27,7 @@ citing the ID. The statements below are the user's; the notes say how each is in
 | N2m | u(K*) = -u(K); K = K*: u(K) = 0 | mirror pairs; amphichiral nodes |
 | N2z | K slice: u(K) = 0 | tabulated smooth four-genus 0 (as rules F5, U4a); the unknot |
 | N3 | twist inequality (3) | every crossing-change edge (a = b = 1: K+ -> K- is a right-handed full twist on two oppositely oriented strands) and every twist edge of the main problem, with its a, b and handedness; also the crossing-change and twist records whose result is an alternating knot of N1a that is not a node of the main problem (a result reached from one node only is not a node there) |
-| N4 | band inequality (4) | the band-move passes (`data/passes/bm*`): `mrcalc/pd.py band_smoothing` at every crossing of a diagram |
+| N4 | band inequality (4) | the band-move passes (`data/passes/bm*`): `mrcalc/pd.py band_smoothing` at every crossing of a diagram; from 2026-11-16 also face bands (pass bm6, `passes.face_band_records`): D0 is the diagram after a Reidemeister II move between two arcs of a face (`pd.r2`, over or under), c one of its two new crossings |
 | N5 | u_Z is an integer | the bounds of u_Z are rounded inwards after every step; those of u_R are not |
 | N6 | u_M only: mutants have equal u_M | every mutation edge of the main problem (certified mutant pairs, the instances of rule F6); u_M also uses N1-N5 |
 

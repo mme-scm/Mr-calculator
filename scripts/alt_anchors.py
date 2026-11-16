@@ -36,7 +36,7 @@ from mrcalc.config import DATA  # noqa: E402
 RX_CENSUS = re.compile(r'"dst":"(K\d+a\d+\*?)"')
 RX_HYP = re.compile(r'"dst":"(H:[^"]+)"')
 RX_N = re.compile(r'"n":(\d+)')
-KEYS = ('t', 'd', 'i', 'e', 'h', 'axis', 'a', 'b', 's', 'src', 'dst')
+KEYS = ('t', 'd', 'i', 'e', 'h', 'axis', 'a', 'b', 's', 'r2', 'src', 'dst')
 
 
 def scan(args):
@@ -64,9 +64,7 @@ def scan(args):
 
 
 def result_pd(pd0, r):
-    if r['t'] == 'bm':
-        return P.band_smoothing(pd0, r['i'])[0]
-    return passes.result_pd(pd0, r)
+    return passes.result_pd(pd0, r)          # band moves included (passes.band_pd)
 
 
 def compute(args):

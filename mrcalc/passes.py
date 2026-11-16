@@ -123,6 +123,43 @@ def band_records(diag):
     return out
 
 
+def face_band_records(diag):
+    """Band moves of rule N4 between two arcs on a common face of a diagram.  A Reidemeister II move pushes a
+    finger of one arc across the other (over or under, P.r2); the diagram D0 of the rule is the diagram after
+    that move, and c is one of its two new crossings, smoothed the way that gives a knot.
+    Record: as band_records, with 'r2': [face, i, j, over] and 'i' the index of the crossing in D0."""
+    out = []
+    pd0 = diag['pd']
+    D = P.Diagram.from_pd(pd0)
+    n = D.n
+    for f in range(len(D.faces)):
+        m = len(D.faces[f])
+        for i in range(m):
+            for j in range(i + 1, m):
+                for over in (1, 0):
+                    try:
+                        pd1 = P.r2(pd0, f, i, j, bool(over))
+                    except P.DiagramError:
+                        continue                  # the two arcs are one edge, or share both ends
+                    if len(pd1) != n + 2 or len(set(pd1[n]) & set(pd1[n + 1])) < 2:
+                        raise AssertionError('Reidemeister II: the new crossings are not the last two')
+                    for idx in (n, n + 1):
+                        new, sg, w0, w1 = P.band_smoothing(pd1, idx)
+                        rec = {'t': 'bm', 'd': diag['id'], 'src': diag['node'], 'r2': [f, i, j, over], 'i': idx,
+                               's': sg, 'w0': w0, 'w1': w1, 'e': sg - (w1 - w0)}
+                        if rec['e'] % 2:
+                            raise AssertionError('parity check failed on band move')
+                        rec.update(_result(new, diag))
+                        out.append(rec)
+    return out
+
+
+def band_pd(diag_pd, rec):
+    """The result diagram of a band-move record (after the Reidemeister II move of a face band, if any)."""
+    pd0 = P.r2(diag_pd, rec['r2'][0], rec['r2'][1], rec['r2'][2], bool(rec['r2'][3])) if 'r2' in rec else diag_pd
+    return P.band_smoothing(pd0, rec['i'])[0]
+
+
 def twist_records(diag, ks, max_imbalance=2, min_imbalance=0):
     """Full twists along the dual paths crossing k edges with min_imbalance <= |a - b| <= max_imbalance
     (max_imbalance None: no upper limit)."""
@@ -171,6 +208,8 @@ def result_pd(diag_pd, rec):
         return P.twist(diag_pd, rec['e'], rec['h'])[0]
     if rec['t'] == 'mu':
         return P.mutate(diag_pd, rec['e'], rec['axis'])
+    if rec['t'] == 'bm':
+        return band_pd(diag_pd, rec)
     raise ValueError(rec['t'])
 
 
@@ -310,6 +349,8 @@ def shard_task(args):
                 drecs = mutation_records(d)
             elif opt['move'] == 'bm':
                 drecs = band_records(d)
+            elif opt['move'] == 'fb':
+                drecs = face_band_records(d)
             else:
                 raise ValueError('unknown move %r' % (opt['move'],))
         except BaseException as e:      # cysignals' SignalError is a BaseException
