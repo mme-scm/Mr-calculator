@@ -1,6 +1,7 @@
 """Re-solve and export.
-usage: solve.py [upsilon] [ablation] [nochains] [plain] [out=<dir>] [runs=<name,name>]
-       solve.py ablate [upsilon] [out=<dir>] [runs=..]   second phase of `ablation` (started by the first)
+usage: solve.py [upsilon] [ablation] [nochains] [plain] [out=<dir>] [runs=<name,name>] [ablation-base=<dir>]
+       solve.py ablate [upsilon] [out=<dir>] [runs=..] [procs=1]   second phase of `ablation` (started by the first,
+                                                         or by hand on the directory given as ablation-base=)
        solve.py ablate-run=<name> [upsilon] [out=<dir>]  one ablation run; prints its counts as one JSON line
 
 ablation: the full run solves, exports and leaves a table of its pins; then every ablation run is a process
@@ -244,36 +245,61 @@ def pass_ablation_run(name, skipped, out_dir, include_upsilon):
                 seconds=round(time.time() - t0, 1))
 
 
-def ablation_driver(out_dir, include_upsilon, only=None):
+def ablation_driver(out_dir, include_upsilon, only=None, procs=1):
     """Second phase of `solve.py ablation`: the full run has exported and left the process; every ablation
-    run is a process of its own, one after the other, so that the memory in use is that of one problem.
-    Writes ablation.json and the sheet `ablation` of knots.xlsx.  Exit code 3 if a run died."""
+    run is a process of its own, so that the memory in use is that of one problem per process.  `procs` runs
+    at a time (default 1); a file <out_dir>/procs with a number changes it while the driver runs.
+    Writes ablation.json and, if knots.xlsx is in out_dir, its sheet `ablation`.  Exit code 3 if a run died."""
     import subprocess
-    out, died = [], 0
     runs = [(name, {'rules': rules}) for name, rules in ablation_runs()]
     runs += [(name, {'rules': [], 'passes': ps}) for name, ps in pass_ablation_runs()]
-    for name, head in runs:
-        if only is not None and name not in only:
-            continue
-        t0 = time.time()
-        cmd = [sys.executable, '-W', 'ignore', os.path.abspath(__file__), 'ablate-run=' + name, 'out=' + out_dir]
-        proc = subprocess.run(cmd + (['upsilon'] if include_upsilon else []), stdout=subprocess.PIPE)
-        res = None
-        if proc.returncode == 0:
-            try:
-                res = json.loads(proc.stdout.decode().strip().split('\n')[-1])
-            except ValueError:
-                res = None
-        if res is None:
-            died += 1
-            res = dict(head, withheld=name, error='run died (exit code %d)' % proc.returncode,
-                       pins={i: None for i in INVARIANTS}, lost={i: None for i in INVARIANTS}, violations=None)
-        out.append(res)
-        print('ablation %-18s pins %s lost %s violations %s (%.0fs)' % (
-            name, res['pins'], res['lost'], res['violations'], time.time() - t0), flush=True)
+    runs = [r for r in runs if only is None or r[0] in only]
+    results, died = {}, 0
+    todo, running = list(runs), {}
+
+    def nprocs():
+        try:
+            with open(os.path.join(out_dir, 'procs')) as f:
+                return max(1, int(f.read().strip()))
+        except (OSError, ValueError):
+            return procs
+
+    def write():
+        out = [results[name] for name, _ in runs if name in results]
         with open(os.path.join(out_dir, 'ablation.json'), 'w') as f:
             json.dump(out, f, indent=1)
-    export.write_ablation_sheet(out_dir, out)
+        return out
+
+    while todo or running:
+        while todo and len(running) < nprocs():
+            name, head = todo.pop(0)
+            cmd = [sys.executable, '-W', 'ignore', os.path.abspath(__file__), 'ablate-run=' + name, 'out=' + out_dir]
+            running[name] = (subprocess.Popen(cmd + (['upsilon'] if include_upsilon else []),
+                                              stdout=subprocess.PIPE), head, time.time())
+        time.sleep(5)
+        for name in list(running):
+            proc, head, t0 = running[name]
+            if proc.poll() is None:
+                continue
+            text = proc.stdout.read().decode()
+            del running[name]
+            res = None
+            if proc.returncode == 0:
+                try:
+                    res = json.loads(text.strip().split('\n')[-1])
+                except ValueError:
+                    res = None
+            if res is None:
+                died += 1
+                res = dict(head, withheld=name, error='run died (exit code %d)' % proc.returncode,
+                           pins={i: None for i in INVARIANTS}, lost={i: None for i in INVARIANTS}, violations=None)
+            results[name] = res
+            print('ablation %-18s pins %s lost %s violations %s (%.0fs)' % (
+                name, res['pins'], res['lost'], res['violations'], time.time() - t0), flush=True)
+            write()
+    out = write()
+    if os.path.exists(os.path.join(out_dir, 'knots.xlsx')):
+        export.write_ablation_sheet(out_dir, out)
     os.remove(os.path.join(out_dir, ABLATION_BASE))
     print('ablation: %d runs, %d died, %s violations' % (
         len(out), died, sum(r['violations'] or 0 for r in out)), flush=True)
@@ -289,7 +315,8 @@ def main():
         print(json.dumps(ablation_run(kv['ablate-run'], out_dir, upsilon)), flush=True)
         return
     if 'ablate' in args:
-        sys.exit(ablation_driver(out_dir, upsilon, kv['runs'].split(',') if 'runs' in kv else None))
+        sys.exit(ablation_driver(out_dir, upsilon, kv['runs'].split(',') if 'runs' in kv else None,
+                                 int(kv.get('procs', 1))))
     t0 = time.time()
     problem = prepare.Problem(include_upsilon=upsilon)
     print('problem: %d nodes, %d constraints, %d edges (%.0fs)' % (
@@ -306,6 +333,9 @@ def main():
     abl = None
     if 'ablation' in args:
         write_ablation_base(problem, S, out_dir)
+    elif 'ablation-base' in kv:           # the ablation runs are started later (solve.py ablate out=<that dir>)
+        os.makedirs(kv['ablation-base'], exist_ok=True)
+        write_ablation_base(problem, S, kv['ablation-base'])
     elif os.path.exists(os.path.join(out_dir, 'ablation.json')):
         abl = json.load(open(os.path.join(out_dir, 'ablation.json')))
     val = validate(problem, S)

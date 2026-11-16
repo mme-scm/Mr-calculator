@@ -55,8 +55,11 @@ SPEC = {
 # with at most 11, k = 6 with at most 10).
 # MRCALC_PASS_ABLATIONS="name=pass+pass,name=pass" replaces the table (tests).
 PASS_ABLATIONS = {'stage6a': ['tw5'], 'stage6b': ['tw6'], 'stage6c': ['tw3x', 'tw4x', 'tw5x', 'tw6x'],
-                  # stage 6c by k (each run withholds one part and keeps the others)
-                  'stage6c_k3': ['tw3x'], 'stage6c_k4': ['tw4x'], 'stage6c_k56': ['tw5x', 'tw6x']}
+                  # final table (2026-11-16): k = 4 twists (stage 4 and stage 7 share the pass tw4), the targeted
+                  # search (moves on further diagrams of open knots and on diagrams of adjacent nodes), and the
+                  # mutations computed for the neighbours of the knots with u open
+                  'k4': ['tw4'], 'targeted': ['twB', 'ccR', 'twL', 'g2cc', 'g2tw'],
+                  'neighbour_mutations': ['g2mu', 'g2mv', 'muR']}
 if os.environ.get('MRCALC_PASS_ABLATIONS'):
     PASS_ABLATIONS = {kv.split('=')[0]: kv.split('=')[1].split('+')
                       for kv in os.environ['MRCALC_PASS_ABLATIONS'].split(',')}

@@ -94,7 +94,7 @@ full() {     # $1 label, $2 description for the commit message
   commit "Checkpoint $1: calculator inputs and complexes"
   OUT=$SCR/full
   rm -rf $OUT; mkdir -p $OUT
-  $PY scripts/solve.py upsilon out=$OUT > $OUT/solve.log 2>&1
+  $PY scripts/solve.py upsilon out=$OUT $SOLVE_EXTRA > $OUT/solve.log 2>&1      # SOLVE_EXTRA: e.g. ablation-base=<dir>
   rc=$?
   [ $rc -eq 2 ] && halt $1 "empty domain" $OUT
   [ $rc -ne 0 ] && { say "checkpoint $1: solve failed with exit $rc"; echo "solve exit $rc" > $FLAGS/FAILED_$1; return 1; }
@@ -147,6 +147,7 @@ handle() {   # marker name
 }
 
 if [ "$1" = "finish" ]; then finish "$2" "$3"; exit $?; fi
+if [ "$1" = "full" ]; then full "$2" "$3"; exit $?; fi          # one checkpoint, no loop (scripts/wind_down.sh)
 [ -f $FLAGS/last_sync ] || date +%s > $FLAGS/last_sync
 say "orchestrator started"
 while true; do

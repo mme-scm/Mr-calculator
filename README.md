@@ -4,10 +4,15 @@ A computational pipeline that propagates a fixed, closed catalogue of rules over
 six integer invariants (M, r_2, nu^#, r_0, tau^#, upsilon) of small knots. Every pinned value comes with a
 machine-generated chain of rule applications (`export/chains/`).
 
+* **Final state (2026-11-16).** The run is wound down. The final export, verified by the independent checker, is in
+  the repository `mme-scm/Mr-export`, branch `export/final`; its small tables are in `checkpoints/final/`. The
+  directory `export/` of this repository is the earlier export of the stage 6c checkpoint (2026-11-13).
 * `REPORT.md` — results, ablation, scope parameters used, skipped passes.
+* `RULES_U.md`, `checkpoints/u_final/` — the invariants u_Z, u_R, u_M (rules N1-N6, supplied 2026-11-15/16):
+  ranges, events and constraints (`scripts/solve_u.py`, `checker/check_u.py`).
 * `STATE.md` — pinned counts and pass progress.
 * `WANTED_RULES.md` — statements that would help but are not in the catalogue (never used).
-* `export/` — deliverable (`knots.csv` / `knots.xlsx` are the human-readable tables; `FORMAT.md` documents every file).
+* `export/` — deliverable of the stage 6c checkpoint; the final one has the same layout (`knots.csv` / `knots.xlsx` are the human-readable tables; `FORMAT.md` documents every file).
   The JSONL files are stored as gzip parts and the chain files inside `chains/chains-NNN.tar.xz`, because no file
   may exceed 50 MB; `python3 scripts/export_pack.py unpack export <dir>` writes plain `X.jsonl` files and one
   `chains/<node>.txt` per node.

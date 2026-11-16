@@ -1,5 +1,5 @@
 """Write STATE.md and REPORT.md from the export and the pass data.
-usage: report.py [final]"""
+usage: report.py [final] [export=<dir>] [source=<text>]   (state=<dir> [label=<name>]: STATE.md only)"""
 import collections
 import json
 import os
@@ -57,7 +57,14 @@ def check_set(knots):
 
 
 def main():
+    global EXPORT
     final = 'final' in sys.argv
+    # export=<dir>: the export to report on (default: export/ of this repository); source=<text>: how the
+    # report names it
+    exp = next((a.split('=', 1)[1] for a in sys.argv[1:] if a.startswith('export=')), None)
+    source = next((a.split('=', 1)[1] for a in sys.argv[1:] if a.startswith('source=')), '`export/`')
+    if exp:
+        EXPORT = exp
     # state=<dir>: write only STATE.md, from the pin counts of a scratch re-solve (REPORT.md stays tied
     # to the last exported checkpoint in export/)
     state_dir = next((a.split('=', 1)[1] for a in sys.argv[1:] if a.startswith('state=')), None)
@@ -179,7 +186,7 @@ def main():
                         n = (int(hi) - int(lo)) // step + 1
                         open_sizes[i]['<= %d values' % n if n <= 5 else '> 5 values'] += 1
     R = ['# REPORT', '', ('Final report.' if final else 'Interim report.') +
-         ' Generated %s UTC from `export/`.' % time.strftime('%Y-%m-%d %H:%M', time.gmtime()), '']
+         ' Generated %s UTC from %s.' % (time.strftime('%Y-%m-%d %H:%M', time.gmtime()), source), '']
     R += ['## Nodes by kind', '', '| kind | nodes |', '|---|---|']
     for k, n in sorted(kinds.items()):
         R.append('| %s | %d |' % (k, n))
@@ -196,6 +203,21 @@ def main():
                  ['<= 2 values', '<= 3 values', '<= 4 values', '<= 5 values', '> 5 values', 'unbounded']) + ' |')
     R += ['', 'Sizes are the number of lattice points between the lower and upper end of the projection '
           '(M, r_2 on 4Z); the exact finite joint domains are in `export/knots.csv`.', '']
+    # ---- u_Z, u_R, u_M (rules N1-N6 of RULES_U.md; solved apart from the six invariants)
+    upath = os.path.join(ROOT, 'checkpoints', 'u_final', 'U_PINS.md')
+    if os.path.exists(upath):
+        with open(upath) as f:
+            utext = f.read().split('\n')
+        R += ['## u_Z, u_R, u_M (rules N1-N6, RULES_U.md)', '',
+              'Solved by scripts/solve_u.py on the same pass data, checked by checker/check_u.py '
+              '(checkpoints/u_final/).', '']
+        R += [x for x in utext if x.startswith('|') or x.startswith('"anchored"') or x.startswith('Ranges')]
+        opath = os.path.join(ROOT, 'checkpoints', 'u_final', 'u_open_ranges.txt')
+        if os.path.exists(opath):
+            with open(opath) as f:
+                R += ['', 'Knots with u open (KnotInfo chirality; the same range for u_Z, u_R and u_M), with the '
+                      'values left for M:', ''] + ['- ' + x.strip() for x in f if x.strip()]
+        R.append('')
     R += ['## Ablation', '']
     if abl:
         R += ['| withheld | pins ' + ' / '.join(INV) + ' | lost ' + ' / '.join(INV) +
