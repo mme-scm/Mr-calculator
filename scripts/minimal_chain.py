@@ -13,7 +13,11 @@ used).  This program looks for a small set of rule instances of the same export 
             is a set from which no single instance can be dropped; the smallest ones found are written as
             chain texts (the format of the chain files) and as JSON.
 
-usage: minimal_chain.py extract export=<dir> node=<name> chain=<chain file of the node> [radius=2] out=<file.pkl>
+  miniexport  writes one of the sets found as an export directory of its own (constraints, events, chains,
+            node and edge records), which checker/check.py checks and route.py prints.
+
+usage: minimal_chain.py miniexport in=<minimal.json> [set=1] out=<dir>
+       minimal_chain.py extract export=<dir> node=<name> chain=<chain file of the node> [radius=2] out=<file.pkl>
        minimal_chain.py minimize in=<file.pkl> inv=M [tries=40] [procs=3] [seed=1] [keep=5] out=<dir>
                         [avoid=<constraint id,...>]   instances that may not be used (for a second chain)
 """
@@ -157,18 +161,25 @@ def _chain_rows(cons):
     return sorted({S.events.c[i] for i in ids})
 
 
+def _shuffled(cons, rnd):
+    """A random order in which the instances of F1 and C1 stay ahead of everything else: these two act on an
+    untouched domain only (FORMAT.md 4.1, 4.2), and every solve of the project applies them first."""
+    first = [c for c in cons if c['rule'] in ('F1', 'C1')]
+    rest = [c for c in cons if c['rule'] not in ('F1', 'C1')]
+    rnd.shuffle(rest)
+    return first + rest
+
+
 def one_try(seed):
     rnd = random.Random(seed)
-    cons = list(_G['cons'])
-    rnd.shuffle(cons)
+    cons = _shuffled(_G['cons'], rnd)
     while True:                                   # the chain of the pin, until it no longer shrinks
         rows = _chain_rows(cons)
         if rows is None:
             return None
         if len(rows) == len(cons):
             break
-        cons = [cons[i] for i in rows]
-        rnd.shuffle(cons)
+        cons = _shuffled([cons[i] for i in rows], rnd)
     # all instances of a node at once (never the node itself), then single instances
     nodes = sorted({x for c in cons for x in c['nodes']} - {_G['node']})
     rnd.shuffle(nodes)
@@ -270,6 +281,89 @@ def minimize(kv):
                                                        time.time() - t0), flush=True)
 
 
+def miniexport(kv):
+    """An export directory (FORMAT.md) that holds one of the sets of minimal.json and nothing else: its rule
+    instances as they are in the export, the events of a solve of exactly these, the records of its nodes and
+    edges.  checker/check.py and route.py read it like any export."""
+    import csv
+    from mrcalc import export as E, names, solver
+    with open(kv['in']) as f:
+        D = json.load(f)
+    src, out = D['export'], kv['out']
+    cons = D['sets'][int(kv.get('set', 1)) - 1]['instances']
+    ids = {c['id'] for c in cons}
+    full = []
+    for fn in parts(src, 'constraints'):
+        with gzip.open(fn, 'rt') as f:
+            for line in f:
+                if line.split('"id":"', 1)[1].split('"', 1)[0] in ids:
+                    full.append(json.loads(line))
+    assert len(full) == len(ids)
+    with open(os.path.join(src, 'parameters.json')) as f:
+        params = json.load(f)
+    solver.SLOPES.clear()
+    solver.SLOPES.update({k: [tuple(x) for x in v] for k, v in params['slope_sets'].items()})
+    sol = solver.Solver()
+    sol.add([{k: v for k, v in c.items() if k != 'fam'} for c in full])
+    sol.run()
+    os.makedirs(os.path.join(out, 'chains'), exist_ok=True)
+    dumps = lambda o: json.dumps(o, separators=(',', ':'), sort_keys=True)   # noqa: E731
+    with open(os.path.join(out, 'constraints.jsonl'), 'w') as f:
+        for c in full:
+            f.write(dumps(c) + '\n')
+    with open(os.path.join(out, 'events.jsonl'), 'w') as f:
+        for e in sol.events:
+            f.write(dumps(e.to_dict()) + '\n')
+    refs = {c['ref'] for c in full if isinstance(c.get('ref'), str)}
+    with open(os.path.join(out, 'edges.jsonl'), 'w') as f:
+        for fn in (parts(src, 'edges') if refs else []):
+            with gzip.open(fn, 'rt') as g:
+                for line in g:
+                    if line.split('"id":"', 1)[1].split('"', 1)[0] in refs:
+                        f.write(line)
+    par = {'max_statement_text': E.MAX_TEXT, 'slope_sets': params['slope_sets'], 'scope': params['scope'],
+           'versions': params['versions'], 'stats': {}, 'log': []}
+    with open(os.path.join(out, 'parameters.json'), 'w') as f:
+        f.write(dumps(par) + '\n')
+    nodes = []
+    for c in full:
+        for n in c['nodes']:
+            if n not in nodes:
+                nodes.append(n)
+    recs = {}
+    for fn in parts(src, 'knots'):
+        with gzip.open(fn, 'rt') as f:
+            for line in f:
+                if line.split('"node":"', 1)[1].split('"', 1)[0] in nodes:
+                    r = json.loads(line)
+                    recs[r['node']] = r
+    cons_by_id = {c['id']: c for c in sol.cons}
+    ev_text = [E.dom_text(d) for d in sol.ev_dom]
+    rows = []
+    with open(os.path.join(out, 'knots.jsonl'), 'w') as f:
+        for n in nodes:
+            rec = recs[n]
+            pins = sol.pins(n)
+            pe = {inv: sol.pin_event[(n, inv)] for inv in pins}
+            rec['domains'] = {k: sol.get(n, k).to_json() for k in ('F', 'C', 'U')}
+            rec['pins'] = pins
+            rec['pin_events'] = pe
+            rec['last_events'] = {k: sol.last[(n, k)] for k in ('F', 'C', 'U') if (n, k) in sol.last}
+            rec['chain'] = ('chains/%s.txt' % names.file_name(n)) if pins else None
+            f.write(dumps(rec) + '\n')
+            rows.append(E.table_row(rec, sol, n))
+            if pins:
+                with open(os.path.join(out, 'chains', names.file_name(n) + '.txt'), 'w') as g:
+                    g.write(E.chain_text(n, pins, pe, sol.events, ev_text, cons_by_id))
+    with open(os.path.join(out, 'knots.csv'), 'w', newline='', encoding='utf-8') as f:
+        w = csv.DictWriter(f, fieldnames=E.COLUMNS)
+        w.writeheader()
+        for r in rows:
+            w.writerow(r)
+    print('MINIEXPORT_DONE %s: %d nodes, %d constraints, %d events; pins of %s: %s'
+          % (out, len(nodes), len(full), len(sol.events), D['node'], sol.pins(D['node'])), flush=True)
+
+
 if __name__ == '__main__':
     kv = dict(a.split('=', 1) for a in sys.argv[2:] if '=' in a)
-    {'extract': extract, 'minimize': minimize}[sys.argv[1]](kv)
+    {'extract': extract, 'minimize': minimize, 'miniexport': miniexport}[sys.argv[1]](kv)
